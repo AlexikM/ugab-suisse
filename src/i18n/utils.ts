@@ -15,10 +15,16 @@ export function useTranslations(lang: Lang) {
 // Pages internes ayant une version EN. Toute autre route fallback sur FR.
 const enRoutes = new Set<string>(['/']);
 
+export function withBase(path: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  if (path === '/') return base === '' ? '/' : `${base}/`;
+  return `${base}${path}`;
+}
+
 export function localizedPath(path: string, lang: Lang): string {
   const clean = path.startsWith('/') ? path : `/${path}`;
-  if (lang === defaultLang) return clean;
+  if (lang === defaultLang) return withBase(clean);
   // Pour les pages sans traduction EN, on renvoie sur la version FR.
-  if (!enRoutes.has(clean)) return clean;
-  return `/${lang}${clean}`;
+  if (!enRoutes.has(clean)) return withBase(clean);
+  return withBase(`/${lang}${clean}`);
 }

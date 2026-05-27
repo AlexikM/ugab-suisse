@@ -4,7 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://ugab.ch',
+  site: 'https://alexikm.github.io',
+  base: '/ugab-suisse',
   i18n: {
     defaultLocale: 'fr',
     locales: ['fr', 'en'],
