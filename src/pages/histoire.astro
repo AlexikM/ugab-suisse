@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { withBase } from '../i18n/utils';
 const lang = 'fr';
 const antennes = await getCollection('antennes');
 
@@ -83,7 +84,7 @@ const committee = [
         {pillars.map((p, idx) => (
           <div class={`grid md:grid-cols-12 gap-8 md:gap-12 items-center ${idx % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}>
             <div class="md:col-span-6 aspect-[4/3] overflow-hidden bg-[var(--color-paper-deep)]">
-              <img src={p.image} alt="" loading="lazy" class="h-full w-full object-cover" />
+              <img src={withBase(p.image)} alt="" loading="lazy" class="h-full w-full object-cover" />
             </div>
             <div class="md:col-span-6">
               <div class="font-display text-sm uppercase tracking-[0.25em] text-[var(--color-brand)] mb-4">
