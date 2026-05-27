@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "skills": {
+    "get-tsconfig": {
+      "source": "get-tsconfig",
+      "sourceType": "node_modules",
+      "computedHash": "4f7d29d57b35470ca90d9ca6fc963e4d07fa1b9d0f3940a07052afba3a9996d5"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": "skill/SKILL.md",
+      "computedHash": "34e59a34b9705187e87039faa5d9585aebe0056ef657f761b905afef276a3362"
+    }
+  }
+}
