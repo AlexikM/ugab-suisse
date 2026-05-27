@@ -1,0 +1,48 @@
+backend:
+  name: github
+  repo: AlexikM/ugab-suisse
+  branch: main
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+locale: fr
+
+collections:
+  - name: events
+    label: Événements
+    label_singular: Événement
+    folder: src/content/events
+    create: true
+    slug: "{{year}}-{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Titre, name: title, widget: string }
+      - { label: Langue, name: lang, widget: select, options: ["fr", "en"], default: "fr" }
+      - { label: Date de début, name: date, widget: datetime }
+      - { label: Date de fin, name: endDate, widget: datetime, required: false }
+      - { label: Lieu, name: location, widget: string }
+      - { label: Image (couverture), name: cover, widget: image, required: false }
+      - { label: Résumé, name: excerpt, widget: text }
+      - { label: Lien d'inscription, name: registrationUrl, widget: string, required: false }
+      - { label: Brouillon, name: draft, widget: boolean, default: false }
+      - { label: Contenu, name: body, widget: markdown }
+
+  - name: antennes
+    label: Antennes
+    label_singular: Antenne
+    folder: src/content/antennes
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Ville, name: city, widget: string }
+      - { label: Canton, name: canton, widget: string }
+      - { label: Email, name: email, widget: string, required: false }
+      - { label: Téléphone, name: phone, widget: string, required: false }
+      - { label: Adresse, name: address, widget: string, required: false }
+      - { label: Description, name: description, widget: text }
