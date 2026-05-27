@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lang = 'fr';
+---
+
+<Layout lang={lang} title="Politique de confidentialité">
+  <section class="bg-[var(--color-ink)] text-white">
+    <div class="mx-auto max-w-7xl px-6 py-24 md:py-28">
+      <div class="max-w-3xl">
+        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">Données personnelles</div>
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">Politique de confidentialité</h1>
+        <p class="text-sm text-white/70">Conforme à la nouvelle loi suisse sur la protection des données (nLPD), en vigueur depuis le 1<sup>er</sup> septembre 2023.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-3xl space-y-12 [&_h2]:text-2xl [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-[var(--color-ink-soft)] [&_ul]:text-[var(--color-ink-soft)]">
+        <div>
+          <h2 class="mb-3">Responsable du traitement</h2>
+          <p>UGAB Suisse, <a href="mailto:contact@ugab.ch" class="text-[var(--color-brand)] underline">contact@ugab.ch</a>.</p>
+        </div>
+
+        <div>
+          <h2 class="mb-3">Données collectées</h2>
+          <ul class="list-disc pl-6 space-y-2 leading-relaxed">
+            <li>Données de contact volontairement transmises via le formulaire (nom, email, message)</li>
+            <li>Données de don traitées par notre prestataire de paiement (RaiseNow)</li>
+            <li>Données techniques anonymisées (cookies de mesure d'audience, si vous y avez consenti)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="mb-3">Finalités</h2>
+          <p>Vos données sont utilisées exclusivement pour vous répondre, traiter vos dons, vous tenir informé(e) de nos activités si vous l'avez demandé, et améliorer l'expérience de ce site.</p>
+        </div>
+
+        <div>
+          <h2 class="mb-3">Vos droits</h2>
+          <p>Conformément à la nLPD, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition concernant vos données. Pour exercer ces droits, écrivez-nous à <a href="mailto:contact@ugab.ch" class="text-[var(--color-brand)] underline">contact@ugab.ch</a>.</p>
+        </div>
+
+        <div>
+          <h2 class="mb-3">Cookies</h2>
+          <p>Ce site n'utilise que des cookies essentiels au fonctionnement et, avec votre accord explicite, des cookies de mesure d'audience anonymisés.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

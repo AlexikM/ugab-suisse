@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+const lang = 'fr';
+const antennes = await getCollection('antennes');
+
+const pillars = [
+  { title: 'Culture', kicker: '01', image: '/images/folk-dance.jpg', text: "Concerts, expositions, conférences, publications : faire vivre la richesse culturelle arménienne en Suisse, du chant liturgique de Komitas à la littérature contemporaine." },
+  { title: 'Éducation', kicker: '02', image: '/images/library.jpg', text: "Cours de langue arménienne pour enfants et adultes, soutien scolaire, bourses d'études, camps d'été pour la jeunesse de la diaspora." },
+  { title: 'Humanitaire', kicker: '03', image: '/images/humanitarian.jpg', text: "Aide d'urgence et programmes de long terme en Arménie, en Artsakh et auprès des communautés arméniennes en difficulté à travers le monde." },
+  { title: 'Communauté', kicker: '04', image: '/images/community.jpg', text: "Rassembler la diaspora arménienne de Suisse autour d'événements fédérateurs, transmettre l'identité aux nouvelles générations." },
+];
+
+// Comité — à remplacer par les vraies personnes et photos quand disponibles
+const committee = [
+  { name: 'Ara Tashjian', role: 'Président', initials: 'AT' },
+  { name: 'Anaïs Demirjian', role: 'Vice-présidente', initials: 'AD' },
+  { name: 'Vahé Garabedian', role: 'Trésorier', initials: 'VG' },
+  { name: 'Sona Markarian', role: 'Secrétaire', initials: 'SM' },
+  { name: 'Aram Mouradian', role: 'Membre', initials: 'AM' },
+  { name: 'Tigran Boyadjian', role: 'Membre', initials: 'TB' },
+  { name: 'Liana Avakian', role: 'Membre', initials: 'LA' },
+  { name: 'Hagop Sahakian', role: 'Membre', initials: 'HS' },
+];
+---
+
+<Layout lang={lang} title="Qui sommes-nous">
+  <!-- HERO -->
+  <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <img src="/images/armenian-church.jpg" alt="" class="h-full w-full object-cover opacity-50 grayscale" />
+    </div>
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-ink)]/70 to-transparent"></div>
+    <div class="relative mx-auto max-w-7xl px-6 py-32 md:py-44">
+      <div class="max-w-3xl">
+        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">1906 — 2026</div>
+        <h1 class="font-display uppercase tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">
+          120 ans au service du peuple arménien
+        </h1>
+        <p class="text-xl md:text-2xl text-white/90 leading-relaxed max-w-2xl">
+          La plus ancienne organisation non-gouvernementale arménienne au monde, de sa fondation au Caire en 1906 à ses missions actuelles sur quatre continents.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEAD ÉDITORIAL -->
+  <section class="bg-[var(--color-paper)] py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-4xl">
+        <p class="text-2xl md:text-3xl text-[var(--color-ink)] leading-[1.4]">
+          <span class="font-display text-7xl float-left mr-4 mt-2 leading-none text-[var(--color-brand)]">L</span>'Union Générale Arménienne de Bienfaisance a traversé un siècle de bouleversements en gardant intacte sa mission : préserver l'identité arménienne et venir en aide au peuple arménien partout dans le monde. Son histoire se confond avec celle de la diaspora moderne.
+        </p>
+        <div class="mt-12 pt-8 border-t border-[var(--color-line)] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="text-sm text-[var(--color-ink-muted)] max-w-md">
+            Pour découvrir l'histoire complète de l'UGAB, ses programmes internationaux et sa chronologie détaillée :
+          </div>
+          <a
+            href="https://agbu.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 font-display text-sm uppercase tracking-[0.18em] text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] border-b border-[var(--color-brand)] pb-1 whitespace-nowrap"
+          >
+            Site officiel UGAB
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h6v6M10 2L2 10"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISSION — 4 PILIERS -->
+  <section class="bg-[var(--color-paper-soft)] py-20 md:py-28">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-3xl mb-16">
+        <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">Mission & actions</div>
+        <h2 class="text-4xl md:text-5xl leading-tight">Quatre piliers, une vocation.</h2>
+        <p class="mt-6 text-lg text-[var(--color-ink-soft)] leading-relaxed">
+          L'UGAB Suisse perpétue la mission universelle de l'organisation : préserver l'identité, la langue et la culture arméniennes, tout en venant en aide aux Arméniens en difficulté, ici comme là-bas.
+        </p>
+      </div>
+      <div class="space-y-16 md:space-y-24">
+        {pillars.map((p, idx) => (
+          <div class={`grid md:grid-cols-12 gap-8 md:gap-12 items-center ${idx % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}>
+            <div class="md:col-span-6 aspect-[4/3] overflow-hidden bg-[var(--color-paper-deep)]">
+              <img src={p.image} alt="" loading="lazy" class="h-full w-full object-cover" />
+            </div>
+            <div class="md:col-span-6">
+              <div class="font-display text-sm uppercase tracking-[0.25em] text-[var(--color-brand)] mb-4">
+                {p.kicker} — {p.title}
+              </div>
+              <h3 class="text-3xl md:text-4xl mb-5 leading-tight">{p.title}</h3>
+              <p class="text-base text-[var(--color-ink-soft)] leading-relaxed">{p.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- COMITÉ -->
+  <section class="bg-[var(--color-paper)] py-20 md:py-28">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">Notre comité</div>
+        <h2 class="text-4xl md:text-5xl leading-tight">Les visages qui portent l'UGAB Suisse.</h2>
+        <p class="mt-6 text-lg text-[var(--color-ink-soft)] leading-relaxed">
+          Huit bénévoles élus pour un mandat de trois ans (2026 — 2029), qui assurent la gouvernance et l'animation de la section suisse.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        {committee.map((m) => (
+          <div class="group">
+            <div class="aspect-square mb-4 bg-gradient-to-br from-[var(--color-brand)] to-[var(--color-brand-deep)] grid place-items-center text-white relative overflow-hidden">
+              <span class="font-display text-5xl tracking-tight">{m.initials}</span>
+              <div class="absolute inset-0 bg-[var(--color-gold)]/0 group-hover:bg-[var(--color-gold)]/15 transition-colors"></div>
+            </div>
+            <div class="font-medium text-[var(--color-ink)]">{m.name}</div>
+            <div class="text-sm text-[var(--color-ink-muted)] mt-1">{m.role}</div>
+          </div>
+        ))}
+      </div>
+      <p class="mt-12 text-sm text-[var(--color-ink-muted)] italic max-w-2xl">
+        Les portraits photographiques du comité seront publiés au cours du premier semestre 2026.
+      </p>
+    </div>
+  </section>
+
+  <!-- ANTENNES -->
+  <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">Nos antennes</div>
+      <h2 class="text-4xl md:text-5xl mb-12 leading-tight">Présents en Suisse romande et alémanique.</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {antennes.map((a) => (
+          <div class="bg-[var(--color-paper)] border border-[var(--color-line)] p-8">
+            <div class="text-xs uppercase tracking-widest text-[var(--color-brand)] mb-2">{a.data.canton}</div>
+            <h3 class="text-2xl mb-3">{a.data.city}</h3>
+            <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed mb-4">{a.data.description}</p>
+            {a.data.email && (
+              <a href={`mailto:${a.data.email}`} class="text-sm text-[var(--color-brand)] hover:underline">{a.data.email}</a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

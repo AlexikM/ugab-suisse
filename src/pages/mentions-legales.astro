@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+const lang = 'fr';
+---
+
+<Layout lang={lang} title="Mentions légales">
+  <section class="bg-[var(--color-ink)] text-white">
+    <div class="mx-auto max-w-7xl px-6 py-24 md:py-28">
+      <div class="max-w-3xl">
+        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">Informations</div>
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.05]">Mentions légales</h1>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="max-w-3xl prose prose-stone space-y-4 [&_h2]:mt-12 [&_h2]:mb-3 [&_h2]:text-2xl [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-[var(--color-ink-soft)]">
+        <h2>Éditeur</h2>
+        <p>
+          UGAB Suisse — Section suisse de l'Union Générale Arménienne de Bienfaisance.<br/>
+          Adresse&nbsp;: [à compléter]<br/>
+          Email&nbsp;: contact@ugab.ch
+        </p>
+
+        <h2>Statut juridique</h2>
+        <p>Association à but non lucratif au sens des articles 60 et suivants du Code civil suisse, reconnue d'utilité publique.</p>
+
+        <h2>Hébergement</h2>
+        <p>Ce site est hébergé par Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA.</p>
+
+        <h2>Propriété intellectuelle</h2>
+        <p>L'ensemble des contenus présents sur ce site (textes, images, logos, photographies) est protégé par le droit d'auteur. Toute reproduction, totale ou partielle, est soumise à autorisation préalable.</p>
+      </div>
+    </div>
+  </section>
+</Layout>
