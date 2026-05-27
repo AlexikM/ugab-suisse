@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { localizedPath, withBase } from '../../i18n/utils';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', ({ data }) => !data.draft && data.lang === 'fr');
@@ -45,7 +46,7 @@ const otherEvents = allEvents
   <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
     {event.data.cover && (
       <div class="absolute inset-0 -z-10">
-        <img src={event.data.cover} alt="" class="h-full w-full object-cover opacity-50" />
+        <img src={withBase(event.data.cover)} alt="" class="h-full w-full object-cover opacity-50" />
       </div>
     )}
     <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/70 to-[var(--color-brand-deep)]/40"></div>
@@ -92,7 +93,7 @@ const otherEvents = allEvents
         ) : isPast ? (
           <div class="text-lg text-[var(--color-ink-muted)] leading-snug">Événement terminé</div>
         ) : (
-          <a href="/contact" class="inline-block text-lg font-medium text-[var(--color-brand)] underline underline-offset-4">Nous contacter →</a>
+          <a href={localizedPath('/contact', 'fr')} class="inline-block text-lg font-medium text-[var(--color-brand)] underline underline-offset-4">Nous contacter →</a>
         )}
       </div>
     </div>
@@ -136,7 +137,7 @@ const otherEvents = allEvents
 
         <!-- 1 photo hero pleine largeur -->
         <figure class="aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[var(--color-paper-deep)] mb-3 md:mb-4">
-          <img src={gallery[0]} alt={`${event.data.title} — 01`} loading="lazy" class="h-full w-full object-cover" />
+          <img src={withBase(gallery[0])} alt={`${event.data.title} — 01`} loading="lazy" class="h-full w-full object-cover" />
         </figure>
 
         <!-- Grille uniforme 3 colonnes pour le reste -->
@@ -144,7 +145,7 @@ const otherEvents = allEvents
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {gallery.slice(1).map((src, i) => (
               <figure class="aspect-[4/3] overflow-hidden bg-[var(--color-paper-deep)]">
-                <img src={src} alt={`${event.data.title} — ${i + 2}`} loading="lazy" class="h-full w-full object-cover" />
+                <img src={withBase(src)} alt={`${event.data.title} — ${i + 2}`} loading="lazy" class="h-full w-full object-cover" />
               </figure>
             ))}
           </div>
@@ -190,7 +191,7 @@ const otherEvents = allEvents
                     S'inscrire →
                   </a>
                 ) : (
-                  <a href="/contact" class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] mt-2 px-6 py-3 text-xs font-display uppercase tracking-[0.18em] text-white transition">
+                  <a href={localizedPath('/contact', 'fr')} class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] mt-2 px-6 py-3 text-xs font-display uppercase tracking-[0.18em] text-white transition">
                     Nous contacter →
                   </a>
                 )}
@@ -270,7 +271,7 @@ const otherEvents = allEvents
       <p class="text-sm text-white/60 mb-6 max-w-xl mx-auto">
         Des formules sur-mesure et un dossier de partenariat détaillé sont disponibles sur simple demande.
       </p>
-      <a href="/contact" class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-10 py-5 text-sm font-display uppercase tracking-[0.18em] text-white transition">
+      <a href={localizedPath('/contact', 'fr')} class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-10 py-5 text-sm font-display uppercase tracking-[0.18em] text-white transition">
         Demander le dossier →
       </a>
     </div>
@@ -284,10 +285,10 @@ const otherEvents = allEvents
         <h2 class="text-3xl md:text-4xl mb-12">Découvrir nos rendez-vous.</h2>
         <div class="grid md:grid-cols-2 gap-10">
           {otherEvents.map((e) => (
-            <a href={`/evenements/${e.id}`} class="group grid grid-cols-12 gap-5">
+            <a href={`${import.meta.env.BASE_URL}/evenements/${e.id}`} class="group grid grid-cols-12 gap-5">
               {e.data.cover && (
                 <div class="col-span-5 aspect-[4/3] overflow-hidden bg-[var(--color-paper-deep)]">
-                  <img src={e.data.cover} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                  <img src={withBase(e.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
               <div class="col-span-7 flex flex-col justify-center">
@@ -299,7 +300,7 @@ const otherEvents = allEvents
           ))}
         </div>
         <div class="mt-12">
-          <a href="/evenements" class="inline-flex items-center font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] border-b border-[var(--color-brand)] pb-1">
+          <a href={localizedPath('/evenements', 'fr')} class="inline-flex items-center font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] border-b border-[var(--color-brand)] pb-1">
             ← Tous les événements
           </a>
         </div>

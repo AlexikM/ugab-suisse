@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../i18n/utils';
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
@@ -16,7 +17,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long'
 <Layout lang={lang} title="Événements">
   <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
     <div class="absolute inset-0 -z-10">
-      <img src="/images/concert.jpg" alt="" class="h-full w-full object-cover opacity-40" />
+      <img src={`${import.meta.env.BASE_URL}/images/concert.jpg`} alt="" class="h-full w-full object-cover opacity-40" />
     </div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-ink)]/75 to-[var(--color-brand-deep)]/30"></div>
     <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-36">
@@ -34,10 +35,10 @@ const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long'
         <h2 class="text-3xl mb-10">À venir</h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {upcoming.map((ev) => (
-            <a href={`/evenements/${ev.id}`} class="group block">
+            <a href={`${import.meta.env.BASE_URL}/evenements/${ev.id}`} class="group block">
               {ev.data.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
-                  <img src={ev.data.cover} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                  <img src={withBase(ev.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
               <div class="text-xs uppercase tracking-widest text-[var(--color-brand)] mb-2">{dateFmt.format(ev.data.date)}</div>
@@ -58,10 +59,10 @@ const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long'
         <h2 class="text-3xl md:text-4xl mb-12">Événements passés</h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {past.map((ev) => (
-            <a href={`/evenements/${ev.id}`} class="group block">
+            <a href={`${import.meta.env.BASE_URL}/evenements/${ev.id}`} class="group block">
               {ev.data.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-deep)]">
-                  <img src={ev.data.cover} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                  <img src={withBase(ev.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
               <div class="text-xs uppercase tracking-widest text-[var(--color-ink-muted)] mb-2">{dateFmt.format(ev.data.date)}</div>
