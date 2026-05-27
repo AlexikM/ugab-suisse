@@ -1,0 +1,115 @@
+---
+import { useTranslations, localizedPath, type Lang } from '../i18n/utils';
+import { languages } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const aboutLabel = lang === 'en' ? 'About us' : 'Qui sommes-nous';
+const nav = [
+  { href: localizedPath('/histoire', lang), label: aboutLabel },
+  { href: localizedPath('/evenements', lang), label: t('nav.events') },
+  { href: localizedPath('/contact', lang), label: t('nav.contact') },
+];
+
+const donateLabel = lang === 'en' ? 'Donate' : t('nav.donate');
+const joinLabel = lang === 'en' ? 'Join us' : 'Nous rejoindre';
+---
+
+<header class="sticky top-0 z-40 bg-[var(--color-paper)]">
+  <div class="mx-auto flex max-w-7xl items-center justify-between pl-6 pr-0 h-16 md:h-20">
+    <a href={localizedPath('/', lang)} class="flex items-center gap-4" aria-label="UGAB Suisse — Accueil">
+      <img
+        src="/logo.png"
+        alt="UGAB 120 ans"
+        width="138"
+        height="32"
+        class="h-7 md:h-9 w-auto"
+      />
+      <span class="hidden sm:inline-block border-l border-[var(--color-line)] pl-4 font-display uppercase tracking-[0.12em] text-[var(--color-brand)] text-lg md:text-xl font-medium">
+        Suisse
+      </span>
+    </a>
+
+    <nav class="hidden lg:flex items-center gap-10 h-full">
+      {nav.map((item) => (
+        <a href={item.href} class="font-display text-[17px] font-medium text-[var(--color-ink)] hover:text-[var(--color-brand)] transition-colors">
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-stretch h-full">
+      <a
+        href={localizedPath('/don', lang)}
+        class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-5 md:px-7 font-display uppercase tracking-[0.15em] text-xs md:text-sm text-white transition-colors"
+      >
+        {donateLabel}
+      </a>
+      <a
+        href={localizedPath('/contact', lang)}
+        class="hidden md:inline-flex items-center bg-[var(--color-brand-soft)] hover:bg-[#7a949a] px-7 font-display uppercase tracking-[0.15em] text-sm text-white transition-colors"
+      >
+        {joinLabel}
+      </a>
+      <div class="hidden sm:flex items-center bg-[var(--color-ink)] px-4 gap-2 text-xs">
+        {Object.entries(languages).map(([code, label]) => (
+          <a
+            href={code === 'fr' ? '/' : `/${code}/`}
+            class:list={['min-w-[28px] text-center font-display uppercase tracking-wider transition-colors', lang === code ? 'text-white font-medium' : 'text-white/50 hover:text-white']}
+            aria-label={label}
+          >{code}</a>
+        ))}
+      </div>
+      <button
+        id="mobile-menu-toggle"
+        class="lg:hidden inline-flex items-center justify-center w-12 h-full bg-[var(--color-ink)] text-white"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="3" y1="6" x2="17" y2="6"/>
+          <line x1="3" y1="10" x2="17" y2="10"/>
+          <line x1="3" y1="14" x2="17" y2="14"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div
+    id="mobile-menu"
+    class="lg:hidden hidden border-t border-[var(--color-line)] bg-[var(--color-paper)]"
+  >
+    <nav class="px-6 py-6 space-y-1">
+      {nav.map((item) => (
+        <a href={item.href} class="block py-3 font-display text-lg text-[var(--color-ink)] border-b border-[var(--color-paper-soft)] last:border-0 hover:text-[var(--color-brand)] transition-colors">
+          {item.label}
+        </a>
+      ))}
+      <div class="pt-6 flex items-center gap-3">
+        {Object.entries(languages).map(([code, label]) => (
+          <a
+            href={code === 'fr' ? '/' : `/${code}/`}
+            class:list={['min-w-11 min-h-11 inline-flex items-center justify-center font-display uppercase tracking-wider text-sm border', lang === code ? 'border-[var(--color-brand)] text-[var(--color-brand)] font-medium' : 'border-[var(--color-line)] text-[var(--color-ink-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]']}
+            aria-label={label}
+          >{code}</a>
+        ))}
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById('mobile-menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('hidden') === false;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  })();
+</script>
