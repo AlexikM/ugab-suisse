@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand UGAB officiel — couleurs extraites pixel-sampled du logo et site officiel */
+  --color-brand: #243c98;          /* Bleu UGAB du logo */
+  --color-brand-deep: #1a2d70;     /* Hover / fond sombre */
+  --color-brand-soft: #8da8ae;     /* Bleu secondaire (CTAs alternatifs) */
+
+  /* Or anniversaire — deux nuances officielles */
+  --color-gold: #8f8659;           /* Or olive bronze (du "120" du logo) */
+  --color-gold-light: #f3eac0;     /* Crème highlight (utilisé sur photos en hero) */
+
+  /* Neutres tintés vers le bleu de marque (per Impeccable: jamais #fff pur) */
+  --color-ink: #0e1426;
+  --color-ink-soft: #2a3140;
+  --color-ink-muted: #5b6675;
+  --color-paper: #fbfcfd;
+  --color-paper-soft: #f3f5f9;
+  --color-paper-deep: #e6ebf2;
+  --color-line: #d3dae3;
+
+  /* Typographies officielles UGAB */
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-serif: 'EB Garamond', 'Garamond', Georgia, serif;
+  --font-sans: 'Lato', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-paper);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0.005em;
+  }
+  h2, h3, h4 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.005em;
+  }
+
+  .editorial {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+@layer utilities {
+  .fade-in {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 600ms ease-out, transform 600ms ease-out;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
