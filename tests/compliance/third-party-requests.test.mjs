@@ -42,24 +42,34 @@ test('the privacy policy publishes the list of hosts the site contacts', () => {
   );
 });
 
-test('every host the site contacts on its own is declared, or a recorded launch blocker', () => {
+/**
+ * A host is disclosed if the policy names it at all — as an approved processor
+ * (`active`) or as something the site contacts today that should not survive
+ * launch (`pre-launch`). The two are different promises to a reader, but both
+ * are honest, and both are checkable. Silence is what fails.
+ */
+const disclosedHosts = () => {
+  const declared = declaredHosts(site.privacyPageHtml);
+  return [...declared.active, ...declared.preLaunch];
+};
+
+test('every host the site contacts on its own is disclosed on the privacy page', () => {
   const contacted = hostsOf(allReferences, KIND.AUTOMATIC);
-  const declared = declaredHosts(site.privacyPageHtml).active;
-  const undeclared = contacted.filter((host) => !declared.includes(host) && !blockedHosts().includes(host));
+  const undeclared = contacted.filter((host) => !disclosedHosts().includes(host));
 
   assert.deepEqual(
     undeclared,
     [],
     `These hosts are contacted while the page loads but appear nowhere in the privacy policy.\n` +
-      `Either remove them from the site, or add them to the processor register in src/i18n/legal.ts:\n\n` +
+      `Remove them from the site, or disclose them in src/i18n/legal.ts — as a processor if they belong there, ` +
+      `as a pre-launch exception if they do not:\n\n` +
       report(referencesOfKind(KIND.AUTOMATIC).filter((r) => undeclared.includes(r.host))),
   );
 });
 
-test('every host that receives form data is declared, or a recorded launch blocker', () => {
+test('every host that receives form data is disclosed on the privacy page', () => {
   const targets = hostsOf(allReferences, KIND.FORM_TARGET);
-  const declared = declaredHosts(site.privacyPageHtml).active;
-  const undeclared = targets.filter((host) => !declared.includes(host) && !blockedHosts().includes(host));
+  const undeclared = targets.filter((host) => !disclosedHosts().includes(host));
 
   assert.deepEqual(
     undeclared,
@@ -69,16 +79,24 @@ test('every host that receives form data is declared, or a recorded launch block
   );
 });
 
-test('every host a script would call is declared, or a recorded launch blocker', () => {
+test('every host a script would call is disclosed on the privacy page', () => {
   const called = hostsOf(allReferences, KIND.SCRIPT_LITERAL);
-  const declared = declaredHosts(site.privacyPageHtml).active;
-  const undeclared = called.filter((host) => !declared.includes(host) && !blockedHosts().includes(host));
+  const undeclared = called.filter((host) => !disclosedHosts().includes(host));
 
   assert.deepEqual(
     undeclared,
     [],
     `Script code on a page names a third-party host the privacy policy does not:\n\n` +
       report(referencesOfKind(KIND.SCRIPT_LITERAL).filter((r) => undeclared.includes(r.host))),
+  );
+});
+
+test('the engineering record of what must go matches what the page admits to', () => {
+  assert.deepEqual(
+    declaredHosts(site.privacyPageHtml).preLaunch,
+    blockedHosts(),
+    'The privacy page and tests/compliance/lib/launch-blockers.mjs disagree about which third parties the site ' +
+      'still contacts. One of them is lying to somebody. Fix both when a host is removed.',
   );
 });
 

@@ -21,20 +21,21 @@ const attribute = (tag, name) => {
  * @returns {{active: string[], planned: string[], explicitlyNone: boolean}}
  */
 export function declaredHosts(html) {
-  const active = new Set();
-  const planned = new Set();
+  const buckets = { active: new Set(), planned: new Set(), 'pre-launch': new Set() };
 
   for (const match of html.matchAll(/<[a-z]+\b[^>]*\bdata-host\s*=[^>]*>/gi)) {
     const tag = match[0];
     const host = attribute(tag, 'data-host');
     if (!host) continue;
-    const status = attribute(tag, 'data-host-status');
-    (status === 'planned' ? planned : active).add(host.trim());
+    const status = attribute(tag, 'data-host-status') ?? 'active';
+    (buckets[status] ?? buckets.active).add(host.trim());
   }
 
   return {
-    active: [...active].sort(),
-    planned: [...planned].sort(),
+    active: [...buckets.active].sort(),
+    planned: [...buckets.planned].sort(),
+    /** Contacted today, not approved, must be gone before launch. */
+    preLaunch: [...buckets['pre-launch']].sort(),
     // The page states in machine-readable form that it contacts nothing, which is
     // a different claim from having simply forgotten to render the list.
     explicitlyNone: /\bdata-hosts-none\b/i.test(html),

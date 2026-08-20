@@ -179,6 +179,65 @@ export const plannedHosts = (): string[] =>
 export const hasPlannedProcessors = (): boolean => processors.some((p) => p.status === 'planned');
 
 // ---------------------------------------------------------------------------
+// Third parties the site contacts today that it should not
+// ---------------------------------------------------------------------------
+
+/**
+ * Hosts the built site really does contact, that nobody chose and that must be
+ * gone before launch. Each is introduced by a page or layout outside this
+ * workstream; `tests/compliance/lib/launch-blockers.mjs` carries the owner and
+ * the fix, and a test asserts the two lists agree.
+ *
+ * They are published rather than hidden. A privacy policy that quietly omits the
+ * fonts CDN it loads on every page is the same failure as the "jamais partagées
+ * avec des tiers" sentence this rewrite exists to correct — a reassuring
+ * statement that the system does not honour. Saying so is uncomfortable, which
+ * is the point: the discomfort is what gets it removed.
+ *
+ * Empty this list and the pre-launch section disappears on its own.
+ */
+export const preLaunchExceptions: Array<{
+  host: string;
+  what: Record<LegalLang, string>;
+}> = [
+  {
+    host: 'fonts.googleapis.com',
+    what: {
+      fr: "Les polices de caractères du site sont encore chargées depuis Google, ce qui transmet votre adresse IP aux États-Unis à chaque page. Elles seront installées sur nos propres serveurs avant l'ouverture.",
+      en: 'The site’s typefaces are still loaded from Google, which sends your IP address to the United States on every page. They will be moved onto our own servers before opening.',
+    },
+  },
+  {
+    host: 'fonts.gstatic.com',
+    what: {
+      fr: 'Les fichiers de police eux-mêmes, servis par Google. Même correction.',
+      en: 'The font files themselves, served by Google. Same fix.',
+    },
+  },
+  {
+    host: 'www.openstreetmap.org',
+    what: {
+      fr: "Le plan du lieu, sur les pages d'événement, est une carte interactive chargée dès l'ouverture de la page. Elle sera remplacée par une image et un lien, pour que rien ne parte tant que vous ne le demandez pas.",
+      en: 'The venue map on event pages is an interactive map loaded as soon as the page opens. It will be replaced by an image and a link, so nothing leaves until you ask for it.',
+    },
+  },
+  {
+    host: 'api.web3forms.com',
+    what: {
+      fr: "Le formulaire de contact est encore branché sur un service de formulaires externe. Il sera remplacé par notre propre messagerie, en Suisse, avant l'ouverture. Ce formulaire n'est pas fonctionnel en l'état.",
+      en: 'The contact form is still wired to an external form service. It will be replaced by our own mail handling, in Switzerland, before opening. The form does not work as it stands.',
+    },
+  },
+  {
+    host: 'unpkg.com',
+    what: {
+      fr: "L'outil d'édition réservé au Comité charge son code depuis un dépôt public. Cette page n'est pas accessible aux visiteurs et ne traite aucune de vos données.",
+      en: 'The Committee’s editing tool loads its code from a public repository. That page is not reachable by visitors and processes none of your data.',
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
 
@@ -228,14 +287,23 @@ export interface LegalPage {
 /** The date the wording below was last reviewed. Rendered on every legal page. */
 export const lastReviewed = '2026-08-21';
 
-export const preLaunchNotice: Record<LegalLang, { heading: string; body: string }> = {
+export const preLaunchNotice: Record<
+  LegalLang,
+  { heading: string; body: string; exceptionsHeading: string; exceptionsIntro: string }
+> = {
   fr: {
     heading: 'Version de pré-lancement',
-    body: "Ce site n'est pas encore ouvert au public. L'hébergeur suisse, le prestataire de paiement, la billetterie et le service anti-spam décrits ci-dessous sont ceux qui seront en place à l'ouverture ; ils ne sont pas encore tous raccordés. Cette page sera revue et cette mention retirée avant le lancement.",
+    body: "Ce site n'est pas encore ouvert au public. L'hébergeur suisse, le prestataire de paiement, la billetterie et le service anti-spam décrits ci-dessous sont ceux qui seront en place à l'ouverture ; ils ne sont pas encore tous raccordés.",
+    exceptionsHeading: "Et ce qui, aujourd'hui, ne correspond pas encore à ce que nous décrivons",
+    exceptionsIntro:
+      "Autant le dire : la version que vous consultez charge encore quelques éléments depuis des serveurs qui ne figurent pas dans la liste ci-dessus. Voici lesquels, et ce qui est prévu. Cette section disparaît d'elle-même quand la liste se vide.",
   },
   en: {
     heading: 'Pre-launch version',
-    body: 'This site is not yet open to the public. The Swiss host, the payment provider, the ticketing provider and the anti-spam service described below are the ones that will be in place at launch; they are not all connected yet. This page will be reviewed and this notice removed before launch.',
+    body: 'This site is not yet open to the public. The Swiss host, the payment provider, the ticketing provider and the anti-spam service described below are the ones that will be in place at launch; they are not all connected yet.',
+    exceptionsHeading: 'And what, today, does not yet match what we describe',
+    exceptionsIntro:
+      'Better said than discovered: the version you are reading still loads a few things from servers that are not in the list above. Here is which, and what is planned. This section disappears on its own when the list empties.',
   },
 };
 
@@ -469,7 +537,7 @@ const legalNoticeFr: LegalPage = {
     {
       heading: 'Liens vers d’autres sites',
       paragraphs: [
-        "Ce site renvoie vers des sites que nous ne contrôlons pas — l'UGAB internationale, des lieux d'événements, nos réseaux sociaux. Leur contenu et leurs pratiques en matière de données ne relèvent pas de nous. Aucun de ces sites n'est contacté par votre navigateur tant que vous ne cliquez pas.",
+        "Ce site renvoie vers des sites que nous ne contrôlons pas — l'UGAB internationale, des lieux d'événements, nos réseaux sociaux. Leur contenu et leurs pratiques en matière de données ne relèvent pas de nous. Un lien ne déclenche rien tant que vous ne cliquez pas ; ce que ce site charge de lui-même est listé dans la politique de confidentialité.",
       ],
     },
     {
@@ -519,7 +587,7 @@ const legalNoticeEn: LegalPage = {
     {
       heading: 'Links to other sites',
       paragraphs: [
-        'This site links to sites we do not control — AGBU worldwide, event venues, our social accounts. Their content and their data practices are not ours. None of them is contacted by your browser until you click.',
+        'This site links to sites we do not control — AGBU worldwide, event venues, our social accounts. Their content and their data practices are not ours. A link does nothing until you click it; what this site loads on its own is listed in the privacy policy.',
       ],
     },
     {
@@ -642,6 +710,7 @@ export const legalChrome: Record<
     columnWhere: string;
     columnKeeps: string;
     notYetConnected: string;
+    toBeRemoved: string;
     hostsHeading: string;
     hostsIntro: string;
     hostsNone: string;
@@ -663,9 +732,10 @@ export const legalChrome: Record<
     columnWhere: 'Où',
     columnKeeps: 'Combien de temps il le garde',
     notYetConnected: 'pas encore raccordé',
+    toBeRemoved: 'retiré avant le lancement',
     hostsHeading: 'Ce que votre navigateur contacte',
     hostsIntro:
-      "Le détail technique, pour qui veut vérifier. En dehors de ce site, votre navigateur ne contacte aucun serveur de lui-même. Cette liste est comparée automatiquement au site publié à chaque mise en ligne.",
+      "Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Elle est comparée automatiquement au site publié à chaque mise en ligne — si un élément nouveau y apparaissait sans figurer ici, la publication échouerait.",
     hostsNone: "Aucun. Ce site ne charge rien depuis un serveur tiers.",
     contactHeading: 'Nous écrire',
     lastReviewed: 'Dernière révision',
@@ -684,9 +754,10 @@ export const legalChrome: Record<
     columnWhere: 'Where',
     columnKeeps: 'How long it keeps it',
     notYetConnected: 'not connected yet',
+    toBeRemoved: 'removed before launch',
     hostsHeading: 'What your browser contacts',
     hostsIntro:
-      'The technical detail, for anyone who wants to check. Apart from this site, your browser contacts no server on its own. This list is compared automatically against the published site on every deployment.',
+      'The technical detail, for anyone who wants to check: the complete list of servers your browser contacts on its own, apart from this one. It is compared automatically against the published site on every deployment — if something new appeared there without being listed here, publishing would fail.',
     hostsNone: 'None. This site loads nothing from a third-party server.',
     contactHeading: 'Write to us',
     lastReviewed: 'Last reviewed',

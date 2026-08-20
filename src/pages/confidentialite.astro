@@ -9,6 +9,7 @@ import {
   legalLang,
   legalPages,
   pendingLabel,
+  preLaunchExceptions,
   preLaunchNotice,
   processors,
 } from '../i18n/legal';
@@ -24,16 +25,24 @@ const notice = preLaunchNotice[lang];
  * site actually contacts, in both directions, so this list cannot go stale
  * without the build failing.
  */
-const hostRows = processors
-  .flatMap((processor) =>
+const hostRows = [
+  ...processors.flatMap((processor) =>
     processor.hosts.map((host) => ({
       host,
       status: processor.status,
       provider: processor.name[lang],
       purpose: processor.purpose[lang],
     })),
-  )
-  .sort((a, b) => a.host.localeCompare(b.host));
+  ),
+  ...preLaunchExceptions.map((exception) => ({
+    host: exception.host,
+    status: 'pre-launch' as const,
+    provider: notice.exceptionsHeading,
+    purpose: exception.what[lang],
+  })),
+].sort((a, b) => a.host.localeCompare(b.host));
+
+const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
 ---
 
 <Layout lang="fr" title={page.title} description={page.lead}>
@@ -49,10 +58,25 @@ const hostRows = processors
 
   <div class="mx-auto max-w-7xl px-6">
     <div class="max-w-3xl">
-      {hasPlannedProcessors() && (
+      {showPreLaunch && (
         <aside class="mt-12 border-l-4 border-[var(--color-gold)] bg-[var(--color-paper-soft)] p-6">
           <h2 class="font-display uppercase tracking-wide text-sm mb-2">{notice.heading}</h2>
           <p class="text-sm leading-relaxed text-[var(--color-ink-soft)]">{notice.body}</p>
+
+          {preLaunchExceptions.length > 0 && (
+            <div class="mt-5">
+              <h3 class="font-display uppercase tracking-wide text-sm mb-2">{notice.exceptionsHeading}</h3>
+              <p class="text-sm leading-relaxed text-[var(--color-ink-soft)] mb-3">{notice.exceptionsIntro}</p>
+              <ul class="space-y-2">
+                {preLaunchExceptions.map((exception) => (
+                  <li class="text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                    <code class="font-mono text-[var(--color-ink)]">{exception.host}</code>
+                    <span class="block">{exception.what[lang]}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </aside>
       )}
     </div>
@@ -126,9 +150,9 @@ const hostRows = processors
                   class="border-l-2 border-[var(--color-line)] pl-4 text-sm leading-relaxed text-[var(--color-ink-soft)]"
                 >
                   <code class="font-mono text-[var(--color-ink)]">{row.host}</code>
-                  {row.status === 'planned' && (
+                  {row.status !== 'active' && (
                     <span class="ml-2 text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
-                      {chrome.notYetConnected}
+                      {row.status === 'planned' ? chrome.notYetConnected : chrome.toBeRemoved}
                     </span>
                   )}
                   <span class="block text-[var(--color-ink-muted)]">{row.provider} — {row.purpose}</span>
