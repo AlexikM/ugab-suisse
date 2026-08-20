@@ -95,6 +95,35 @@ génériques" the brief forbids. Two jobs:
 `site` to the real domain once chosen (this also deletes the base-URL prefix
 bugs the last five commits were fixing).
 
+## 7. Third-party leakage (found by the compliance lane, 2026-08-21)
+
+Not spotted in the first pass. The prototype contacts four external services on
+page load, none disclosed anywhere:
+
+| Where | What it contacts | Problem |
+| --- | --- | --- |
+| `src/layouts/Layout.astro` | `fonts.googleapis.com` / `fonts.gstatic.com` | Every visitor's IP to Google before a word renders. Self-host instead. |
+| `src/pages/evenements/[slug].astro` | `openstreetmap.org` embed | Loads before anyone asks for a map. Defer to click. |
+| `src/pages/contact.astro` | `api.web3forms.com` | Form SaaS the ADR rules out — and the access key is still `YOUR_ACCESS_KEY`, so the contact form does not work at all. |
+| `public/admin/index.html` | `unpkg.com` at `^3.5.0` | Whole CMS from a CDN at an open version range. |
+
+Each is a processor that would have to be disclosed, or removed. Removal is
+cheaper in every case.
+
+## 8. Fonts do not match the brief
+
+The brief specifies Playfair Display or Montserrat for headings, Inter or Lato
+for body. The prototype loads **Oswald, EB Garamond and Lato**. Two of the three
+families are not in the brief at all, and none are self-hosted. Armenian is
+absent entirely.
+
+## 9. Invented contact details
+
+`contact@ugab.ch` appears in the footer and `{geneve,lausanne,zurich}@ugab.ch`
+in the antennes content. That domain is not the committee's and these addresses
+reach nobody — while the privacy policy routes data-rights requests to one of
+them.
+
 ## Summary of cleanup work
 
 1. Rename `/histoire` → `/a-propos`; strip Mission/Actualités from nav
@@ -105,3 +134,6 @@ bugs the last five commits were fixing).
 6. Add the Sponsoring half of `/don`
 7. Replace placeholder photography; move images to `src/assets/`
 8. Verify or delete the tax-deductibility claim
+9. Remove the four undisclosed third-party services, or disclose them
+10. Replace the font stack with the brief's families, self-hosted, incl. Armenian
+11. Purge invented contact addresses
