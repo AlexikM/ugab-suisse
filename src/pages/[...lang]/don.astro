@@ -1,5 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
+// PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
+import humanitarianImage from '../../assets/images/humanitarian.jpg';
 import { useTranslations, withBase, type Lang } from '../../i18n/utils';
 import { languagePaths, localeRoute, routes, sponsorshipTiers, suggestedAmounts } from '../../i18n/ui';
 
@@ -13,9 +16,14 @@ const link = (path: string) => withBase(localeRoute(path, lang));
 <Layout lang={lang} title={t('nav.donate_page')} description={t('donate.lead')}>
   <!-- TITRE & ACCROCHE -->
   <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
-    <div class="absolute inset-0 -z-10">
-      <img src={withBase('/images/humanitarian.jpg')} alt="" class="h-full w-full object-cover opacity-50" />
-    </div>
+    <Image
+      src={humanitarianImage}
+      alt=""
+      widths={[640, 1024, 1920]}
+      sizes="100vw"
+      loading="eager"
+      class="absolute inset-0 -z-10 h-full w-full object-cover opacity-50"
+    />
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-brand-deep)]/70 to-transparent"></div>
     <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-36">
       <div class="max-w-3xl">
