@@ -168,14 +168,6 @@ export const processors: Processor[] = [
   },
 ];
 
-/** Hosts the audit expects to find in the build output today. */
-export const activeHosts = (): string[] =>
-  [...new Set(processors.filter((p) => p.status === 'active').flatMap((p) => p.hosts))].sort();
-
-/** Hosts disclosed ahead of integration, which must NOT be contacted yet. */
-export const plannedHosts = (): string[] =>
-  [...new Set(processors.filter((p) => p.status === 'planned').flatMap((p) => p.hosts))].sort();
-
 export const hasPlannedProcessors = (): boolean => processors.some((p) => p.status === 'planned');
 
 // ---------------------------------------------------------------------------
@@ -397,7 +389,7 @@ const privacyFr: LegalPage = {
     {
       heading: 'Modifications',
       paragraphs: [
-        "Cette page change quand le site change — nouveau prestataire, nouvelle fonctionnalité. La date de dernière révision figure en bas de page, et la liste des prestataires ci-dessus est vérifiée automatiquement à chaque mise en ligne contre ce que le site fait réellement.",
+        "Cette page change quand le site change — nouveau prestataire, nouvelle fonctionnalité. La date de dernière révision figure en bas de page. La liste ci-dessous n'est pas tenue à la main : un contrôle automatisé la compare au site réellement publié, et il fait partie des vérifications menées avant chaque mise en ligne.",
       ],
     },
   ],
@@ -493,7 +485,7 @@ const privacyEn: LegalPage = {
     {
       heading: 'Changes',
       paragraphs: [
-        'This page changes when the site changes — a new provider, a new feature. The date of last review is at the foot of the page, and the provider list above is checked automatically on every deployment against what the site actually does.',
+        'This page changes when the site changes — a new provider, a new feature. The date of last review is at the foot of the page. The list below is not maintained by hand: an automated check compares it against the site as actually published, and it is one of the verifications run before each release.',
       ],
     },
   ],
@@ -612,7 +604,7 @@ const accessibilityFr: LegalPage = {
       ],
     },
     {
-      heading: 'Ce que nous avons fait',
+      heading: 'Ce à quoi nous nous tenons',
       bullets: [
         'Navigation complète au clavier, avec un indicateur de focus visible.',
         'Contraste des textes vérifié sur les couleurs de la charte.',
@@ -640,7 +632,7 @@ const accessibilityFr: LegalPage = {
     {
       heading: 'Comment nous le vérifions',
       paragraphs: [
-        "Par un contrôle automatisé à chaque mise en ligne, complété par un parcours au clavier et au lecteur d'écran avant chaque lancement. Un contrôle automatisé ne trouve qu'une partie des problèmes ; votre signalement en trouve d'autres.",
+        "Par un contrôle automatisé, complété par un parcours au clavier et au lecteur d'écran, menés avant chaque mise en ligne. Un contrôle automatisé ne trouve qu'une partie des problèmes ; votre signalement en trouve d'autres, et c'est pour cela que nous vous donnons une adresse.",
       ],
     },
   ],
@@ -659,7 +651,7 @@ const accessibilityEn: LegalPage = {
       ],
     },
     {
-      heading: 'What we have done',
+      heading: 'What we hold ourselves to',
       bullets: [
         'Full keyboard navigation, with a visible focus indicator.',
         'Text contrast checked against the brand colours.',
@@ -687,7 +679,7 @@ const accessibilityEn: LegalPage = {
     {
       heading: 'How we check',
       paragraphs: [
-        'By an automated check on every deployment, plus a keyboard and screen-reader pass before each launch. An automated check finds only some of the problems; your report finds the others.',
+        'By an automated check, plus a keyboard and screen-reader pass, run before each release. An automated check finds only some of the problems; your report finds the others, which is why we give you an address.',
       ],
     },
   ],
@@ -735,7 +727,7 @@ export const legalChrome: Record<
     toBeRemoved: 'retiré avant le lancement',
     hostsHeading: 'Ce que votre navigateur contacte',
     hostsIntro:
-      "Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Elle est comparée automatiquement au site publié à chaque mise en ligne — si un élément nouveau y apparaissait sans figurer ici, la publication échouerait.",
+      "Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Un contrôle automatisé la compare au site réellement publié ; si un élément nouveau y apparaissait sans figurer ici, ce contrôle échouerait.",
     hostsNone: "Aucun. Ce site ne charge rien depuis un serveur tiers.",
     contactHeading: 'Nous écrire',
     lastReviewed: 'Dernière révision',
@@ -757,7 +749,7 @@ export const legalChrome: Record<
     toBeRemoved: 'removed before launch',
     hostsHeading: 'What your browser contacts',
     hostsIntro:
-      'The technical detail, for anyone who wants to check: the complete list of servers your browser contacts on its own, apart from this one. It is compared automatically against the published site on every deployment — if something new appeared there without being listed here, publishing would fail.',
+      'The technical detail, for anyone who wants to check: the complete list of servers your browser contacts on its own, apart from this one. An automated check compares it against the site as actually published; if something new appeared there without being listed here, that check would fail.',
     hostsNone: 'None. This site loads nothing from a third-party server.',
     contactHeading: 'Write to us',
     lastReviewed: 'Last reviewed',

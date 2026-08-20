@@ -43,6 +43,22 @@ test('the privacy policy and the legal notices are reachable from the footer of 
   assert.deepEqual(missing, [], 'a visitor on these pages cannot find the legal pages without searching');
 });
 
+/**
+ * Marked `todo`: expected to fail today, must pass before launch.
+ *
+ * The footer belongs to another workstream, so this lane could not add the link.
+ * The accessibility statement offers someone a way to complete a donation the
+ * site blocks them from making — worth nothing if the only route to it is through
+ * the privacy policy.
+ */
+test('the accessibility statement is reachable from the footer too', { todo: 'the footer belongs to another workstream' }, () => {
+  const missing = site.visitorPages
+    .filter((page) => !footerOf(page.html).includes('/accessibilite'))
+    .map((page) => page.route);
+
+  assert.deepEqual(missing, [], 'the accessibility statement is not linked from the footer of these pages');
+});
+
 test('the promise the architecture cannot keep is gone', () => {
   for (const { route, text } of legalPagesText()) {
     assert.doesNotMatch(

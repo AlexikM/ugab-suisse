@@ -71,9 +71,16 @@ The intent — nothing is sold or traded — is preserved and is true.
 
 ### A3 — Third parties the site contacts that nobody agreed to
 
-Each is introduced by a file owned by another workstream and recorded in
-`tests/compliance/lib/launch-blockers.mjs`. Delete the entry there as each is
-fixed; when the list empties, remove the `todo` marker on the audit's last test.
+Each is introduced by a file owned by another workstream. Because they are real,
+the privacy policy admits to them: they are listed under `preLaunchExceptions` in
+`src/i18n/legal.ts` and rendered on the page as "retiré avant le lancement",
+because a policy that quietly omitted the fonts CDN it loads on every page would
+repeat the exact failure this rewrite exists to correct.
+
+As each is fixed, delete it from **both** `preLaunchExceptions` and
+`tests/compliance/lib/launch-blockers.mjs` — a test fails if the two disagree.
+When the lists empty, the pre-launch section disappears from the page on its own
+and the `todo` marker comes off the audit's last test.
 
 - [ ] **Webmaster** — `fonts.googleapis.com` and `fonts.gstatic.com`: every page sends the visitor's IP address to Google in the United States before rendering. Self-host the three typefaces and remove the stylesheet link and both preconnect hints.
 - [ ] **Webmaster** — `www.openstreetmap.org`: the venue map iframe loads with the event page, sending the visitor's IP address to the OpenStreetMap Foundation before they showed any interest in the map. Use a static image plus a link, or load on click. The address is already written out beside it.
@@ -111,7 +118,17 @@ looks.
 - [ ] **Committee** — confirm that every identifiable person in the supplied event photographs agreed to publication. This is a condition of supply, not something to sort out afterwards.
 - [ ] **Committee** — nominate who handles a takedown request and how fast.
 
-### A7 — The ADR is still Proposed
+### A7 — The legal pages must be reachable, in every language, and actually checked
+
+Written but not wired. Each of these is in a file owned by another workstream.
+
+- [ ] **Webmaster** — link the accessibility statement from the site footer. It offers someone a way to complete a donation the site blocks them from making; a route only reachable through the privacy policy is not a route.
+- [ ] **Webmaster** — publish the English legal pages. The English copy is already written in `src/i18n/legal.ts` and renders nowhere: `enRoutes` in `src/i18n/utils.ts` lists only `/`. Two visitors the policy is written for — an EU donor exercising GDPR rights, an English-speaking supporter — currently get French or nothing.
+- [ ] **Committee** — supply the Armenian translations of the three legal pages, or decide explicitly that the legal pages stay FR/EN on a trilingual site. Either is defensible; silence is not.
+- [ ] **Webmaster** — wire the compliance suite into `npm run test` and the pull-request workflow. Until then, the privacy policy's claim that an automated check compares its list against the published site is true of the code and untrue of the pipeline. Nothing else on this checklist matters if the check never runs.
+- [ ] **Webmaster** — tell people what happens to a contact message *before* they send it, next to the send button, with a link to the policy. Written for, but not reachable from, the contact page.
+
+### A8 — The ADR is still Proposed
 
 - [ ] **Committee** — answer the WordPress question. ADR-0001 is blocked on it, and every processor named in the privacy policy follows from it. If the answer changes the stack, the policy is rewritten.
 
@@ -143,6 +160,7 @@ the result.
 - [ ] **Committee** — send the contact form and the sponsorship form; confirm both arrive in a mailbox someone reads.
 - [ ] **Committee + webmaster** — every page on a phone, including the donation and booking steps.
 - [ ] **Webmaster** — keyboard-only pass over the whole site, and a screen-reader pass over the donation flow.
+- [ ] **Webmaster** — verify each claim the accessibility statement makes, rather than assuming it: full keyboard reach with a visible focus indicator, text contrast against the brand colours, heading order, alt text on meaningful images, and `prefers-reduced-motion` respected. The statement is a promise; this is where it becomes true.
 - [ ] **Webmaster** — handover of every account, per PRD 8. Nothing should be reachable only through the webmaster's own login.
 
 ---
