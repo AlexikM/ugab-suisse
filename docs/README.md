@@ -5,6 +5,7 @@
 | `adr/` | Architecture decision records — the *why*, with alternatives rejected |
 | `prd/` | Product requirements, one per delivery slice; each is also a GitHub issue |
 | `content/site-copy.md` | The committee's approved FR/EN site copy — source of truth for content |
+| `content/placeholder-inventory.md` | Every element on the site that is still a placeholder, and what replaces it |
 | `gap-analysis-prototype-vs-brief.md` | What the prototype gets wrong vs. the brief |
 
 ## Source documents

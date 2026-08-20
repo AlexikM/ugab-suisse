@@ -1,0 +1,127 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+// PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
+import humanitarianImage from '../../assets/images/humanitarian.jpg';
+import { useTranslations, withBase, type Lang } from '../../i18n/utils';
+import { languagePaths, localeRoute, routes, sponsorshipTiers, suggestedAmounts } from '../../i18n/ui';
+
+export const getStaticPaths = languagePaths;
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const link = (path: string) => withBase(localeRoute(path, lang));
+---
+
+<Layout lang={lang} title={t('nav.donate_page')} description={t('donate.lead')}>
+  <!-- TITRE & ACCROCHE -->
+  <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
+    <Image
+      src={humanitarianImage}
+      alt=""
+      widths={[640, 1024, 1920]}
+      sizes="100vw"
+      loading="eager"
+      class="absolute inset-0 -z-10 h-full w-full object-cover opacity-50"
+    />
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-brand-deep)]/70 to-transparent"></div>
+    <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-36">
+      <div class="max-w-3xl">
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">{t('donate.title')}</h1>
+        <p class="font-serif italic text-xl md:text-2xl text-white/85 leading-relaxed max-w-2xl">{t('donate.lead')}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEXTE D'IMPACT -->
+  <section class="py-20 md:py-28">
+    <div class="mx-auto max-w-3xl px-6 space-y-6 text-lg leading-[1.75] text-[var(--color-ink-soft)]">
+      <p>{t('donate.impact_p1')}</p>
+      <p>{t('donate.impact_p2')}</p>
+    </div>
+  </section>
+
+  <!-- MONTANTS SUGGÉRÉS -->
+  <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
+    <div class="mx-auto max-w-5xl px-6">
+      <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('donate.amounts_title')}</h2>
+
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[var(--color-line)]">
+            <th scope="col" class="py-4 pr-6 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)]">{t('donate.amount_column')}</th>
+            <th scope="col" class="py-4 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)]">{t('donate.impact_column')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {suggestedAmounts[lang].map((row) => (
+            <tr class="border-b border-[var(--color-line)]">
+              <th scope="row" class="py-5 pr-6 text-lg font-display font-medium whitespace-nowrap align-top">{row.amount}</th>
+              <td class="py-5 text-[var(--color-ink-soft)] align-top">{row.impact}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p class="mt-8 text-sm text-[var(--color-ink-soft)]">{t('donate.terms')}</p>
+
+      <!--
+        The online donation module — a Swiss provider carrying TWINT,
+        PostFinance, card and QR-bill — is embedded by PRD 5. The account does
+        not exist yet, and no promise of a receipt or of tax deductibility is
+        shown until PRD 7 has verified them.
+      -->
+      <div class="mt-10 border border-[var(--color-line)] bg-[var(--color-paper)] p-8">
+        <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{t('donate.provider_pending')}</p>
+        <a href={link(routes.contact)} class="inline-flex items-center mt-6 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-1">
+          {t('nav.contact')} →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPONSORING -->
+  <section id="sponsoring" class="py-20 md:py-28">
+    <div class="mx-auto max-w-5xl px-6">
+      <h2 class="font-display uppercase tracking-tight text-3xl md:text-5xl leading-[1.1] mb-10 [text-wrap:balance]">
+        {t('sponsor.title')}
+      </h2>
+      <div class="space-y-6 text-lg leading-[1.75] text-[var(--color-ink-soft)] max-w-3xl">
+        <p>{t('sponsor.p1')}</p>
+        <p>{t('sponsor.p2')}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PACKAGES DE PARTENARIAT -->
+  <section class="bg-[var(--color-ink)] text-[var(--color-paper)] py-20 md:py-24">
+    <div class="mx-auto max-w-5xl px-6">
+      <h2 class="text-3xl md:text-4xl leading-tight mb-4">{t('sponsor.packages_title')}</h2>
+      <p class="text-sm text-[var(--color-gold)] mb-10">⚠ {t('sponsor.packages_note')}</p>
+
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-white/20">
+            <th scope="col" class="py-4 pr-6 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-gold)]">{t('sponsor.package_column')}</th>
+            <th scope="col" class="py-4 pr-6 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-gold)]">{t('sponsor.amount_column')}</th>
+            <th scope="col" class="py-4 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-gold)]">{t('sponsor.benefits_column')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sponsorshipTiers[lang].map((tier) => (
+            <tr class="border-b border-white/10 align-top">
+              <th scope="row" class="py-5 pr-6 text-lg font-display font-medium whitespace-nowrap">{tier.name}</th>
+              <td class="py-5 pr-6 whitespace-nowrap text-[var(--color-paper)]/80">{tier.amount}</td>
+              <td class="py-5 text-sm text-[var(--color-paper)]/70 leading-relaxed">{tier.benefits}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <a href={link(routes.contact)} class="inline-flex items-center mt-12 bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-xs font-display uppercase tracking-[0.18em] text-white transition">
+        {t('sponsor.cta')} →
+      </a>
+    </div>
+  </section>
+</Layout>

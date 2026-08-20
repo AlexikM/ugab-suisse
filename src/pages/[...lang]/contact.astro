@@ -1,0 +1,106 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations, type Lang } from '../../i18n/utils';
+import { contactEmail, languagePaths } from '../../i18n/ui';
+
+export const getStaticPaths = languagePaths;
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<Layout lang={lang} title={t('nav.contact')} description={t('contact.lead')}>
+  <section class="bg-[var(--color-ink)] text-white">
+    <div class="mx-auto max-w-7xl px-6 py-28 md:py-36">
+      <div class="max-w-3xl">
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">{t('contact.title')}</h1>
+        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl">{t('contact.lead')}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <!--
+        The confirmation wording the Comité approved. It is revealed when the
+        form handler sends the visitor back with ?message=envoye. The handler
+        itself — endpoint, anti-spam, where the message goes — is PRD 7's work,
+        and PRD 7 may pick a different parameter; this is only the receiving
+        half. Until then the form is not wired to anything, and the page says so.
+      -->
+      <p
+        id="contact-confirmation"
+        role="status"
+        hidden
+        class="mb-10 border-l-4 border-[var(--color-brand)] bg-[var(--color-paper-soft)] px-6 py-5 text-lg text-[var(--color-ink)]"
+      >
+        {t('contact.confirmation')}
+      </p>
+
+      <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('contact.form_title')}</h2>
+
+      <form method="POST" class="space-y-8">
+        <div class="grid md:grid-cols-2 gap-8">
+          <label class="block">
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_name')}</span>
+            <input type="text" name="name" required autocomplete="name" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
+          </label>
+          <label class="block">
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_email')}</span>
+            <input type="email" name="email" required autocomplete="email" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_topic')}</span>
+          <input type="text" name="topic" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
+        </label>
+
+        <label class="block">
+          <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_message')}</span>
+          <textarea name="message" rows="6" required class="w-full border border-[var(--color-line)] bg-[var(--color-paper-soft)] p-4 text-base focus:outline-none focus:border-[var(--color-brand)] transition"></textarea>
+        </label>
+
+        <button type="submit" class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-sm font-display uppercase tracking-[0.18em] text-white transition">
+          {t('contact.form_submit')} →
+        </button>
+
+        <p class="text-sm text-[var(--color-ink-muted)] leading-relaxed">
+          {t('contact.form_pending')}{' '}
+          <a href={`mailto:${contactEmail}`} class="text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-0.5">{contactEmail}</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('contact.details_title')}</h2>
+      <dl class="space-y-6">
+        <div>
+          <dt class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('site.title')}</dt>
+          <dd class="text-lg">{t('contact.organisation')}</dd>
+        </div>
+        <div>
+          <dt class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('contact.form_email')}</dt>
+          <dd class="text-lg">
+            <a href={`mailto:${contactEmail}`} class="text-[var(--color-ink)] hover:text-[var(--color-brand)] border-b border-[var(--color-line)] hover:border-[var(--color-brand)] pb-0.5 transition">
+              {contactEmail}
+            </a>
+          </dd>
+        </div>
+      </dl>
+      <p class="mt-8 text-sm text-[var(--color-ink-muted)] leading-relaxed">{t('contact.pending')}</p>
+    </div>
+  </section>
+</Layout>
+
+<script is:inline>
+  (() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('message') !== 'envoye') return;
+    const confirmation = document.getElementById('contact-confirmation');
+    if (confirmation) confirmation.hidden = false;
+  })();
+</script>

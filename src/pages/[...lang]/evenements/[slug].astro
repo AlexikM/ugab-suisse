@@ -1,0 +1,197 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import { useTranslations, withBase, type Lang } from '../../../i18n/utils';
+import { languagePaths, localeRoute, routes } from '../../../i18n/ui';
+
+// An event has an address in every language, and the French one never moves —
+// ticket links get printed on invitations. The chrome follows the language of
+// the page; the event's own text is in whatever language it was written in,
+// until PRD 4 models one entry with a title per language.
+export async function getStaticPaths() {
+  const events = await getCollection('events', ({ data }) => !data.draft);
+  return languagePaths().flatMap((locale) =>
+    events.map((event) => ({
+      params: { ...locale.params, slug: event.id },
+      props: { ...locale.props, event },
+    })),
+  );
+}
+
+interface Props { lang: Lang; event: CollectionEntry<'events'> }
+const { lang, event } = Astro.props;
+const t = useTranslations(lang);
+const link = (path: string) => withBase(localeRoute(path, lang));
+
+const { Content } = await render(event);
+
+const locale = lang === 'fr' ? 'fr-CH' : 'en-CH';
+const dateFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+const timeFmt = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
+
+const isPast = event.data.date.valueOf() < Date.now();
+const canBook = !isPast && !event.data.soldOut && Boolean(event.data.ticketUrl);
+
+const programme = (event.data.programme ?? '')
+  .split(/\n{2,}/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
+
+const gallery = event.data.gallery ?? [];
+
+const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(
+  event.data.address ?? event.data.location,
+)}`;
+---
+
+<Layout lang={lang} title={event.data.title} description={event.data.excerpt}>
+  <!-- HERO -->
+  <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
+    {event.data.cover && (
+      <div class="absolute inset-0 -z-10">
+        <img src={withBase(event.data.cover)} alt="" class="h-full w-full object-cover opacity-50" />
+      </div>
+    )}
+    <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/70 to-[var(--color-brand-deep)]/40"></div>
+
+    <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-40 min-h-[55vh] flex flex-col justify-end">
+      <div class="max-w-4xl">
+        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6 flex items-center gap-3 flex-wrap">
+          <span>{isPast ? t('event.past') : t('event.upcoming')}</span>
+          <span class="h-px w-8 bg-[var(--color-gold-light)]" aria-hidden="true"></span>
+          <span>{dateFmt.format(event.data.date)}</span>
+          {event.data.soldOut && !isPast && (
+            <span class="bg-white text-[var(--color-ink)] px-2 py-1 tracking-[0.18em]">{t('event.sold_out')}</span>
+          )}
+        </div>
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-6xl lg:text-7xl leading-[1.02] mb-8">
+          {event.data.title}
+        </h1>
+        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl">{event.data.excerpt}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- L'ESSENTIEL -->
+  <section class="bg-[var(--color-paper)] border-b border-[var(--color-line)]">
+    <div class="mx-auto max-w-7xl px-6 py-8 md:py-10 grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+      <div>
+        <div class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('event.date')}</div>
+        <div class="text-lg font-medium leading-snug">{dateFmt.format(event.data.date)}</div>
+        <div class="text-sm text-[var(--color-ink-muted)] mt-1">
+          {timeFmt.format(event.data.date)}{event.data.endDate ? ` — ${timeFmt.format(event.data.endDate)}` : ''}
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('event.venue')}</div>
+        <div class="text-lg font-medium leading-snug">{event.data.location}</div>
+        {event.data.address && <div class="text-sm text-[var(--color-ink-muted)] mt-1">{event.data.address}</div>}
+      </div>
+
+      {(event.data.pricing || event.data.capacity) && (
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">
+            {event.data.pricing ? t('event.pricing') : t('event.capacity')}
+          </div>
+          {event.data.pricing && <div class="text-lg font-medium leading-snug">{event.data.pricing}</div>}
+          {event.data.capacity && (
+            <div class="text-sm text-[var(--color-ink-muted)] mt-1">{event.data.capacity} {t('event.places')}</div>
+          )}
+        </div>
+      )}
+
+      <div>
+        <div class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('event.book')}</div>
+        {isPast ? (
+          <div class="text-lg text-[var(--color-ink-muted)] leading-snug">{t('event.finished')}</div>
+        ) : event.data.soldOut ? (
+          <div class="text-lg font-medium leading-snug text-[var(--color-ink)]">{t('event.sold_out')}</div>
+        ) : canBook ? (
+          <a href={event.data.ticketUrl} class="inline-block text-lg font-medium text-[var(--color-brand)] underline underline-offset-4">
+            {t('event.book')} →
+          </a>
+        ) : (
+          <a href={link(routes.contact)} class="inline-block text-lg font-medium text-[var(--color-brand)] underline underline-offset-4">
+            {t('event.ask')} →
+          </a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- DESCRIPTION -->
+  <section class="py-20 md:py-28">
+    <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+      <div class="lg:col-span-8 lg:col-start-5">
+        <div class="prose prose-stone text-lg leading-[1.75] text-[var(--color-ink-soft)] max-w-none space-y-6 [&_strong]:text-[var(--color-ink)] [&_strong]:font-semibold">
+          <Content />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAMME -->
+  {programme.length > 0 && (
+    <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
+      <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+        <div class="lg:col-span-4">
+          <h2 class="text-3xl md:text-4xl leading-tight">{t('event.programme')}</h2>
+        </div>
+        <div class="lg:col-span-8 space-y-5 text-lg leading-[1.75] text-[var(--color-ink-soft)]">
+          {programme.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- GALERIE -->
+  {gallery.length > 0 && (
+    <section class="py-20 md:py-24">
+      <div class="mx-auto max-w-7xl px-6">
+        <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('event.gallery')}</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {gallery.map((src, index) => (
+            <figure class="aspect-[4/3] overflow-hidden bg-[var(--color-paper-deep)]">
+              <img src={withBase(src)} alt={`${event.data.title} — ${index + 1}`} loading="lazy" class="h-full w-full object-cover" />
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- INFOS PRATIQUES -->
+  <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
+    <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+      <div class="lg:col-span-4">
+        <h2 class="text-3xl md:text-4xl leading-tight">{t('event.practical')}</h2>
+      </div>
+      <div class="lg:col-span-8 space-y-8">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('event.venue')}</div>
+          <div class="text-lg font-medium leading-snug">{event.data.location}</div>
+          {event.data.address && <div class="text-sm text-[var(--color-ink-muted)] mt-1">{event.data.address}</div>}
+          <a href={directionsUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-4 text-sm text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] underline underline-offset-4">
+            {t('event.directions')} ↗
+          </a>
+        </div>
+
+        {canBook && (
+          <div class="pt-8 border-t border-[var(--color-line)]">
+            <a href={event.data.ticketUrl} class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-xs font-display uppercase tracking-[0.18em] text-white transition">
+              {t('event.book')} →
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <div class="mx-auto max-w-7xl px-6 py-12">
+    <a href={link(routes.events)} class="inline-flex items-center font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] border-b border-[var(--color-brand)] pb-1">
+      ← {t('event.all')}
+    </a>
+  </div>
+</Layout>

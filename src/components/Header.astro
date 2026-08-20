@@ -1,40 +1,46 @@
 ---
-import { useTranslations, localizedPath, type Lang } from '../i18n/utils';
-import { languages } from '../i18n/ui';
+import { useTranslations, withBase, type Lang } from '../i18n/utils';
+import { languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const aboutLabel = lang === 'en' ? 'About us' : 'Qui sommes-nous';
-const nav = [
-  { href: localizedPath('/histoire', lang), label: aboutLabel },
-  { href: localizedPath('/evenements', lang), label: t('nav.events') },
-  { href: localizedPath('/contact', lang), label: t('nav.contact') },
-];
+const link = (path: string, target: Lang = lang) => withBase(localeRoute(path, target));
 
-const donateLabel = lang === 'en' ? 'Donate' : t('nav.donate');
-const joinLabel = lang === 'en' ? 'Join us' : 'Nous rejoindre';
+/**
+ * Where the language selector sends a visitor: the same page in the other
+ * language. Every page of the site exists in every language except the legal
+ * ones, which are French-only until PRD 7 translates them — from those, the
+ * selector goes home rather than to an address that does not exist.
+ */
+const here = routeFromPath(Astro.url.pathname, withBase('/'));
+const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
+
+const nav = primaryNav.map((item) => ({
+  href: link(item.path),
+  label: t(item.key),
+}));
 ---
 
 <header class="sticky top-0 z-40 bg-[var(--color-paper)]">
   <div class="mx-auto flex max-w-7xl items-center justify-between pl-6 pr-0 h-16 md:h-20">
-    <a href={localizedPath('/', lang)} class="flex items-center gap-4" aria-label="UGAB Suisse — Accueil">
+    <a href={link(routes.home)} class="flex items-center gap-4" aria-label={`${t('site.title')} — ${t('nav.home')}`}>
       <img
-        src={`${import.meta.env.BASE_URL}/logo.png`}
-        alt="UGAB 120 ans"
+        src={withBase('/logo.png')}
+        alt="UGAB"
         width="138"
         height="32"
         class="h-7 md:h-9 w-auto"
       />
       <span class="hidden sm:inline-block border-l border-[var(--color-line)] pl-4 font-display uppercase tracking-[0.12em] text-[var(--color-brand)] text-lg md:text-xl font-medium">
-        Suisse
+        {t('site.short')}
       </span>
     </a>
 
-    <nav class="hidden lg:flex items-center gap-10 h-full">
+    <nav class="hidden lg:flex items-center gap-8 h-full" aria-label={t('nav.label')}>
       {nav.map((item) => (
-        <a href={item.href} class="font-display text-[17px] font-medium text-[var(--color-ink)] hover:text-[var(--color-brand)] transition-colors">
+        <a href={item.href} class="font-display text-[15px] font-medium text-[var(--color-ink)] hover:text-[var(--color-brand)] transition-colors">
           {item.label}
         </a>
       ))}
@@ -42,21 +48,16 @@ const joinLabel = lang === 'en' ? 'Join us' : 'Nous rejoindre';
 
     <div class="flex items-stretch h-full">
       <a
-        href={localizedPath('/don', lang)}
+        href={link(routes.donate)}
         class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-5 md:px-7 font-display uppercase tracking-[0.15em] text-xs md:text-sm text-white transition-colors"
       >
-        {donateLabel}
-      </a>
-      <a
-        href={localizedPath('/contact', lang)}
-        class="hidden md:inline-flex items-center bg-[var(--color-brand-soft)] hover:bg-[#7a949a] px-7 font-display uppercase tracking-[0.15em] text-sm text-white transition-colors"
-      >
-        {joinLabel}
+        {t('nav.donate')}
       </a>
       <div class="hidden sm:flex items-center bg-[var(--color-ink)] px-4 gap-2 text-xs">
         {Object.entries(languages).map(([code, label]) => (
           <a
-            href={localizedPath('/', code as keyof typeof languages)}
+            href={link(currentRoute, code as Lang)}
+            hreflang={code}
             class:list={['min-w-[28px] text-center font-display uppercase tracking-wider transition-colors', lang === code ? 'text-white font-medium' : 'text-white/50 hover:text-white']}
             aria-label={label}
           >{code}</a>
@@ -65,7 +66,7 @@ const joinLabel = lang === 'en' ? 'Join us' : 'Nous rejoindre';
       <button
         id="mobile-menu-toggle"
         class="lg:hidden inline-flex items-center justify-center w-12 h-full bg-[var(--color-ink)] text-white"
-        aria-label="Ouvrir le menu"
+        aria-label="Menu"
         aria-expanded="false"
         aria-controls="mobile-menu"
       >
@@ -92,7 +93,8 @@ const joinLabel = lang === 'en' ? 'Join us' : 'Nous rejoindre';
       <div class="pt-6 flex items-center gap-3">
         {Object.entries(languages).map(([code, label]) => (
           <a
-            href={localizedPath('/', code as keyof typeof languages)}
+            href={link(currentRoute, code as Lang)}
+            hreflang={code}
             class:list={['min-w-11 min-h-11 inline-flex items-center justify-center font-display uppercase tracking-wider text-sm border', lang === code ? 'border-[var(--color-brand)] text-[var(--color-brand)] font-medium' : 'border-[var(--color-line)] text-[var(--color-ink-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]']}
             aria-label={label}
           >{code}</a>
