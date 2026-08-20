@@ -1,8 +1,10 @@
-# Site web — UGAB Comité Suisse
+# UGAB Comité Suisse — website
 
 The website of the AGBU Swiss Committee (Union Générale Arménienne de
-Bienfaisance, Geneva): five pages, three languages (French, English, Armenian),
-online donations and event ticketing.
+Bienfaisance, Geneva): five pages, online donations and event ticketing, in
+French and English — with Armenian to follow, which the design has to
+accommodate from the start rather than bolt on. See [Known gaps](#known-gaps)
+for what is not there yet.
 
 It is a **statically generated site** — every page is built to plain HTML at
 deploy time. There is no server, no database and no CMS runtime to keep patched.
@@ -70,7 +72,7 @@ src/
   components/     Header, footer, and the like
   content/        Events and other editable content, as Markdown
   i18n/           Interface strings per language
-  styles/         Tailwind entry point and design tokens
+  styles/         Tailwind entry point and global styles
 public/           Served verbatim: images, favicon, CMS admin page
 tests/            See below
 docs/             Decisions, specifications and approved copy
@@ -94,8 +96,8 @@ The Vitest suites read `dist/`, so they need a build first; `npm run check`
 does that for you. Playwright builds nothing itself either — it serves `dist/`
 through `npm run preview`.
 
-`tests/build/base-path.test.ts` is worth knowing about: it fails the build if
-any URL in the output does not carry the configured path prefix, or still
+`tests/build/base-path.test.ts` is worth knowing about: it fails the check if
+any URL in the built output does not carry the configured path prefix, or still
 carries the old `/ugab-suisse` one after the prefix is removed. It exists
 because five consecutive commits were spent fixing exactly that.
 
@@ -111,9 +113,14 @@ residency, the association's own domain — at which point the base prefix is
 removed. That work is [PRD 1](docs/prd/01-foundations-and-ownership.md), and it
 is blocked on the committee registering the domain.
 
-Every pull request runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml),
-which is `npm run check`. Deployment and CI are separate workflows on purpose:
-a change to what is checked should never be a change to what is published.
+Pull requests and pushes to `main` run
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml), which is `npm run
+check`. It is a separate workflow from the deploy, and — worth knowing before
+you push straight to `main` — **it does not currently gate publication**: the
+two start at the same time, so a commit that fails the checks is published
+anyway. A commit that does not build cannot publish, since the deploy builds
+too. Closing that gap belongs with the move to Infomaniak and is tracked in
+[issue #33](https://github.com/AlexikM/ugab-suisse/issues/33).
 
 ## Where the decisions live
 

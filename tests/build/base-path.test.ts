@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  configuredBase,
-  findBasePathViolations,
-  readBuiltFiles,
-  STALE_GITHUB_PAGES_PREFIX,
-} from './base-path.js';
+import { configuredBase, findBasePathViolations, readBuiltFiles } from './base-path.js';
 
 // The five commits that preceded this test all fixed the same defect: a URL
 // written into the built output without going through the configured base.
@@ -123,10 +118,14 @@ describe('the built site', () => {
     ).toEqual([]);
   });
 
-  it('is checked against the base declared in astro.config.mjs', () => {
-    // Guards the guard: if this ever reads as undefined the suite above would
-    // pass vacuously, which is how a regression test quietly stops working.
-    expect(typeof configuredBase()).toBe('string');
-    expect(STALE_GITHUB_PAGES_PREFIX).toBe('/ugab-suisse');
+  it('has internal URLs for the assertion above to have looked at', async () => {
+    // Guards the guard. If the scan ever stopped finding URLs — a change in
+    // how Astro emits them, a mistake in the extractor — the assertion above
+    // would pass on an empty list and quietly stop protecting anything.
+    // Against a base the site is not served from, every internal URL is a
+    // violation, so a non-empty result proves the scan is seeing them.
+    const violations = findBasePathViolations(await readBuiltFiles(), '/not-the-configured-base');
+
+    expect(violations.length).toBeGreaterThan(0);
   });
 });

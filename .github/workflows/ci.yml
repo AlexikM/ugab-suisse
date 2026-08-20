@@ -1,6 +1,9 @@
-# Runs on every pull request. Mirrors `npm run check`, step for step and in the
-# same order, so that anything failing here can be reproduced with one local
-# command. Deployment lives in deploy.yml and is not touched by this workflow.
+# Runs on every pull request, and on main so that a direct push is not
+# unchecked. Mirrors `npm run check`, step for step and in the same order, so
+# that anything failing here can be reproduced with one local command.
+#
+# Deployment lives in deploy.yml and is untouched by this workflow — including
+# the fact that it does not wait for these checks. See issue #33.
 name: CI
 
 on:
