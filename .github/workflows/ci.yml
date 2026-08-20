@@ -1,0 +1,62 @@
+# Runs on every pull request, and on main so that a direct push is not
+# unchecked. Mirrors `npm run check`, step for step and in the same order, so
+# that anything failing here can be reproduced with one local command.
+#
+# Deployment lives in deploy.yml and is untouched by this workflow — including
+# the fact that it does not wait for these checks. See issue #33.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Type check, lint, build, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Pinned to match deploy.yml. Astro 6 requires Node >= 22.12.
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type and content validation
+        run: npm run typecheck
+
+      - name: Lint and format
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Assertions against the built output
+        run: npm run test
+
+      # Only the browser the suite actually uses; see playwright.config.ts.
+      - name: Install Playwright's browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        id: browser-tests
+        run: npm run test:e2e
+
+      - name: Keep the report when a browser test fails
+        if: failure() && steps.browser-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
