@@ -27,8 +27,18 @@ const SCANNED_EXTENSIONS = ['.html', '.css', '.js', '.mjs', '.xml', '.txt', '.js
 const URL_ATTRIBUTES =
   /\b(href|src|srcset|imagesrcset|poster|action|data-src|data-href|content)\s*=\s*["']([^"']*)["']/gi;
 
-/** url(...) in a stylesheet or a style attribute — how the hero backgrounds broke. */
-const CSS_URLS = /url\(\s*['"]?(\/[^'")\s]+)/gi;
+/**
+ * url(...) in a stylesheet or a style attribute — how the hero backgrounds
+ * broke. The quotes may have been escaped into entities by the compiler, when
+ * the url() sits inside a double-quoted style attribute.
+ */
+const CSS_URLS = /url\(\s*(?:["']|&#34;|&quot;|&#39;|&apos;)?(\/[^'")\s]+)/gi;
+
+/** <meta http-equiv="refresh" content="0;url=/en/"> */
+const META_REFRESH_URL = /;\s*url=(\/[^;\s"']+)/i;
+
+/** Trailing entity left behind when an escaped quote closed the URL. */
+const TRAILING_ENTITY = /&(?:#34|#39|quot|apos);.*$/;
 
 /**
  * The base as Astro will apply it: no trailing slash, and empty when the site
@@ -84,8 +94,8 @@ export function findBasePathViolations(files: BuiltFile[], base: string): UrlVio
 
     // Dormant while the site is served from the GitHub Pages prefix; the
     // moment the base changes, every leftover occurrence fails the build.
-    if (base !== STALE_GITHUB_PAGES_PREFIX) {
-      for (const url of file.contents.match(stalePrefixPattern()) ?? []) {
+    if (!base.startsWith(STALE_GITHUB_PAGES_PREFIX)) {
+      for (const url of stalePrefixes(file.contents)) {
         violations.push({ file: file.path, url, reason: 'stale-prefix' });
       }
     }
@@ -94,15 +104,44 @@ export function findBasePathViolations(files: BuiltFile[], base: string): UrlVio
   return violations;
 }
 
-function stalePrefixPattern(): RegExp {
-  return new RegExp(`${STALE_GITHUB_PAGES_PREFIX}[^\\s"'\`)>\\\\]*`, 'g');
+/**
+ * Every shape the old prefix takes in built output. Matching the bare string
+ * anywhere would also flag `github.com/AlexikM/ugab-suisse` — the repository
+ * URL, which is correct and permanent. A check that fails a build over a
+ * correct link is a check people learn to switch off.
+ */
+function stalePrefixes(contents: string): string[] {
+  const prefix = STALE_GITHUB_PAGES_PREFIX;
+  const patterns = [
+    // A path starting at the site root: href="/ugab-suisse/…", url(/ugab-suisse/…)
+    new RegExp(`(?<=^|["'(=\\s>])${prefix}[^\\s"'\`)>\\\\]*`, 'g'),
+    // The absolute GitHub Pages address, host and all
+    new RegExp(`https?://[^\\s"'\`)>]*github\\.io${prefix}[^\\s"'\`)>\\\\]*`, 'g'),
+    // The same, percent-encoded into a share or tracking link
+    new RegExp(`${prefix.replace('/', '%2F')}[^\\s"'\`)>\\\\]*`, 'gi'),
+  ];
+
+  const found = new Set<string>();
+  for (const pattern of patterns) {
+    for (const match of contents.match(pattern) ?? []) found.add(match);
+  }
+  return [...found];
 }
 
 function carriesBase(url: string, base: string): boolean {
   return url === base || url.startsWith(`${base}/`);
 }
 
-/** Every site-internal path this file asks a browser to fetch or link to. */
+/**
+ * Every site-internal path this file asks a browser to fetch or link to:
+ * markup attributes, and url() wherever it appears.
+ *
+ * What it deliberately does not see: paths built inside JavaScript, such as
+ * `location.href = '/en/'`. Telling a URL from any other string in a bundle
+ * needs guesswork, and a check that cries wolf gets switched off. The
+ * stale-prefix half above does read those files, so the direction that
+ * matters after the move to Infomaniak is still covered.
+ */
 function internalUrls(file: BuiltFile): string[] {
   const urls: string[] = [];
 
@@ -115,18 +154,27 @@ function internalUrls(file: BuiltFile): string[] {
   }
 
   for (const [, url = ''] of file.contents.matchAll(CSS_URLS)) {
-    if (isInternalPath(url)) urls.push(url);
+    const trimmed = url.replace(TRAILING_ENTITY, '');
+    if (isInternalPath(trimmed)) urls.push(trimmed);
   }
 
   return urls;
 }
 
 function splitAttributeValue(attribute: string, value: string): string[] {
-  if (!/srcset/i.test(attribute)) return [value];
-  return value
-    .split(',')
-    .map((candidate) => candidate.trim().split(/\s+/)[0] ?? '')
-    .filter(Boolean);
+  if (/srcset/i.test(attribute)) {
+    return value
+      .split(',')
+      .map((candidate) => candidate.trim().split(/\s+/)[0] ?? '')
+      .filter(Boolean);
+  }
+
+  if (/^content$/i.test(attribute)) {
+    const refresh = value.match(META_REFRESH_URL);
+    return refresh?.[1] ? [refresh[1]] : [value];
+  }
+
+  return [value];
 }
 
 /**

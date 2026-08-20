@@ -64,6 +64,55 @@ describe('findBasePathViolations', () => {
     expect(violations[0]?.reason).toBe('stale-prefix');
   });
 
+  it('finds a stale prefix in an absolute GitHub Pages URL', () => {
+    const violations = findBasePathViolations(
+      html('<link rel="canonical" href="https://alexikm.github.io/ugab-suisse/don/">'),
+      '',
+    );
+
+    expect(violations.map((violation) => violation.reason)).toEqual(['stale-prefix']);
+  });
+
+  it('finds a stale prefix that has been percent-encoded into a share link', () => {
+    const violations = findBasePathViolations(
+      html('<a href="https://www.linkedin.com/share?url=https%3A%2F%2Fx.io%2Fugab-suisse%2Fdon">'),
+      '',
+    );
+
+    expect(violations.map((violation) => violation.reason)).toEqual(['stale-prefix']);
+  });
+
+  it('does not mistake the repository URL for a stale prefix', () => {
+    // github.com/AlexikM/ugab-suisse is the repository, not a path on this
+    // site, and stays correct forever. Failing a build over it would teach
+    // people to disable this check.
+    const violations = findBasePathViolations(
+      html('<a href="https://github.com/AlexikM/ugab-suisse">Code source</a>'),
+      '',
+    );
+
+    expect(violations).toEqual([]);
+  });
+
+  it('reports a hero background whose quotes the compiler escaped', () => {
+    // Astro escapes the quotes of a url() inside a double-quoted attribute.
+    const violations = findBasePathViolations(
+      html('<div style="background-image:url(&#34;/images/hero.jpg&#34;)"></div>'),
+      '/ugab-suisse',
+    );
+
+    expect(violations.map((violation) => violation.url)).toEqual(['/images/hero.jpg']);
+  });
+
+  it('reports a meta refresh that omits the configured base', () => {
+    const violations = findBasePathViolations(
+      html('<meta http-equiv="refresh" content="0;url=/en/">'),
+      '/ugab-suisse',
+    );
+
+    expect(violations.map((violation) => violation.url)).toEqual(['/en/']);
+  });
+
   it('accepts output that carries the configured base', () => {
     const violations = findBasePathViolations(
       html('<a href="/ugab-suisse/don/"><img src="/ugab-suisse/images/hero.jpg"></a>'),
