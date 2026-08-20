@@ -1,12 +1,31 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { useTranslations, withBase, type Lang } from '../../i18n/utils';
-import { actionAreas, languagePaths, values } from '../../i18n/ui';
+import { actionAreas, bureauRoles, defaultLang, languagePaths, values } from '../../i18n/ui';
 
 export const getStaticPaths = languagePaths;
 
 const { lang } = Astro.props as { lang: Lang };
 const t = useTranslations(lang);
+
+// Hierarchical order, as the brief presents it — never alphabetical.
+const officers = (await getCollection('bureau')).sort(
+  (a, b) => bureauRoles.indexOf(a.data.role) - bureauRoles.indexOf(b.data.role),
+);
+
+/** The biography in this language, or the one the Comité has written so far. */
+const biography = (bio?: { fr?: string; en?: string }) =>
+  bio?.[lang] ?? bio?.[defaultLang] ?? '';
+
+/** Stands in for a portrait the Comité has not supplied yet. */
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0] ?? '')
+    .join('')
+    .toUpperCase();
 ---
 
 <Layout lang={lang} title={t('about.title')} description={t('about.intro')}>
@@ -84,6 +103,47 @@ const t = useTranslations(lang);
           </article>
         ))}
       </div>
+    </div>
+  </section>
+
+  <!-- BUREAU DU COMITÉ -->
+  <section class="py-20 md:py-28">
+    <div class="mx-auto max-w-7xl px-6">
+      <h2 class="text-3xl md:text-4xl leading-tight mb-12">{t('about.bureau_title')}</h2>
+
+      {officers.length > 0 && (
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {officers.map((officer) => (
+            <article>
+              <div class="aspect-[3/4] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
+                {officer.data.portrait ? (
+                  <img
+                    src={withBase(officer.data.portrait)}
+                    alt={officer.data.name}
+                    loading="lazy"
+                    class="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div class="h-full grid place-items-center font-display text-5xl text-[var(--color-brand)]/25" aria-hidden="true">
+                    {initials(officer.data.name)}
+                  </div>
+                )}
+              </div>
+              <div class="text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">
+                {t(`bureau.${officer.data.role}`)}
+              </div>
+              <h3 class="text-xl mb-3 text-[var(--color-ink)]">{officer.data.name}</h3>
+              {biography(officer.data.bio) && (
+                <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{biography(officer.data.bio)}</p>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+      <p class="mt-10 text-sm text-[var(--color-ink-muted)] leading-relaxed max-w-2xl">
+        {t('about.bureau_pending')}
+      </p>
     </div>
   </section>
 </Layout>

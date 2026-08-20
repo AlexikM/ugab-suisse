@@ -1,6 +1,8 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+import { bureauRoles } from './i18n/ui';
+
 // Where the editable content lives. Tests point this at a fixture directory so
 // they can build a site containing a deliberately broken or deliberately
 // incomplete entry without writing into src/content. Nothing else sets it.
@@ -62,4 +64,28 @@ const events = defineCollection({
     }),
 });
 
-export const collections = { events };
+/**
+ * Bureau du Comité — one entry per officer. The four offices are fixed by the
+ * brief; the people holding them change after an election, which is why they
+ * are content and not page markup.
+ *
+ * Everything but the role and the name is optional: the Comité owes portraits
+ * and biographies (#9) and the section publishes without them.
+ */
+const bureau = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: `${contentDir}/bureau` }),
+  schema: z.object({
+    role: z.enum(bureauRoles),
+    name: z.string(),
+    portrait: z.string().optional(),
+    bio: z
+      .object({
+        fr: z.string().optional(),
+        en: z.string().optional(),
+        // Add `hy` here when the Comité delivers the Armenian translations.
+      })
+      .optional(),
+  }),
+});
+
+export const collections = { events, bureau };

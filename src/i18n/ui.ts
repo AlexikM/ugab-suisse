@@ -33,6 +33,15 @@ export const routes = {
   contact: '/contact',
 } as const;
 
+/**
+ * The four offices of the Bureau, in the hierarchical order the brief presents
+ * them — not alphabetical. Ordering the About page and validating the content
+ * both read this list.
+ */
+export const bureauRoles = ['president', 'vice-president', 'secretaire-general', 'tresorier'] as const;
+
+export type BureauRole = (typeof bureauRoles)[number];
+
 /** Footer-only pages. Not part of the navigation the brief specifies. */
 export const legalRoutes = {
   legal: '/mentions-legales',
@@ -233,6 +242,10 @@ export const ui = {
       "Chaque année, ses galas, concerts et conférences réunissent la communauté arménienne de Suisse et ses partenaires autour d'une cause commune — et contribuent directement aux programmes de l'UGAB à travers le monde.",
     'about.actions_title': "Axes d'action",
     'about.bureau_title': 'Bureau du Comité',
+    'bureau.president': 'Président(e)',
+    'bureau.vice-president': 'Vice-Président(e)',
+    'bureau.secretaire-general': 'Secrétaire Général(e)',
+    'bureau.tresorier': 'Trésorier(ère)',
     'about.bureau_pending':
       'Photographies et biographies des membres du Bureau à fournir par le Comité.',
 
@@ -380,6 +393,10 @@ export const ui = {
       'Each year, its galas, concerts and conferences bring together the Armenian community of Switzerland and its partners around a shared cause — and contribute directly to AGBU programmes worldwide.',
     'about.actions_title': 'Areas of action',
     'about.bureau_title': 'The Committee bureau',
+    'bureau.president': 'President',
+    'bureau.vice-president': 'Vice-President',
+    'bureau.secretaire-general': 'Secretary General',
+    'bureau.tresorier': 'Treasurer',
     'about.bureau_pending':
       'Portraits and biographies of the bureau members are still to be supplied by the Committee.',
 
