@@ -37,6 +37,10 @@ out to be wanted.
 | Bureau portraits | 1 HD portrait per officer | ⬜ awaited — the section renders their initials until then |
 | Event cover images | JPEG HD, landscape, 1920×1080 minimum | ⬜ awaited — no event is published yet |
 
+Event covers and bureau portraits are still plain path strings rather than
+build-processed images: where the CMS uploads media is PRD 4's decision, and the
+pipeline choice follows it.
+
 `public/hero.jpg` is unused and left in place: `public/` outside `images/`
 belongs to another PRD's file boundary.
 

@@ -1,6 +1,6 @@
 ---
 import { useTranslations, withBase, type Lang } from '../i18n/utils';
-import { languages, localeRoute, primaryNav, routes } from '../i18n/ui';
+import { languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -9,22 +9,13 @@ const t = useTranslations(lang);
 const link = (path: string, target: Lang = lang) => withBase(localeRoute(path, target));
 
 /**
- * Where the language selector sends a visitor. On a page of the agreed
- * sitemap that is the same page in the other language; anywhere else — an
- * event, a legal page — it is the home page, because the other language may
- * not have that address. Switching in place everywhere is PRD 3's problem.
+ * Where the language selector sends a visitor: the same page in the other
+ * language. Every page of the site exists in every language except the legal
+ * ones, which are French-only until PRD 7 translates them — from those, the
+ * selector goes home rather than to an address that does not exist.
  */
-const sitemap = Object.values(routes) as string[];
-const currentRoute = (() => {
-  let path = Astro.url.pathname;
-  const base = withBase('/').replace(/\/$/, '');
-  if (base && path.startsWith(base)) path = path.slice(base.length);
-  for (const code of Object.keys(languages)) {
-    if (path === `/${code}` || path.startsWith(`/${code}/`)) path = path.slice(code.length + 1) || '/';
-  }
-  const normalised = path.replace(/\/$/, '') || '/';
-  return sitemap.includes(normalised) ? normalised : routes.home;
-})();
+const here = routeFromPath(Astro.url.pathname, withBase('/'));
+const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
 
 const nav = primaryNav.map((item) => ({
   href: link(item.path),
@@ -43,7 +34,7 @@ const nav = primaryNav.map((item) => ({
         class="h-7 md:h-9 w-auto"
       />
       <span class="hidden sm:inline-block border-l border-[var(--color-line)] pl-4 font-display uppercase tracking-[0.12em] text-[var(--color-brand)] text-lg md:text-xl font-medium">
-        Comité Suisse
+        {t('site.short')}
       </span>
     </a>
 

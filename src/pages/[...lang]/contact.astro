@@ -5,7 +5,8 @@ import { contactEmail, languagePaths } from '../../i18n/ui';
 
 export const getStaticPaths = languagePaths;
 
-const { lang } = Astro.props as { lang: Lang };
+interface Props { lang: Lang }
+const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
@@ -22,9 +23,11 @@ const t = useTranslations(lang);
   <section class="py-20 md:py-24">
     <div class="mx-auto max-w-3xl px-6">
       <!--
-        Le message de confirmation approuvé par le Comité. Il s'affiche au
-        retour du traitement du formulaire, qui redirige vers ?message=envoye.
-        Le traitement lui-même (endpoint, anti-spam) relève du PRD 7.
+        The confirmation wording the Comité approved. It is revealed when the
+        form handler sends the visitor back with ?message=envoye. The handler
+        itself — endpoint, anti-spam, where the message goes — is PRD 7's work,
+        and PRD 7 may pick a different parameter; this is only the receiving
+        half. Until then the form is not wired to anything, and the page says so.
       -->
       <p
         id="contact-confirmation"
@@ -62,6 +65,11 @@ const t = useTranslations(lang);
         <button type="submit" class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-sm font-display uppercase tracking-[0.18em] text-white transition">
           {t('contact.form_submit')} →
         </button>
+
+        <p class="text-sm text-[var(--color-ink-muted)] leading-relaxed">
+          {t('contact.form_pending')}{' '}
+          <a href={`mailto:${contactEmail}`} class="text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-0.5">{contactEmail}</a>
+        </p>
       </form>
     </div>
   </section>

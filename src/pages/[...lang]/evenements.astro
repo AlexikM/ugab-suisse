@@ -5,12 +5,14 @@ import Layout from '../../layouts/Layout.astro';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import concertImage from '../../assets/images/concert.jpg';
 import { useTranslations, withBase, type Lang } from '../../i18n/utils';
-import { languagePaths } from '../../i18n/ui';
+import { languagePaths, localeRoute, routes } from '../../i18n/ui';
 
 export const getStaticPaths = languagePaths;
 
-const { lang } = Astro.props as { lang: Lang };
+interface Props { lang: Lang }
+const { lang } = Astro.props;
 const t = useTranslations(lang);
+const link = (path: string) => withBase(localeRoute(path, lang));
 
 // See src/pages/[...lang]/index.astro: events are not filtered by locale.
 const events = (await getCollection('events', ({ data }) => !data.draft)).sort(
@@ -61,7 +63,7 @@ const dateFmt = new Intl.DateTimeFormat(locale, {
       ) : (
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {upcoming.map((event) => (
-            <a href={withBase(`/evenements/${event.id}`)} class="group block">
+            <a href={link(`${routes.events}/${event.id}`)} class="group block">
               {event.data.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
                   <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
@@ -95,7 +97,7 @@ const dateFmt = new Intl.DateTimeFormat(locale, {
         <p class="text-lg text-[var(--color-ink-soft)] mb-12">{t('events.past_intro')}</p>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {past.map((event) => (
-            <a href={withBase(`/evenements/${event.id}`)} class="group block">
+            <a href={link(`${routes.events}/${event.id}`)} class="group block">
               {event.data.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-deep)]">
                   <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />

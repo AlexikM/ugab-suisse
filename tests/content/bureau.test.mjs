@@ -37,7 +37,11 @@ test('an officer with no portrait and no biography still appears', () => {
   const text = visibleText(page);
 
   assert.match(text, /trésorière de test/i, 'the officer without a portrait was dropped');
-  assert.doesNotMatch(page, /<img[^>]+src=""/, 'a missing portrait rendered as a broken image');
+  assert.doesNotMatch(
+    page,
+    /src="(undefined|null|)"/,
+    'a missing portrait was rendered as a broken image',
+  );
   assert.doesNotMatch(text, /undefined/, 'a missing field leaked into the page');
 });
 

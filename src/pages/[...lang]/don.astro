@@ -8,7 +8,8 @@ import { languagePaths, localeRoute, routes, sponsorshipTiers, suggestedAmounts 
 
 export const getStaticPaths = languagePaths;
 
-const { lang } = Astro.props as { lang: Lang };
+interface Props { lang: Lang }
+const { lang } = Astro.props;
 const t = useTranslations(lang);
 const link = (path: string) => withBase(localeRoute(path, lang));
 ---
@@ -66,10 +67,10 @@ const link = (path: string) => withBase(localeRoute(path, lang));
       <p class="mt-8 text-sm text-[var(--color-ink-soft)]">{t('donate.terms')}</p>
 
       <!--
-        Le module de don en ligne (prestataire suisse : TWINT, PostFinance,
-        carte, QR-facture) est intégré par le PRD 5. Le compte n'existe pas
-        encore : aucune promesse de reçu ou de déductibilité fiscale n'est
-        affichée tant que le PRD 7 ne les a pas vérifiées.
+        The online donation module — a Swiss provider carrying TWINT,
+        PostFinance, card and QR-bill — is embedded by PRD 5. The account does
+        not exist yet, and no promise of a receipt or of tax deductibility is
+        shown until PRD 7 has verified them.
       -->
       <div class="mt-10 border border-[var(--color-line)] bg-[var(--color-paper)] p-8">
         <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{t('donate.provider_pending')}</p>

@@ -58,6 +58,21 @@ test('a full room stops taking bookings', () => {
   assert.match(listing, /Complet/, 'the events listing must show that the room is full');
 });
 
+test('an event has an address in every language, and the French one does not move', () => {
+  const build = withEventFixtures();
+
+  // Printed on invitations: this address must stay where it is.
+  const french = visibleText(readPage(build.outDir, '/evenements/2099-complet'));
+  assert.match(french, /Infos pratiques/, 'the French event page is not in French');
+
+  const english = visibleText(readPage(build.outDir, '/en/evenements/2099-complet'));
+  assert.match(
+    english,
+    /Practical information/,
+    'an English visitor lands on an event page dressed in French',
+  );
+});
+
 test('the home page shows what is coming up next', () => {
   const build = withEventFixtures();
   const home = visibleText(readPage(build.outDir, '/'));
@@ -87,5 +102,14 @@ test('the site still tells a visitor something when there are no events', () => 
   );
 
   const home = visibleText(readPage(build.outDir, '/'));
-  assert.ok(home.length > 0, 'the home page should still render');
+  assert.match(
+    home,
+    /Au service de l'Arménie/,
+    'the home page should still render everything that does not depend on events',
+  );
+  assert.doesNotMatch(
+    home,
+    /Prochains événements/,
+    'the home page should not announce an empty events section',
+  );
 });

@@ -9,7 +9,8 @@ import { actionAreas, bureauRoles, defaultLang, languagePaths, values } from '..
 
 export const getStaticPaths = languagePaths;
 
-const { lang } = Astro.props as { lang: Lang };
+interface Props { lang: Lang }
+const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 // Hierarchical order, as the brief presents it — never alphabetical.
@@ -20,6 +21,11 @@ const officers = (await getCollection('bureau')).sort(
 /** The biography in this language, or the one the Comité has written so far. */
 const biography = (bio?: { fr?: string; en?: string }) =>
   bio?.[lang] ?? bio?.[defaultLang] ?? '';
+
+// The note about what is still missing disappears once nothing is.
+const bureauIncomplete =
+  officers.length < bureauRoles.length ||
+  officers.some((officer) => !officer.data.portrait || !biography(officer.data.bio));
 
 /** Stands in for a portrait the Comité has not supplied yet. */
 const initials = (name: string) =>
@@ -149,9 +155,11 @@ const initials = (name: string) =>
         </div>
       )}
 
-      <p class="mt-10 text-sm text-[var(--color-ink-muted)] leading-relaxed max-w-2xl">
-        {t('about.bureau_pending')}
-      </p>
+      {bureauIncomplete && (
+        <p class="mt-10 text-sm text-[var(--color-ink-muted)] leading-relaxed max-w-2xl">
+          {t('about.bureau_pending')}
+        </p>
+      )}
     </div>
   </section>
 </Layout>

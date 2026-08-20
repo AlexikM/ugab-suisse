@@ -5,6 +5,13 @@
 // string by looking at the page it appears on. Armenian is deliberately absent:
 // the Comité has not delivered it (#9), and the third locale is PRD 3's work.
 //
+// A handful of strings are NOT from the approved copy, because the site needs
+// to say something the brief never had to write: the empty events list, the
+// donation form that is not yet embedded, the contact details and bureau
+// portraits still to come, and the note that the contact form is not yet wired.
+// They are marked "NOT APPROVED COPY" below and the Comité should be asked to
+// approve or reword them before launch.
+//
 // Two things are deliberately NOT here, and must not be added without the
 // compliance work in PRD 7 (#7):
 //   - that donations are tax-deductible in Switzerland;
@@ -72,6 +79,23 @@ export function localeRoute(path: string, lang: Lang): string {
   const clean = path.startsWith('/') ? path : `/${path}`;
   if (lang === defaultLang) return clean;
   return clean === '/' ? `/${lang}/` : `/${lang}${clean}`;
+}
+
+/**
+ * The route a URL path points at, with the deployment base and the language
+ * prefix stripped off: `/ugab-suisse/en/a-propos` becomes `/a-propos`. Used to
+ * point the language selector at the same page in another language.
+ */
+export function routeFromPath(pathname: string, base = ''): string {
+  let path = pathname;
+  const prefix = base.replace(/\/$/, '');
+  if (prefix && path.startsWith(prefix)) path = path.slice(prefix.length);
+  for (const code of Object.keys(languages)) {
+    if (path === `/${code}` || path.startsWith(`/${code}/`)) {
+      path = path.slice(code.length + 1) || '/';
+    }
+  }
+  return path.replace(/\/$/, '') || '/';
 }
 
 /**
@@ -200,6 +224,7 @@ export const ui = {
     'nav.contact': 'Contact',
 
     'site.title': 'UGAB Comité Suisse',
+    'site.short': 'Comité Suisse',
     'site.tagline': 'Genève',
     'site.description':
       "L'UGAB Comité Suisse soutient l'Arménie et sa diaspora depuis Genève. Fondée en 1906.",
@@ -246,6 +271,7 @@ export const ui = {
     'bureau.vice-president': 'Vice-Président(e)',
     'bureau.secretaire-general': 'Secrétaire Général(e)',
     'bureau.tresorier': 'Trésorier(ère)',
+    // NOT APPROVED COPY — see the header of this file.
     'about.bureau_pending':
       'Photographies et biographies des membres du Bureau à fournir par le Comité.',
 
@@ -254,6 +280,7 @@ export const ui = {
     'events.intro':
       "Toute l'année, le Comité Suisse célèbre la culture arménienne à travers des événements de prestige. Galas, concerts, conférences : réservez vos places en ligne.",
     'events.upcoming_title': 'À venir',
+    // NOT APPROVED COPY — see the header of this file.
     'events.empty': "Aucun événement n'est programmé pour le moment. Revenez bientôt.",
     'events.past_title': 'Événements passés',
     'events.past_intro': 'Revivez nos événements passés en images.',
@@ -272,6 +299,7 @@ export const ui = {
     'event.book': 'Réserver',
     'event.finished': 'Événement terminé',
     'event.ask': 'Nous contacter',
+    'event.gallery': 'En images',
     'event.practical': 'Infos pratiques',
     'event.directions': 'Itinéraire',
     'event.all': 'Tous les événements',
@@ -289,6 +317,7 @@ export const ui = {
     // The brief's line ends with "Reçu automatique par e-mail" — deliberately
     // not carried. See PRD 7 (#7).
     'donate.terms': 'Don unique ou mensuel · Paiement 100 % sécurisé.',
+    // NOT APPROVED COPY — see the header of this file.
     'donate.provider_pending':
       'Le module de don en ligne sera intégré dès l’ouverture du compte auprès du prestataire de paiement suisse.',
 
@@ -313,6 +342,7 @@ export const ui = {
     'contact.organisation':
       'Union Générale Arménienne de Bienfaisance — Comité Suisse, Genève',
     'contact.details_title': 'Coordonnées',
+    // NOT APPROVED COPY — see the header of this file.
     'contact.pending':
       'Case postale, téléphone et comptes de réseaux sociaux : coordonnées officielles à fournir par le Comité.',
     'contact.form_title': 'Envoyer un message',
@@ -322,11 +352,9 @@ export const ui = {
     'contact.form_message': 'Message',
     'contact.form_submit': 'Envoyer le message',
     'contact.confirmation': 'Message bien reçu. Le Comité Suisse vous répond très vite.',
-
-    // --- Confirmations (rendered by the payment and ticketing flows, PRD 5/6) ---
-    'confirm.donation':
-      "Merci pour ce geste. Votre don agit, dès aujourd'hui, pour l'Arménie.",
-    'confirm.ticket': 'Réservation confirmée — billet envoyé par e-mail.',
+    // NOT APPROVED COPY — see the header of this file.
+    'contact.form_pending':
+      'Le formulaire sera activé à la mise en ligne du site. D’ici là, écrivez-nous directement par e-mail.',
 
     'footer.description':
       "L'UGAB Comité Suisse soutient l'Arménie et sa diaspora depuis Genève. Fondée en 1906.",
@@ -351,6 +379,7 @@ export const ui = {
     'nav.contact': 'Contact',
 
     'site.title': 'AGBU Swiss Committee',
+    'site.short': 'Swiss Committee',
     'site.tagline': 'Geneva',
     'site.description':
       'The AGBU Swiss Committee supports Armenia and its diaspora from Geneva. Founded in 1906.',
@@ -397,6 +426,7 @@ export const ui = {
     'bureau.vice-president': 'Vice-President',
     'bureau.secretaire-general': 'Secretary General',
     'bureau.tresorier': 'Treasurer',
+    // NOT APPROVED COPY — see the header of this file.
     'about.bureau_pending':
       'Portraits and biographies of the bureau members are still to be supplied by the Committee.',
 
@@ -405,6 +435,7 @@ export const ui = {
     'events.intro':
       'Throughout the year, the Swiss Committee celebrates Armenian culture through prestigious events. Galas, concerts, conferences: book your tickets online.',
     'events.upcoming_title': 'Coming up',
+    // NOT APPROVED COPY — see the header of this file.
     'events.empty': 'No event is scheduled at the moment. Please come back soon.',
     'events.past_title': 'Past events',
     'events.past_intro': 'Relive our past events in pictures.',
@@ -423,6 +454,7 @@ export const ui = {
     'event.book': 'Book',
     'event.finished': 'This event has taken place',
     'event.ask': 'Contact us',
+    'event.gallery': 'In pictures',
     'event.practical': 'Practical information',
     'event.directions': 'Directions',
     'event.all': 'All events',
@@ -438,6 +470,7 @@ export const ui = {
     'donate.amount_column': 'Amount',
     'donate.impact_column': 'Impact',
     'donate.terms': 'One-time or monthly · 100% secure payment.',
+    // NOT APPROVED COPY — see the header of this file.
     'donate.provider_pending':
       'The online donation form will be embedded as soon as the account with the Swiss payment provider is open.',
 
@@ -462,6 +495,7 @@ export const ui = {
     'contact.organisation':
       'Armenian General Benevolent Union — Swiss Committee, Geneva',
     'contact.details_title': 'Contact details',
+    // NOT APPROVED COPY — see the header of this file.
     'contact.pending':
       'Postal box, telephone and social media accounts: official details still to be supplied by the Committee.',
     'contact.form_title': 'Send a message',
@@ -471,10 +505,9 @@ export const ui = {
     'contact.form_message': 'Message',
     'contact.form_submit': 'Send the message',
     'contact.confirmation': 'Message received. The Swiss Committee will reply shortly.',
-
-    // --- Confirmations (rendered by the payment and ticketing flows, PRD 5/6) ---
-    'confirm.donation': 'Thank you for this gift. Your donation is already at work for Armenia.',
-    'confirm.ticket': 'Booking confirmed — ticket sent by email.',
+    // NOT APPROVED COPY — see the header of this file.
+    'contact.form_pending':
+      'The form will be switched on when the site goes live. Until then, please write to us by email.',
 
     'footer.description':
       'The AGBU Swiss Committee supports Armenia and its diaspora from Geneva. Founded in 1906.',

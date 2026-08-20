@@ -13,42 +13,42 @@ import { readBuiltPage } from './helpers.mjs';
 
 const PAGES_WITH_PHOTOGRAPHY = ['/', '/a-propos', '/evenements', '/don'];
 
-function images(html) {
-  return [...html.matchAll(/<img[^>]*>/g)].map((match) => match[0]);
+/** Images the build produced, as opposed to files copied verbatim. */
+function processedImages(html) {
+  return [...html.matchAll(/<img[^>]*>/g)]
+    .map((match) => match[0])
+    .filter((tag) => tag.includes('_astro'));
 }
 
-test('photographs are processed by the build, not served untouched from public/', () => {
+test('no page serves a photograph straight out of the public directory', () => {
   for (const route of PAGES_WITH_PHOTOGRAPHY) {
     const html = readBuiltPage(route);
 
-    assert.doesNotMatch(
-      html,
-      /(src|url\()="?[^"')]*\/images\//,
-      `${route} still serves an image straight out of the public directory`,
-    );
+    assert.doesNotMatch(html, /src="[^"]*\/images\//, `${route} serves an unprocessed image`);
+    assert.doesNotMatch(html, /url\(&#39;?[^)]*\/images\//, `${route} paints one as a CSS background`);
   }
 });
 
 test('a photograph is offered at more than one size, so a phone does not fetch a desktop image', () => {
-  const html = readBuiltPage('/');
-  const photographs = images(html).filter((tag) => tag.includes('_astro'));
+  for (const route of PAGES_WITH_PHOTOGRAPHY) {
+    const photographs = processedImages(readBuiltPage(route));
 
-  assert.ok(photographs.length > 0, 'the home page renders no processed photograph');
-  assert.ok(
-    photographs.some((tag) => tag.includes('srcset')),
-    'no photograph offers a smaller variant to a small screen',
-  );
+    assert.ok(photographs.length > 0, `${route} renders no processed photograph`);
+    assert.ok(
+      photographs.every((tag) => tag.includes('srcset')),
+      `a photograph on ${route} offers no smaller variant to a small screen`,
+    );
+  }
 });
 
-test('every photograph declares its dimensions and its alternative text', () => {
-  // An empty alt is the right answer for the decorative photographs behind the
-  // page headings — what must never happen is an image with no alt at all,
-  // which a screen reader reads out as a filename.
+test('a photograph reserves its space, so the page does not jump as it loads', () => {
   for (const route of PAGES_WITH_PHOTOGRAPHY) {
-    for (const tag of images(readBuiltPage(route))) {
+    for (const tag of processedImages(readBuiltPage(route))) {
+      assert.match(tag, /\swidth=/, `an image on ${route} declares no width`);
+      assert.match(tag, /\sheight=/, `an image on ${route} declares no height`);
+      // An empty alt is the right answer for the decorative photographs behind
+      // the page headings; no alt at all is read out as a filename.
       assert.match(tag, /\salt(=|[\s>/])/, `an image on ${route} has no alt attribute`);
-      assert.match(tag, /\swidth=/, `an image on ${route} declares no width, so the page will jump`);
-      assert.match(tag, /\sheight=/, `an image on ${route} declares no height, so the page will jump`);
     }
   }
 });

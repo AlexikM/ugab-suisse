@@ -1,13 +1,18 @@
 ---
 import { useTranslations, withBase, type Lang } from '../i18n/utils';
-import { contactEmail, legalRoutes, localeRoute, primaryNav, routes } from '../i18n/ui';
+import { contactEmail, languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
 
-const link = (path: string) => withBase(localeRoute(path, lang));
+const link = (path: string, target: Lang = lang) => withBase(localeRoute(path, target));
+
+// The same page in another language — see the header. The legal pages exist in
+// French only until PRD 7 translates them.
+const here = routeFromPath(Astro.url.pathname, withBase('/'));
+const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
 
 const nav = primaryNav
   .filter((item) => item.path !== routes.home)
@@ -22,8 +27,8 @@ const nav = primaryNav
         {t('footer.description')}
       </p>
       <!--
-        Réseaux sociaux : les comptes officiels sont attendus du Comité (#9).
-        Aucun lien n'est publié tant qu'ils ne sont pas confirmés.
+        Social media: the official accounts are owed by the Comité (#9). No link
+        is published until they are confirmed.
       -->
     </div>
 
@@ -49,13 +54,23 @@ const nav = primaryNav
     <div class="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--color-paper)]/50">
       <div>© {year} {t('footer.copyright')}</div>
       <!--
-        Les pages légales n'existent qu'en français pour l'instant : elles sont
-        liées sans préfixe de langue plutôt que vers une adresse qui n'existe
-        pas. Leur traduction relève du PRD 7.
+        The legal pages exist in French only for now, so they are linked without
+        a language prefix rather than at an address that does not exist. Their
+        translation belongs to PRD 7.
       -->
-      <div class="flex gap-6">
+      <div class="flex flex-wrap items-center gap-6">
         <a href={withBase(legalRoutes.legal)} class="hover:text-[var(--color-paper)]">{t('footer.legal')}</a>
         <a href={withBase(legalRoutes.privacy)} class="hover:text-[var(--color-paper)]">{t('footer.privacy')}</a>
+        <div class="flex items-center gap-3">
+          {Object.entries(languages).map(([code, label]) => (
+            <a
+              href={link(currentRoute, code as Lang)}
+              hreflang={code}
+              class:list={['uppercase tracking-wider', lang === code ? 'text-[var(--color-paper)]' : 'hover:text-[var(--color-paper)]']}
+              aria-label={label}
+            >{code}</a>
+          ))}
+        </div>
       </div>
     </div>
   </div>

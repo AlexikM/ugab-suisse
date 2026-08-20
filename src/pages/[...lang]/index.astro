@@ -10,7 +10,8 @@ import { keyFigures, languagePaths, localeRoute, routes } from '../../i18n/ui';
 
 export const getStaticPaths = languagePaths;
 
-const { lang } = Astro.props as { lang: Lang };
+interface Props { lang: Lang }
+const { lang } = Astro.props;
 const t = useTranslations(lang);
 const link = (path: string) => withBase(localeRoute(path, lang));
 
@@ -108,7 +109,7 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
 
         <div class="grid md:grid-cols-3 gap-8">
           {events.map((event) => (
-            <a href={withBase(`/evenements/${event.id}`)} class="group block">
+            <a href={link(`${routes.events}/${event.id}`)} class="group block">
               <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
                 {event.data.cover ? (
                   <img
@@ -129,6 +130,9 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
               </h3>
               <p class="text-sm text-[var(--color-ink-soft)] mb-3">{event.data.location}</p>
               <p class="text-sm text-[var(--color-ink-soft)]/80 leading-relaxed">{event.data.excerpt}</p>
+              <span class="inline-flex items-center mt-4 text-xs font-display uppercase tracking-[0.18em] text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-1">
+                {event.data.soldOut ? t('event.sold_out') : t('event.book')} →
+              </span>
             </a>
           ))}
         </div>

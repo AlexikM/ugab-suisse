@@ -18,12 +18,6 @@ const events = defineCollection({
       endDate: z.coerce.date().optional(),
       location: z.string(),
       address: z.string().optional(),
-      coordinates: z
-        .object({
-          lat: z.number(),
-          lng: z.number(),
-        })
-        .optional(),
       cover: z.string().optional(),
       gallery: z.array(z.string()).optional(),
       excerpt: z.string(),
@@ -56,9 +50,9 @@ const events = defineCollection({
           code: z.ZodIssueCode.custom,
           path: ['demo'],
           message:
-            'This entry is marked as demo content and cannot be published. ' +
-            'The Comité announces real events only: delete the entry, or move it ' +
-            'out of src/content/events and into tests/content/fixtures.',
+            'Cette fiche est marquée comme contenu de démonstration et ne peut ' +
+            'pas être publiée. Le Comité n’annonce que des événements réels : ' +
+            'supprimez la fiche, ou sortez-la de src/content/events.',
         });
       }
     }),
