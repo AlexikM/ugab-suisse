@@ -1,10 +1,17 @@
 ---
-import { useTranslations, localizedPath, type Lang } from '../i18n/utils';
+import { useTranslations, withBase, type Lang } from '../i18n/utils';
+import { contactEmail, legalRoutes, localeRoute, primaryNav, routes } from '../i18n/ui';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+
+const link = (path: string) => withBase(localeRoute(path, lang));
+
+const nav = primaryNav
+  .filter((item) => item.path !== routes.home)
+  .map((item) => ({ href: link(item.path), label: t(item.key) }));
 ---
 
 <footer class="bg-[var(--color-ink)] text-[var(--color-paper)]">
@@ -12,48 +19,43 @@ const year = new Date().getFullYear();
     <div class="md:col-span-2">
       <div class="font-display text-2xl mb-3">{t('site.title')}</div>
       <p class="text-sm text-[var(--color-paper)]/70 max-w-md leading-relaxed mb-6">
-        Section suisse de l'Union Générale Arménienne de Bienfaisance, fondée en 1906 — la plus ancienne organisation non-gouvernementale arménienne au monde.
+        {t('footer.description')}
       </p>
-      <a
-        href="https://www.instagram.com/ugabsuisse/"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Instagram UGAB Suisse"
-        class="inline-flex items-center justify-center w-10 h-10 border border-white/20 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-        </svg>
-      </a>
+      <!--
+        Réseaux sociaux : les comptes officiels sont attendus du Comité (#9).
+        Aucun lien n'est publié tant qu'ils ne sont pas confirmés.
+      -->
     </div>
 
     <div>
-      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">Navigation</div>
+      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">{t('nav.label')}</div>
       <ul class="space-y-2 text-sm">
-        <li><a href={localizedPath('/histoire', lang)} class="hover:text-[var(--color-gold)] transition">Qui sommes-nous</a></li>
-        <li><a href={localizedPath('/evenements', lang)} class="hover:text-[var(--color-gold)] transition">{t('nav.events')}</a></li>
-        <li><a href={localizedPath('/contact', lang)} class="hover:text-[var(--color-gold)] transition">{t('nav.contact')}</a></li>
+        {nav.map((item) => (
+          <li><a href={item.href} class="hover:text-[var(--color-gold)] transition">{item.label}</a></li>
+        ))}
       </ul>
     </div>
 
     <div>
-      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">Contact</div>
+      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">{t('nav.contact')}</div>
       <ul class="space-y-2 text-sm text-[var(--color-paper)]/70">
-        <li>UGAB Suisse</li>
-        <li>contact@ugab.ch</li>
-        <li><a href={localizedPath('/don', lang)} class="text-[var(--color-gold)] hover:underline">{t('nav.donate')}</a></li>
+        <li>{t('contact.organisation')}</li>
+        <li><a href={`mailto:${contactEmail}`} class="hover:text-[var(--color-gold)] transition">{contactEmail}</a></li>
       </ul>
     </div>
   </div>
 
   <div class="border-t border-white/10">
     <div class="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--color-paper)]/50">
-      <div>© {year} UGAB Suisse — {t('footer.rights')}</div>
+      <div>© {year} {t('footer.copyright')}</div>
+      <!--
+        Les pages légales n'existent qu'en français pour l'instant : elles sont
+        liées sans préfixe de langue plutôt que vers une adresse qui n'existe
+        pas. Leur traduction relève du PRD 7.
+      -->
       <div class="flex gap-6">
-        <a href={localizedPath('/mentions-legales', lang)} class="hover:text-[var(--color-paper)]">{t('footer.legal')}</a>
-        <a href={localizedPath('/confidentialite', lang)} class="hover:text-[var(--color-paper)]">{t('footer.privacy')}</a>
+        <a href={withBase(legalRoutes.legal)} class="hover:text-[var(--color-paper)]">{t('footer.legal')}</a>
+        <a href={withBase(legalRoutes.privacy)} class="hover:text-[var(--color-paper)]">{t('footer.privacy')}</a>
       </div>
     </div>
   </div>
