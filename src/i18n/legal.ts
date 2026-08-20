@@ -254,13 +254,6 @@ const privacyFr: LegalPage = {
       ],
     },
     {
-      heading: 'Une précision sur une phrase que vous avez peut-être lue ailleurs',
-      paragraphs: [
-        "Une version antérieure de ce texte annonçait que vos données ne sont « jamais partagées avec des tiers ». L'intention était juste — nous ne monnayons rien — mais la formulation ne l'était pas. Un site qui encaisse des dons s'appuie forcément sur un hébergeur et sur un établissement de paiement, et ceux-là voient nécessairement une partie de vos données.",
-        "La phrase exacte est donc : nous ne cédons vos données à personne pour son propre usage, et les seuls tiers qui y accèdent sont des prestataires qui travaillent sur nos instructions, pour la finalité indiquée, et rien d'autre.",
-      ],
-    },
-    {
       heading: 'Qui est responsable de vos données',
       paragraphs: [
         "Le Comité Suisse de l'Union Générale Arménienne de Bienfaisance, association de droit suisse ayant son siège à Genève, décide de ce qui est collecté et pourquoi. C'est à lui que vous écrivez pour toute question ou toute demande concernant vos données.",
@@ -354,13 +347,6 @@ const privacyEn: LegalPage = {
         'We do not sell, rent or trade your data with anyone. Ever.',
         'A few providers process it on our behalf — the host, the payment institution that collects donations, the ticketing service, the anti-spam service. All of them are named below.',
         'This site sets no cookies, measures no audience and hosts no advertising tracker.',
-      ],
-    },
-    {
-      heading: 'A correction to a sentence you may have read elsewhere',
-      paragraphs: [
-        'An earlier version of this text said your data is “never shared with third parties”. The intent was right — we monetise nothing — but the wording was not. A site that collects donations necessarily relies on a host and on a payment institution, and those necessarily see part of your data.',
-        'So the accurate sentence is this: we hand your data to nobody for their own purposes, and the only third parties with access are providers acting on our instructions, for the stated purpose, and nothing else.',
       ],
     },
     {
@@ -670,7 +656,7 @@ export const legalChrome: Record<
   fr: {
     processorsHeading: 'À qui vos données sont transmises',
     processorsIntro:
-      "Voici la liste complète. Chacun de ces prestataires traite vos données pour notre compte, pour la finalité indiquée, et n'a pas le droit de s'en servir pour autre chose.",
+      "Voici la liste complète. Nous ne cédons vos données à personne pour son propre usage : les seuls tiers qui y accèdent sont des prestataires qui les traitent pour notre compte, pour la finalité indiquée, et qui n'ont pas le droit de s'en servir pour autre chose.",
     columnProvider: 'Prestataire',
     columnRole: 'Ce qu’il fait pour nous',
     columnReceives: 'Ce qu’il reçoit',
@@ -691,7 +677,7 @@ export const legalChrome: Record<
   en: {
     processorsHeading: 'Who your data is passed to',
     processorsIntro:
-      'Here is the complete list. Each of these providers processes your data on our behalf, for the stated purpose, and is not allowed to use it for anything else.',
+      'Here is the complete list. We hand your data to nobody for their own purposes: the only third parties with access are providers who process it on our behalf, for the stated purpose, and who are not allowed to use it for anything else.',
     columnProvider: 'Provider',
     columnRole: 'What it does for us',
     columnReceives: 'What it receives',

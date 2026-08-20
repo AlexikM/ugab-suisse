@@ -4,7 +4,7 @@ import { withBase } from '../i18n/utils';
 import { committee, lastReviewed, legalChrome, legalLang, legalPages, pendingLabel } from '../i18n/legal';
 
 const lang = legalLang('fr');
-const page = legalPages[lang].legalNotice;
+const page = legalPages[lang].accessibility;
 const chrome = legalChrome[lang];
 ---
 
@@ -22,36 +22,6 @@ const chrome = legalChrome[lang];
   <section class="py-16 md:py-20">
     <div class="mx-auto max-w-7xl px-6">
       <div class="max-w-3xl space-y-12">
-        <div>
-          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">Coordonnées</h2>
-          <address class="not-italic text-base leading-relaxed text-[var(--color-ink-soft)] space-y-1">
-            <div>{committee.legalName}</div>
-            <div>
-              {committee.postalAddress ?? (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse postale — {pendingLabel[lang]}</span>
-              )}
-            </div>
-            <div>{committee.city}</div>
-            <div>
-              {committee.email ? (
-                <a href={`mailto:${committee.email}`} class="text-[var(--color-brand)] underline">{committee.email}</a>
-              ) : (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse e-mail — {pendingLabel[lang]}</span>
-              )}
-            </div>
-            <div>
-              {committee.phone ?? (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Téléphone — {pendingLabel[lang]}</span>
-              )}
-            </div>
-            <div>
-              {committee.registrationNumber ?? (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Numéro IDE — {pendingLabel[lang]}</span>
-              )}
-            </div>
-          </address>
-        </div>
-
         {page.sections.map((section) => (
           <div>
             <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{section.heading}</h2>
@@ -66,11 +36,30 @@ const chrome = legalChrome[lang];
           </div>
         ))}
 
+        <div>
+          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.contactHeading}</h2>
+          <address class="not-italic text-base leading-relaxed text-[var(--color-ink-soft)] space-y-1">
+            <div>{committee.legalName}</div>
+            <div>
+              {committee.email ? (
+                <a href={`mailto:${committee.email}`} class="text-[var(--color-brand)] underline">{committee.email}</a>
+              ) : (
+                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse e-mail — {pendingLabel[lang]}</span>
+              )}
+            </div>
+            <div>
+              {committee.phone ?? (
+                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Téléphone — {pendingLabel[lang]}</span>
+              )}
+            </div>
+          </address>
+        </div>
+
         <div class="border-t border-[var(--color-line)] pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-[var(--color-ink-muted)]">
           <div>{chrome.lastReviewed} : <time datetime={lastReviewed}>{lastReviewed}</time></div>
           <div class="flex gap-5">
             <a href={withBase('/confidentialite')} class="underline hover:text-[var(--color-ink)]">{chrome.privacyLink}</a>
-            <a href={withBase('/accessibilite')} class="underline hover:text-[var(--color-ink)]">{chrome.accessibilityLink}</a>
+            <a href={withBase('/mentions-legales')} class="underline hover:text-[var(--color-ink)]">{chrome.legalLink}</a>
           </div>
         </div>
       </div>
