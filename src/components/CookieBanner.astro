@@ -1,53 +1,49 @@
 ---
-import { useTranslations, type Lang } from '../i18n/utils';
-interface Props { lang: Lang }
+/**
+ * Renders a privacy notice only when there is something to give notice about.
+ *
+ * The prototype had a two-button consent dialogue whose own text claimed the site
+ * used "cookies essentiels et, avec votre accord, des cookies de mesure
+ * d'audience". None of that was true. The site sets nothing. So the dialogue
+ * interrupted every visitor to collect consent for nothing — and wrote the
+ * resulting non-consent to localStorage, which made it the only thing on the
+ * entire site that stored anything at all.
+ *
+ * The fix is not a better banner. It is to have nothing that needs one: no
+ * analytics, no cookies, no cross-site identifiers (see `analytics` and
+ * `nonEssentialStorage` in src/i18n/legal.ts). With nothing to consent to, the
+ * honest interface is no interface.
+ *
+ * This component stays rather than being deleted so the decision is enforced
+ * instead of remembered. It is driven by the same declaration the privacy policy
+ * renders: declare a non-essential storage user there and the notice comes back
+ * on its own, on every page, without anyone having to think of it. Until then it
+ * renders nothing — no markup, no script, no storage.
+ *
+ * If it ever does come back, it must become a real choice: a decline that is as
+ * easy as an accept, nothing loaded before the visitor answers, and the answer
+ * itself recorded in a way the privacy policy describes.
+ */
+import { legalLang, legalPages, nonEssentialStorage, storageNotice } from '../i18n/legal';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const locale = legalLang(lang);
+const privacyTitle = legalPages[locale].privacy.title;
+const declared = nonEssentialStorage.map((item) => item.name[locale]).join(', ');
 ---
 
-<div
-  id="cookie-banner"
-  class="fixed bottom-6 inset-x-4 sm:left-6 sm:right-auto sm:max-w-sm z-50 hidden bg-[var(--color-ink)] text-white p-5 shadow-2xl"
-  role="dialog"
-  aria-label="Consentement cookies"
->
-  <p class="text-sm leading-relaxed pr-4">{t('cookies.message')}</p>
-  <div class="mt-4 flex items-center gap-3">
-    <button id="cookie-accept" class="min-h-11 inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-5 text-xs font-display uppercase tracking-wider transition">
-      {t('cookies.accept')}
-    </button>
-    <button id="cookie-reject" class="min-h-11 inline-flex items-center border border-white/30 px-5 text-xs font-display uppercase tracking-wider hover:bg-white/10 transition">
-      {t('cookies.reject')}
-    </button>
-  </div>
-</div>
-
-<script is:inline>
-  (() => {
-    const KEY = 'ugab-cookie-consent';
-    const banner = document.getElementById('cookie-banner');
-    if (!banner || localStorage.getItem(KEY)) return;
-
-    // Show only after user scrolls past the hero (so it doesn't cover CTAs)
-    let shown = false;
-    const reveal = () => {
-      if (shown) return;
-      if (window.scrollY > window.innerHeight * 0.4) {
-        banner.classList.remove('hidden');
-        shown = true;
-        window.removeEventListener('scroll', reveal);
-      }
-    };
-    window.addEventListener('scroll', reveal, { passive: true });
-    setTimeout(() => { if (!shown) reveal(); }, 8000);
-
-    document.getElementById('cookie-accept')?.addEventListener('click', () => {
-      localStorage.setItem(KEY, 'accepted');
-      banner.classList.add('hidden');
-    });
-    document.getElementById('cookie-reject')?.addEventListener('click', () => {
-      localStorage.setItem(KEY, 'rejected');
-      banner.classList.add('hidden');
-    });
-  })();
-</script>
+{
+  nonEssentialStorage.length > 0 && (
+    <aside
+      class="fixed bottom-0 inset-x-0 z-50 bg-[var(--color-ink)] text-white px-6 py-4"
+      aria-label={privacyTitle}
+    >
+      <p class="mx-auto max-w-7xl text-sm leading-relaxed">{storageNotice[locale](declared)}</p>
+    </aside>
+  )
+}
