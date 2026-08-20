@@ -50,10 +50,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Browser tests
+        id: browser-tests
         run: npm run test:e2e
 
       - name: Keep the report when a browser test fails
-        if: failure()
+        if: failure() && steps.browser-tests.outcome == 'failure'
         uses: actions/upload-artifact@v5
         with:
           name: playwright-report
