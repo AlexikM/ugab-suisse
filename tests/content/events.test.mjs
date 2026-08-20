@@ -58,6 +58,22 @@ test('a full room stops taking bookings', () => {
   assert.match(listing, /Complet/, 'the events listing must show that the room is full');
 });
 
+test('the home page shows what is coming up next', () => {
+  const build = withEventFixtures();
+  const home = visibleText(readPage(build.outDir, '/'));
+
+  assert.match(home, /Événement au strict minimum/, 'the soonest event is not on the home page');
+  assert.doesNotMatch(home, /Soirée déjà passée/, 'a past event is being announced as upcoming');
+});
+
+test('past events are listed with their photographs', () => {
+  const build = withEventFixtures();
+  const page = readPage(build.outDir, '/evenements');
+
+  assert.match(visibleText(page), /Soirée déjà passée/, 'the past event is missing from the listing');
+  assert.match(page, /exemple-soiree\.jpg/, 'the past event is listed without its photograph');
+});
+
 test('the site still tells a visitor something when there are no events', () => {
   const build = buildWithContent('no-events');
 
