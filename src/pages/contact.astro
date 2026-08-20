@@ -1,8 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 const lang = 'fr';
-const antennes = await getCollection('antennes');
 ---
 
 <Layout lang={lang} title="Contact">
@@ -61,29 +59,12 @@ const antennes = await getCollection('antennes');
   <!-- ANTENNES (3 cards en ligne) -->
   <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">Nos antennes</div>
-      <h2 class="text-3xl md:text-4xl leading-tight mb-12">Joindre l'antenne la plus proche.</h2>
+      <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">Coordonnées</div>
+      <h2 class="text-3xl md:text-4xl leading-tight mb-12">Nous joindre.</h2>
 
-      <div class="grid md:grid-cols-3 gap-px bg-[var(--color-line)] border border-[var(--color-line)]">
-        {antennes.map((a) => (
-          <article class="bg-[var(--color-paper)] p-8 md:p-10">
-            <div class="font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] mb-3">{a.data.canton}</div>
-            <h3 class="text-2xl mb-4">{a.data.city}</h3>
-            <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed mb-6">{a.data.description}</p>
-            {a.data.email && (
-              <a href={`mailto:${a.data.email}`} class="inline-flex items-center text-sm font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] border-b border-[var(--color-brand)] pb-0.5 transition">
-                {a.data.email}
-              </a>
-            )}
-          </article>
-        ))}
-      </div>
-
-      <!-- Contact général -->
-      <div class="mt-12 pt-10 border-t border-[var(--color-line)] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <div class="text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">Contact général</div>
-          <div class="text-base text-[var(--color-ink-soft)]">Pour toute question hors antenne&nbsp;:</div>
+          <div class="text-base text-[var(--color-ink-soft)]">Union Générale Arménienne de Bienfaisance — Comité Suisse, Genève</div>
         </div>
         <a href="mailto:contact@ugab.ch" class="text-xl md:text-2xl font-display text-[var(--color-ink)] hover:text-[var(--color-brand)] transition border-b border-[var(--color-line)] hover:border-[var(--color-brand)] pb-1">
           contact@ugab.ch

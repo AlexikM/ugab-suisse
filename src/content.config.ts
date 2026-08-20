@@ -44,16 +44,4 @@ const events = defineCollection({
     }),
 });
 
-const antennes = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: `${contentDir}/antennes` }),
-  schema: z.object({
-    city: z.string(),
-    canton: z.string(),
-    email: z.string().email().optional(),
-    phone: z.string().optional(),
-    address: z.string().optional(),
-    description: z.string(),
-  }),
-});
-
-export const collections = { events, antennes };
+export const collections = { events };
