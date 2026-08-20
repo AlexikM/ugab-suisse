@@ -12,7 +12,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",
-    "check": "npm run typecheck && npm run build"
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "check": "npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@biomejs/biome": "2.5.9",
     "typescript": "^6.0.3"
   }
 }
