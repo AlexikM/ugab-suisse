@@ -53,6 +53,17 @@ const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long'
     </section>
   )}
 
+  {upcoming.length === 0 && (
+    <section class="py-20 md:py-24">
+      <div class="mx-auto max-w-7xl px-6">
+        <h2 class="text-3xl mb-6">À venir</h2>
+        <p class="text-lg text-[var(--color-ink-soft)] max-w-2xl leading-relaxed">
+          Aucun événement n'est programmé pour le moment. Revenez bientôt.
+        </p>
+      </div>
+    </section>
+  )}
+
   {past.length > 0 && (
     <section class="bg-[var(--color-paper-soft)] py-20 md:py-24 md:py-24">
       <div class="mx-auto max-w-7xl px-6">
