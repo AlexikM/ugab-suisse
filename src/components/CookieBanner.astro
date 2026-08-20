@@ -40,10 +40,10 @@ const declared = nonEssentialStorage.map((item) => item.name[locale]).join(', ')
 {
   nonEssentialStorage.length > 0 && (
     <aside
-      class="fixed bottom-0 inset-x-0 z-50 bg-[var(--color-ink)] text-white px-6 py-4"
+      class="fixed bottom-0 inset-x-0 z-50 bg-ink text-white px-6 py-4"
       aria-label={privacyTitle}
     >
-      <p class="mx-auto max-w-7xl text-sm leading-relaxed">{storageNotice[locale](declared)}</p>
+      <p class="mx-auto max-w-page text-sm leading-relaxed">{storageNotice[locale](declared)}</p>
     </aside>
   )
 }

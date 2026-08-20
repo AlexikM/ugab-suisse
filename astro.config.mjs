@@ -1,5 +1,6 @@
 // @ts-check
 
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 
@@ -13,10 +14,11 @@ export default defineConfig({
   base,
   i18n: {
     defaultLocale: 'fr',
-    // Armenian is not here yet: the Comité has not delivered the translations.
-    // Adding 'hy' should be the only change needed to make every page exist in
-    // Armenian — see src/pages/[...lang]/.
-    locales: ['fr', 'en'],
+    // French is unprefixed; English and Armenian carry their code. Every page
+    // in src/pages/[...lang]/ exists in all three from one implementation — the
+    // Armenian ones serve French until the Comité delivers the translations
+    // (#9), and say so. See src/i18n/fallback.ts.
+    locales: ['fr', 'en', 'hy'],
     routing: {
       prefixDefaultLocale: false,
     },
@@ -26,7 +28,24 @@ export default defineConfig({
   redirects: {
     '/histoire': { status: 301, destination: `${base}/a-propos` },
     '/en/histoire': { status: 301, destination: `${base}/en/a-propos` },
+    '/hy/histoire': { status: 301, destination: `${base}/hy/a-propos` },
   },
+  integrations: [
+    // The sitemap is generated from the routes the build produces, so it cannot
+    // drift from the site. Every page appears once per language, each entry
+    // cross-referencing the other two, which is the same promise the `hreflang`
+    // tags in the page head make — written by a machine in both places rather
+    // than maintained by hand in either.
+    sitemap({
+      i18n: {
+        defaultLocale: 'fr',
+        locales: { fr: 'fr-CH', en: 'en', hy: 'hy' },
+      },
+      // Redirect stubs are not pages; listing /histoire would offer a search
+      // engine an address whose only content is a meta refresh.
+      filter: (page) => !/\/histoire\/?$/.test(page),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

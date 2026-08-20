@@ -3,8 +3,9 @@ import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import concertImage from '../../assets/images/concert.jpg';
-import { languagePaths, localeRoute, routes } from '../../i18n/ui';
-import { type Lang, useTranslations, withBase } from '../../i18n/utils';
+import { pageContext } from '../../i18n/fallback';
+import { formatLocale, languagePaths, localeRoute, routes } from '../../i18n/ui';
+import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
@@ -13,7 +14,7 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const { served, t } = pageContext(lang, 'events');
 const link = (path: string) => withBase(localeRoute(path, lang));
 
 // See src/pages/[...lang]/index.astro: events are not filtered by locale.
@@ -25,8 +26,7 @@ const now = Date.now();
 const upcoming = events.filter((event) => event.data.date.valueOf() >= now);
 const past = events.filter((event) => event.data.date.valueOf() < now).reverse();
 
-const locale = lang === 'fr' ? 'fr-CH' : 'en-CH';
-const dateFmt = new Intl.DateTimeFormat(locale, {
+const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -35,8 +35,8 @@ const dateFmt = new Intl.DateTimeFormat(locale, {
 });
 ---
 
-<Layout lang={lang} title={t('events.title')} description={t('events.intro')}>
-  <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
+<Layout lang={lang} section="events" title={t('events.title')} description={t('events.intro')}>
+  <section class="relative isolate bg-ink text-white overflow-hidden">
     <Image
       src={concertImage}
       alt=""
@@ -45,44 +45,44 @@ const dateFmt = new Intl.DateTimeFormat(locale, {
       loading="eager"
       class="absolute inset-0 -z-10 h-full w-full object-cover opacity-40"
     />
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-ink)]/75 to-[var(--color-brand-deep)]/30"></div>
-    <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-36">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/75 to-navy-deep/30"></div>
+    <div class="relative mx-auto max-w-page px-6 py-section-lg">
       <div class="max-w-3xl">
-        <h1 class="font-display uppercase tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">
+        <h1 class="font-display text-display-xl mb-8">
           {t('events.title')}
         </h1>
-        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl">{t('events.intro')}</p>
+        <p class="text-lead max-w-2xl text-white">{t('events.intro')}</p>
       </div>
     </div>
   </section>
 
-  <section class="py-20 md:py-24">
-    <div class="mx-auto max-w-7xl px-6">
-      <h2 class="text-3xl mb-10">{t('events.upcoming_title')}</h2>
+  <section class="py-section">
+    <div class="mx-auto max-w-page px-6">
+      <h2 class="text-display-sm mb-10">{t('events.upcoming_title')}</h2>
 
       {upcoming.length === 0 ? (
-        <p class="text-lg text-[var(--color-ink-soft)] max-w-2xl leading-relaxed">{t('events.empty')}</p>
+        <p class="text-lg text-ink-soft max-w-2xl leading-relaxed">{t('events.empty')}</p>
       ) : (
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {upcoming.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
               {event.data.cover && (
-                <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
+                <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
                   <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
-              <div class="text-xs uppercase tracking-widest text-[var(--color-brand)] mb-2">{dateFmt.format(event.data.date)}</div>
-              <h3 class="text-2xl mb-2 group-hover:text-[var(--color-brand)] transition">
+              <div class="eyebrow mb-2 text-navy">{dateFmt.format(event.data.date)}</div>
+              <h3 class="text-2xl mb-2 group-hover:text-red transition">
                 {event.data.title}
                 {event.data.soldOut && (
-                  <span class="ml-3 align-middle text-xs uppercase tracking-[0.18em] font-display text-white bg-[var(--color-ink)] px-2 py-1">
+                  <span class="eyebrow ml-3 bg-ink px-2 py-1 align-middle text-white">
                     {t('event.sold_out')}
                   </span>
                 )}
               </h3>
-              <p class="text-sm text-[var(--color-ink-soft)]/80 mb-3">{event.data.location}</p>
-              <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{event.data.excerpt}</p>
-              <span class="inline-flex items-center mt-4 text-xs font-display uppercase tracking-[0.18em] text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-1">
+              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
+              <span class="eyebrow mt-4 inline-flex items-center border-b border-navy pb-1 text-navy">
                 {t('events.more')} →
               </span>
             </a>
@@ -93,22 +93,22 @@ const dateFmt = new Intl.DateTimeFormat(locale, {
   </section>
 
   {past.length > 0 && (
-    <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
-      <div class="mx-auto max-w-7xl px-6">
-        <h2 class="text-3xl md:text-4xl mb-3">{t('events.past_title')}</h2>
-        <p class="text-lg text-[var(--color-ink-soft)] mb-12">{t('events.past_intro')}</p>
+    <section class="bg-paper-soft py-section">
+      <div class="mx-auto max-w-page px-6">
+        <h2 class="text-display-sm mb-3">{t('events.past_title')}</h2>
+        <p class="text-lg text-ink-soft mb-12">{t('events.past_intro')}</p>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {past.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
               {event.data.cover && (
-                <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-deep)]">
+                <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-deep">
                   <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
-              <div class="text-xs uppercase tracking-widest text-[var(--color-ink-muted)] mb-2">{dateFmt.format(event.data.date)}</div>
-              <h3 class="text-2xl mb-2 group-hover:text-[var(--color-brand)] transition">{event.data.title}</h3>
-              <p class="text-sm text-[var(--color-ink-soft)]/80 mb-3">{event.data.location}</p>
-              <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{event.data.excerpt}</p>
+              <div class="eyebrow mb-2 text-ink-muted">{dateFmt.format(event.data.date)}</div>
+              <h3 class="text-2xl mb-2 group-hover:text-red transition">{event.data.title}</h3>
+              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
             </a>
           ))}
         </div>

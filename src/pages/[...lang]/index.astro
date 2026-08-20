@@ -4,8 +4,9 @@ import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import genevaImage from '../../assets/images/geneva.jpg';
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
-import { keyFigures, languagePaths, localeRoute, routes } from '../../i18n/ui';
-import { type Lang, useTranslations, withBase } from '../../i18n/utils';
+import { pageContext } from '../../i18n/fallback';
+import { formatLocale, inLang, keyFigures, languagePaths, localeRoute, routes } from '../../i18n/ui';
+import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
@@ -14,7 +15,10 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+// `served` is the language this page is really written in — French, until the
+// Comité delivers Armenian (#9). Everything below follows it, including the
+// date format, so the page is never half one language and half another.
+const { served, t } = pageContext(lang, 'home');
 const link = (path: string) => withBase(localeRoute(path, lang));
 
 // Every locale lists every published event: the same evenings happen whichever
@@ -27,16 +31,16 @@ const events = (await getCollection('events', ({ data }) => !data.draft))
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
   .slice(0, 3);
 
-const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
+const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
 });
 ---
 
-<Layout lang={lang} description={t('site.description')}>
+<Layout lang={lang} section="home" description={t('site.description')}>
   <!-- HERO -->
-  <section class="relative isolate overflow-hidden bg-[var(--color-ink)] text-[var(--color-paper)] min-h-[88vh] flex items-end">
+  <section class="relative isolate overflow-hidden bg-ink text-paper min-h-[88vh] flex items-end">
     <Image
       src={genevaImage}
       alt=""
@@ -46,23 +50,23 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
       class="absolute inset-0 -z-10 h-full w-full object-cover"
     />
     <div
-      class="absolute inset-0 -z-10 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-brand-deep)]/80 to-[var(--color-brand)]/30"
+      class="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-navy-deep/80 to-navy/30"
       aria-hidden="true"
     ></div>
 
-    <div class="relative mx-auto max-w-7xl px-6 py-24 md:py-32 w-full">
+    <div class="relative mx-auto max-w-page px-6 py-section-lg w-full">
       <div class="max-w-4xl">
-        <h1 class="font-display uppercase text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight mb-8 text-white [text-wrap:balance]">
+        <h1 class="font-display text-display-xl mb-8 text-white">
           {t('home.hero_title')}
         </h1>
-        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12">
+        <p class="text-lead max-w-2xl text-white mb-12">
           {t('home.hero_lead')}
         </p>
         <div class="flex flex-wrap items-stretch gap-0">
-          <a href={link(routes.donate)} class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-sm font-display uppercase tracking-[0.18em] text-white transition">
+          <a href={link(routes.donate)} class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep">
             {t('home.cta_donate')}
           </a>
-          <a href={link(routes.events)} class="inline-flex items-center border border-white/40 hover:border-white px-8 py-4 text-sm font-display uppercase tracking-[0.18em] text-white transition">
+          <a href={link(routes.events)} class="eyebrow inline-flex items-center border border-white px-8 py-4 text-white transition hover:bg-white/15">
             {t('home.cta_events')}
           </a>
         </div>
@@ -71,14 +75,14 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
   </section>
 
   <!-- CHIFFRES CLÉS -->
-  <section class="bg-[var(--color-paper)] border-b border-[var(--color-line)] py-16">
-    <div class="mx-auto max-w-7xl px-6">
+  <section class="bg-paper border-b border-line py-16">
+    <div class="mx-auto max-w-page px-6">
       <h2 class="sr-only">{t('home.figures_title')}</h2>
       <dl class="grid grid-cols-2 md:grid-cols-4 gap-10">
-        {keyFigures[lang].map((figure) => (
+        {inLang(keyFigures, served).map((figure) => (
           <div>
-            <dt class="font-display text-3xl md:text-4xl text-[var(--color-brand)] mb-2">{figure.value}</dt>
-            <dd class="text-xs uppercase tracking-widest text-[var(--color-ink-muted)]">{figure.label}</dd>
+            <dt class="font-display text-3xl md:text-4xl text-navy mb-2">{figure.value}</dt>
+            <dd class="eyebrow text-ink-muted">{figure.label}</dd>
           </div>
         ))}
       </dl>
@@ -86,13 +90,13 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
   </section>
 
   <!-- NOTRE MISSION -->
-  <section class="bg-[var(--color-paper-soft)] py-24">
+  <section class="bg-paper-soft py-section">
     <div class="mx-auto max-w-4xl px-6">
-      <div class="text-xs uppercase tracking-[0.2em] text-[var(--color-brand)] mb-4">{t('home.mission_title')}</div>
-      <p class="text-2xl md:text-3xl text-[var(--color-ink)] leading-[1.45]">
+      <div class="eyebrow mb-4 text-navy">{t('home.mission_title')}</div>
+      <p class="text-lead text-ink">
         {t('home.mission_body')}
       </p>
-      <a href={link(routes.about)} class="inline-flex items-center mt-10 font-display text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] hover:text-[var(--color-brand-deep)] transition border-b border-[var(--color-brand)] pb-1">
+      <a href={link(routes.about)} class="eyebrow mt-10 inline-flex items-center border-b border-navy pb-1 text-navy transition hover:text-red">
         {t('nav.about')} →
       </a>
     </div>
@@ -100,11 +104,11 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
 
   <!-- PROCHAINS ÉVÉNEMENTS -->
   {events.length > 0 && (
-    <section class="py-24">
-      <div class="mx-auto max-w-7xl px-6">
+    <section class="py-section">
+      <div class="mx-auto max-w-page px-6">
         <div class="flex items-end justify-between mb-12">
-          <h2 class="text-4xl md:text-5xl text-[var(--color-ink)]">{t('home.events_title')}</h2>
-          <a href={link(routes.events)} class="hidden md:inline text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-brand)] underline underline-offset-4">
+          <h2 class="text-display-md text-ink">{t('home.events_title')}</h2>
+          <a href={link(routes.events)} class="hidden md:inline text-sm text-ink-soft hover:text-red underline underline-offset-4">
             {t('home.events_all')} →
           </a>
         </div>
@@ -112,7 +116,7 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
         <div class="grid md:grid-cols-3 gap-8">
           {events.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              <div class="aspect-[4/3] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
+              <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
                 {event.data.cover ? (
                   <img
                     src={withBase(event.data.cover)}
@@ -121,18 +125,18 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
                     class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                   />
                 ) : (
-                  <div class="h-full grid place-items-center text-[var(--color-brand)]/20 font-display text-6xl" aria-hidden="true">☩</div>
+                  <div class="h-full grid place-items-center text-navy/40 font-display text-6xl" aria-hidden="true">☩</div>
                 )}
               </div>
-              <div class="text-xs uppercase tracking-widest text-[var(--color-brand)] mb-2">
+              <div class="eyebrow mb-2 text-navy">
                 {dateFmt.format(event.data.date)}
               </div>
-              <h3 class="text-xl mb-2 text-[var(--color-ink)] group-hover:text-[var(--color-brand)] transition">
+              <h3 class="text-xl mb-2 text-ink group-hover:text-red transition">
                 {event.data.title}
               </h3>
-              <p class="text-sm text-[var(--color-ink-soft)] mb-3">{event.data.location}</p>
-              <p class="text-sm text-[var(--color-ink-soft)]/80 leading-relaxed">{event.data.excerpt}</p>
-              <span class="inline-flex items-center mt-4 text-xs font-display uppercase tracking-[0.18em] text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-1">
+              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
+              <span class="eyebrow mt-4 inline-flex items-center border-b border-navy pb-1 text-navy">
                 {event.data.soldOut ? t('event.sold_out') : t('event.book')} →
               </span>
             </a>
@@ -143,7 +147,7 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
   )}
 
   <!-- APPEL AUX DONS -->
-  <section class="relative isolate overflow-hidden bg-[var(--color-brand)] text-white py-24 md:py-32">
+  <section class="relative isolate overflow-hidden bg-navy text-white py-section-lg">
     <div class="absolute inset-0 -z-10 opacity-15">
       <Image
         src={humanitarianImage}
@@ -154,25 +158,25 @@ const dateFmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-CH', {
         class="h-full w-full object-cover"
       />
     </div>
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-brand-deep)] via-[var(--color-brand)] to-[var(--color-brand-deep)]"></div>
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-navy-deep via-navy to-navy-deep"></div>
 
     <div class="relative mx-auto max-w-4xl px-6 text-center">
-      <h2 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl text-white leading-[1.05] mb-10 [text-wrap:balance]">
+      <h2 class="font-display text-display-lg text-white mb-10">
         {t('home.donate_teaser')}
       </h2>
-      <a href={link(routes.donate)} class="inline-flex items-center bg-white text-[var(--color-brand-deep)] hover:bg-[var(--color-gold-light)] hover:text-[var(--color-ink)] px-10 py-5 font-display uppercase tracking-[0.18em] text-sm transition">
+      <a href={link(routes.donate)} class="eyebrow inline-flex items-center bg-white px-10 py-5 text-navy-deep transition hover:bg-gold-light hover:text-ink">
         {t('home.cta_donate')} →
       </a>
     </div>
   </section>
 
   <!-- APPEL AUX SPONSORS -->
-  <section class="bg-[var(--color-ink)] text-[var(--color-paper)] py-24">
+  <section class="bg-ink text-paper py-section">
     <div class="mx-auto max-w-4xl px-6 text-center">
-      <p class="font-serif italic text-2xl md:text-3xl leading-[1.4] mb-10">
+      <p class="font-display text-display-sm mb-10 italic">
         {t('home.sponsor_teaser')}
       </p>
-      <a href={link(routes.donate)} class="inline-flex items-center gap-2 text-sm uppercase tracking-widest text-[var(--color-gold)] hover:text-[var(--color-paper)] transition">
+      <a href={link(routes.donate)} class="eyebrow inline-flex items-center gap-2 text-gold-light transition hover:text-white">
         {t('home.sponsor_cta')} →
       </a>
     </div>

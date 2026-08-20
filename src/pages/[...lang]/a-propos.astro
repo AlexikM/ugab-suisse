@@ -3,8 +3,16 @@ import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import archiveImage from '../../assets/images/archive.jpg';
-import { actionAreas, bureauRoles, defaultLang, languagePaths, values } from '../../i18n/ui';
-import { type Lang, useTranslations, withBase } from '../../i18n/utils';
+import { pageContext } from '../../i18n/fallback';
+import {
+  actionAreas,
+  bureauRoles,
+  defaultLang,
+  inLang,
+  languagePaths,
+  values,
+} from '../../i18n/ui';
+import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
@@ -13,7 +21,7 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const { served, t } = pageContext(lang, 'about');
 
 // Hierarchical order, as the brief presents it — never alphabetical.
 const officers = (await getCollection('bureau')).sort(
@@ -21,7 +29,8 @@ const officers = (await getCollection('bureau')).sort(
 );
 
 /** The biography in this language, or the one the Comité has written so far. */
-const biography = (bio?: { fr?: string; en?: string }) => bio?.[lang] ?? bio?.[defaultLang] ?? '';
+const biography = (bio?: Partial<Record<Lang, string>>) =>
+  bio?.[served] ?? bio?.[defaultLang] ?? '';
 
 // The note about what is still missing disappears once nothing is.
 const bureauIncomplete =
@@ -38,9 +47,9 @@ const initials = (name: string) =>
     .toUpperCase();
 ---
 
-<Layout lang={lang} title={t('about.title')} description={t('about.intro')}>
+<Layout lang={lang} section="about" title={t('about.title')} description={t('about.intro')}>
   <!-- INTRODUCTION -->
-  <section class="relative isolate bg-[var(--color-ink)] text-white overflow-hidden">
+  <section class="relative isolate bg-ink text-white overflow-hidden">
     <Image
       src={archiveImage}
       alt=""
@@ -49,24 +58,24 @@ const initials = (name: string) =>
       loading="eager"
       class="absolute inset-0 -z-10 h-full w-full object-cover opacity-40"
     />
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-ink)]/75 to-[var(--color-brand-deep)]/30"></div>
-    <div class="relative mx-auto max-w-7xl px-6 py-28 md:py-36">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/75 to-navy-deep/30"></div>
+    <div class="relative mx-auto max-w-page px-6 py-section-lg">
       <div class="max-w-3xl">
-        <h1 class="font-display uppercase tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">
+        <h1 class="font-display text-display-xl mb-8">
           {t('about.title')}
         </h1>
-        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl">{t('about.intro')}</p>
+        <p class="text-lead max-w-2xl text-white">{t('about.intro')}</p>
       </div>
     </div>
   </section>
 
   <!-- HISTOIRE DE L'UGAB -->
-  <section class="py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+  <section class="py-section-lg">
+    <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
       <div class="lg:col-span-4">
-        <h2 class="text-3xl md:text-4xl leading-tight">{t('about.history_title')}</h2>
+        <h2 class="text-display-sm">{t('about.history_title')}</h2>
       </div>
-      <div class="lg:col-span-8 space-y-6 text-lg leading-[1.75] text-[var(--color-ink-soft)]">
+      <div class="lg:col-span-8 space-y-6 text-lg leading-[1.75] text-ink-soft">
         <p>{t('about.history_p1')}</p>
         <p>{t('about.history_p2')}</p>
         <p>{t('about.history_p3')}</p>
@@ -75,16 +84,16 @@ const initials = (name: string) =>
   </section>
 
   <!-- MISSION ET VALEURS -->
-  <section class="bg-[var(--color-paper-soft)] py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+  <section class="bg-paper-soft py-section-lg">
+    <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
       <div class="lg:col-span-4">
-        <h2 class="text-3xl md:text-4xl leading-tight">{t('about.mission_title')}</h2>
+        <h2 class="text-display-sm">{t('about.mission_title')}</h2>
       </div>
       <div class="lg:col-span-8">
-        <p class="text-lg leading-[1.75] text-[var(--color-ink-soft)] mb-10">{t('about.mission_body')}</p>
+        <p class="text-lg leading-[1.75] text-ink-soft mb-10">{t('about.mission_body')}</p>
         <ul class="flex flex-wrap gap-x-6 gap-y-3">
-          {values[lang].map((value) => (
-            <li class="font-display text-sm uppercase tracking-[0.18em] text-[var(--color-brand)] border-b border-[var(--color-gold)] pb-1">
+          {inLang(values, served).map((value) => (
+            <li class="eyebrow border-b border-gold pb-1 text-navy">
               {value}
             </li>
           ))}
@@ -94,12 +103,12 @@ const initials = (name: string) =>
   </section>
 
   <!-- LE COMITÉ SUISSE -->
-  <section class="py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+  <section class="py-section-lg">
+    <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
       <div class="lg:col-span-4">
-        <h2 class="text-3xl md:text-4xl leading-tight">{t('about.committee_title')}</h2>
+        <h2 class="text-display-sm">{t('about.committee_title')}</h2>
       </div>
-      <div class="lg:col-span-8 space-y-6 text-lg leading-[1.75] text-[var(--color-ink-soft)]">
+      <div class="lg:col-span-8 space-y-6 text-lg leading-[1.75] text-ink-soft">
         <p>{t('about.committee_p1')}</p>
         <p>{t('about.committee_p2')}</p>
       </div>
@@ -107,14 +116,14 @@ const initials = (name: string) =>
   </section>
 
   <!-- AXES D'ACTION -->
-  <section class="bg-[var(--color-paper-soft)] py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-6">
-      <h2 class="text-3xl md:text-4xl leading-tight mb-12">{t('about.actions_title')}</h2>
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--color-line)] border border-[var(--color-line)]">
-        {actionAreas[lang].map((area) => (
-          <article class="bg-[var(--color-paper)] p-8 md:p-10">
-            <h3 class="text-2xl mb-4 text-[var(--color-ink)]">{area.title}</h3>
-            <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{area.body}</p>
+  <section class="bg-paper-soft py-section-lg">
+    <div class="mx-auto max-w-page px-6">
+      <h2 class="text-display-sm mb-12">{t('about.actions_title')}</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-line border border-line">
+        {inLang(actionAreas, served).map((area) => (
+          <article class="bg-paper p-8 md:p-10">
+            <h3 class="text-2xl mb-4 text-ink">{area.title}</h3>
+            <p class="text-sm text-ink-soft leading-relaxed">{area.body}</p>
           </article>
         ))}
       </div>
@@ -122,15 +131,15 @@ const initials = (name: string) =>
   </section>
 
   <!-- BUREAU DU COMITÉ -->
-  <section class="py-20 md:py-28">
-    <div class="mx-auto max-w-7xl px-6">
-      <h2 class="text-3xl md:text-4xl leading-tight mb-12">{t('about.bureau_title')}</h2>
+  <section class="py-section-lg">
+    <div class="mx-auto max-w-page px-6">
+      <h2 class="text-display-sm mb-12">{t('about.bureau_title')}</h2>
 
       {officers.length > 0 && (
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {officers.map((officer) => (
             <article>
-              <div class="aspect-[3/4] mb-5 overflow-hidden bg-[var(--color-paper-soft)]">
+              <div class="aspect-[3/4] mb-5 overflow-hidden bg-paper-soft">
                 {officer.data.portrait ? (
                   <img
                     src={withBase(officer.data.portrait)}
@@ -139,17 +148,17 @@ const initials = (name: string) =>
                     class="h-full w-full object-cover"
                   />
                 ) : (
-                  <div class="h-full grid place-items-center font-display text-5xl text-[var(--color-brand)]/25" aria-hidden="true">
+                  <div class="h-full grid place-items-center font-display text-5xl text-navy/40" aria-hidden="true">
                     {initials(officer.data.name)}
                   </div>
                 )}
               </div>
-              <div class="text-xs uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">
+              <div class="eyebrow mb-2 text-navy">
                 {t(`bureau.${officer.data.role}`)}
               </div>
-              <h3 class="text-xl mb-3 text-[var(--color-ink)]">{officer.data.name}</h3>
+              <h3 class="text-xl mb-3 text-ink">{officer.data.name}</h3>
               {biography(officer.data.bio) && (
-                <p class="text-sm text-[var(--color-ink-soft)] leading-relaxed">{biography(officer.data.bio)}</p>
+                <p class="text-sm text-ink-soft leading-relaxed">{biography(officer.data.bio)}</p>
               )}
             </article>
           ))}
@@ -157,7 +166,7 @@ const initials = (name: string) =>
       )}
 
       {bureauIncomplete && (
-        <p class="mt-10 text-sm text-[var(--color-ink-muted)] leading-relaxed max-w-2xl">
+        <p class="mt-10 text-sm text-ink-muted leading-relaxed max-w-2xl">
           {t('about.bureau_pending')}
         </p>
       )}

@@ -3,18 +3,21 @@ import { languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes 
 import { type Lang, useTranslations, withBase } from '../i18n/utils';
 
 interface Props {
-  lang: Lang;
+  /** The language the chrome is written in. */
+  served: Lang;
+  /** The language the visitor asked for — what the switcher marks as current. */
+  requested: Lang;
 }
-const { lang } = Astro.props;
-const t = useTranslations(lang);
+const { served, requested } = Astro.props;
+const t = useTranslations(served);
 
-const link = (path: string, target: Lang = lang) => withBase(localeRoute(path, target));
+const link = (path: string, target: Lang = requested) => withBase(localeRoute(path, target));
 
 /**
  * Where the language selector sends a visitor: the same page in the other
  * language. Every page of the site exists in every language except the legal
- * ones, which are French-only until PRD 7 translates them — from those, the
- * selector goes home rather than to an address that does not exist.
+ * ones, which are French-only until the Comité supplies translations — from
+ * those, the selector goes home rather than to an address that does not exist.
  */
 const here = routeFromPath(Astro.url.pathname, withBase('/'));
 const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
@@ -22,87 +25,146 @@ const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? r
 const nav = primaryNav.map((item) => ({
   href: link(item.path),
   label: t(item.key),
+  current: item.path === currentRoute,
+}));
+
+const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
+  code,
+  label: languages[code],
+  href: link(currentRoute, code),
+  current: code === requested,
 }));
 ---
 
-<header class="sticky top-0 z-40 bg-[var(--color-paper)]">
-  <div class="mx-auto flex max-w-7xl items-center justify-between pl-6 pr-0 h-16 md:h-20">
-    <a href={link(routes.home)} class="flex items-center gap-4" aria-label={`${t('site.title')} — ${t('nav.home')}`}>
+{/*
+  Sticky, as the brief requires: the donation button is reachable from anywhere
+  on any page without scrolling back up. It is one bar 4rem tall on a phone, so
+  it stays out of the way of the content it sits above.
+*/}
+<header class="on-dark sticky top-0 z-40 border-b border-line bg-paper">
+  <div class="mx-auto flex h-16 max-w-page items-center justify-between pr-0 pl-6 md:h-20">
+    <a
+      href={link(routes.home)}
+      class="flex items-center gap-4"
+      aria-label={`${t('site.title')} — ${t('nav.home')}`}
+    >
       <img
         src={withBase('/logo.png')}
-        alt="UGAB"
+        alt=""
         width="138"
         height="32"
-        class="h-7 md:h-9 w-auto"
+        class="h-7 w-auto md:h-9"
       />
-      <span class="hidden sm:inline-block border-l border-[var(--color-line)] pl-4 font-display uppercase tracking-[0.12em] text-[var(--color-brand)] text-lg md:text-xl font-medium">
+      <span class="hidden border-l border-line pl-4 font-display text-lg font-semibold tracking-caps text-navy uppercase sm:inline-block md:text-xl">
         {t('site.short')}
       </span>
     </a>
 
-    <nav class="hidden lg:flex items-center gap-8 h-full" aria-label={t('nav.label')}>
+    <nav class="hidden h-full items-center gap-8 lg:flex" aria-label={t('nav.label')}>
       {nav.map((item) => (
-        <a href={item.href} class="font-display text-[15px] font-medium text-[var(--color-ink)] hover:text-[var(--color-brand)] transition-colors">
+        <a
+          href={item.href}
+          aria-current={item.current ? 'page' : undefined}
+          class:list={[
+            'font-display text-[0.9375rem] font-semibold transition-colors hover:text-red',
+            item.current ? 'text-red' : 'text-ink',
+          ]}
+        >
           {item.label}
         </a>
       ))}
     </nav>
 
-    <div class="flex items-stretch h-full">
+    <div class="flex h-full items-stretch">
       <a
         href={link(routes.donate)}
-        class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-5 md:px-7 font-display uppercase tracking-[0.15em] text-xs md:text-sm text-white transition-colors"
+        class="inline-flex items-center bg-red px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-red-deep md:px-7 md:text-sm"
+        data-donate-cta
       >
         {t('nav.donate')}
       </a>
-      <div class="hidden sm:flex items-center bg-[var(--color-ink)] px-4 gap-2 text-xs">
-        {Object.entries(languages).map(([code, label]) => (
+
+      {/*
+        Three languages, always all three. `hreflang` tells a browser what it is
+        pointing at; the visible label is each language's own name, abbreviated,
+        with the full name available to a screen reader.
+      */}
+      <nav class="hidden items-center gap-2 bg-ink px-4 text-xs sm:flex" aria-label={t('fallback.label')}>
+        {languageLinks.map((item) => (
           <a
-            href={link(currentRoute, code as Lang)}
-            hreflang={code}
-            class:list={['min-w-[28px] text-center font-display uppercase tracking-wider transition-colors', lang === code ? 'text-white font-medium' : 'text-white/50 hover:text-white']}
-            aria-label={label}
-          >{code}</a>
+            href={item.href}
+            hreflang={item.code}
+            lang={item.code}
+            aria-current={item.current ? 'true' : undefined}
+            class:list={[
+              'min-w-[28px] text-center font-display tracking-caps uppercase transition-colors',
+              item.current ? 'font-semibold text-white underline underline-offset-4' : 'text-paper-deep hover:text-white',
+            ]}
+          >
+            <span aria-hidden="true">{item.code}</span>
+            <span class="sr-only">{item.label}</span>
+          </a>
         ))}
-      </div>
+      </nav>
+
       <button
         id="mobile-menu-toggle"
-        class="lg:hidden inline-flex items-center justify-center w-12 h-full bg-[var(--color-ink)] text-white"
-        aria-label="Menu"
+        type="button"
+        class="inline-flex h-full w-12 items-center justify-center bg-ink text-white lg:hidden"
+        aria-label={t('nav.menu')}
         aria-expanded="false"
         aria-controls="mobile-menu"
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
-          <line x1="3" y1="6" x2="17" y2="6"/>
-          <line x1="3" y1="10" x2="17" y2="10"/>
-          <line x1="3" y1="14" x2="17" y2="14"/>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <line x1="3" y1="6" x2="17" y2="6"></line>
+          <line x1="3" y1="10" x2="17" y2="10"></line>
+          <line x1="3" y1="14" x2="17" y2="14"></line>
         </svg>
       </button>
     </div>
   </div>
 
   <!-- Mobile drawer -->
-  <div
-    id="mobile-menu"
-    class="lg:hidden hidden border-t border-[var(--color-line)] bg-[var(--color-paper)]"
-  >
-    <nav class="px-6 py-6 space-y-1">
+  <div id="mobile-menu" class="hidden border-t border-line bg-paper lg:hidden">
+    <nav class="space-y-1 px-6 py-6" aria-label={t('nav.label')}>
       {nav.map((item) => (
-        <a href={item.href} class="block py-3 font-display text-lg text-[var(--color-ink)] border-b border-[var(--color-paper-soft)] last:border-0 hover:text-[var(--color-brand)] transition-colors">
+        <a
+          href={item.href}
+          aria-current={item.current ? 'page' : undefined}
+          class="block border-b border-paper-soft py-3 font-display text-lg text-ink transition-colors last:border-0 hover:text-red"
+        >
           {item.label}
         </a>
       ))}
-      <div class="pt-6 flex items-center gap-3">
-        {Object.entries(languages).map(([code, label]) => (
-          <a
-            href={link(currentRoute, code as Lang)}
-            hreflang={code}
-            class:list={['min-w-11 min-h-11 inline-flex items-center justify-center font-display uppercase tracking-wider text-sm border', lang === code ? 'border-[var(--color-brand)] text-[var(--color-brand)] font-medium' : 'border-[var(--color-line)] text-[var(--color-ink-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]']}
-            aria-label={label}
-          >{code}</a>
-        ))}
-      </div>
     </nav>
+    <div class="flex items-center gap-3 px-6 pb-6">
+      {languageLinks.map((item) => (
+        <a
+          href={item.href}
+          hreflang={item.code}
+          lang={item.code}
+          aria-current={item.current ? 'true' : undefined}
+          class:list={[
+            'inline-flex min-h-11 min-w-11 items-center justify-center border font-display text-sm tracking-caps uppercase',
+            item.current
+              ? 'border-red font-semibold text-red'
+              : 'border-line-strong text-ink-muted hover:border-red hover:text-red',
+          ]}
+        >
+          <span aria-hidden="true">{item.code}</span>
+          <span class="sr-only">{item.label}</span>
+        </a>
+      ))}
+    </div>
   </div>
 </header>
 
@@ -111,9 +173,22 @@ const nav = primaryNav.map((item) => ({
     const btn = document.getElementById('mobile-menu-toggle');
     const menu = document.getElementById('mobile-menu');
     if (!btn || !menu) return;
-    btn.addEventListener('click', () => {
-      const open = menu.classList.toggle('hidden') === false;
+
+    const setOpen = (open) => {
+      menu.classList.toggle('hidden', !open);
       btn.setAttribute('aria-expanded', String(open));
+    };
+
+    btn.addEventListener('click', () => {
+      setOpen(menu.classList.contains('hidden'));
+    });
+
+    // Escape closes the drawer and returns focus to the control that opened it,
+    // so a keyboard visitor is never left inside a panel they cannot leave.
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || menu.classList.contains('hidden')) return;
+      setOpen(false);
+      btn.focus();
     });
   })();
 </script>

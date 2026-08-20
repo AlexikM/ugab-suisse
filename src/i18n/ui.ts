@@ -2,8 +2,12 @@
 //
 // The source of truth is docs/content/site-copy.md — the text the Comité
 // approved. Keys follow the brief's own section names, so an editor can find a
-// string by looking at the page it appears on. Armenian is deliberately absent:
-// the Comité has not delivered it (#9), and the third locale is PRD 3's work.
+// string by looking at the page it appears on.
+//
+// Armenian is a locale with no copy in it yet. The routes, the switcher and the
+// fallback all exist; the words do not, because the Comité owes them (#9) and
+// inventing Armenian on their behalf would be worse than admitting the gap. Add
+// a key to `armenian` below and it is served immediately — see ./fallback.ts.
 //
 // A handful of strings are NOT from the approved copy, because the site needs
 // to say something the brief never had to write: the empty events list, the
@@ -18,14 +22,32 @@
 //   - that a receipt is issued automatically.
 // Both are unverified and both block launch.
 
+/**
+ * The three languages of the site, each written the way its own speakers write
+ * it. `Հայերեն` is the Armenian endonym — a fact about the language, not copy
+ * the Comité has to approve.
+ */
 export const languages = {
   fr: 'Français',
   en: 'English',
+  hy: 'Հայերեն',
 } as const;
 
 export const defaultLang = 'fr' as const;
 
 export type Lang = keyof typeof languages;
+
+/**
+ * The BCP 47 tag used to format dates and numbers in a language. Not the same
+ * question as which language a page is written in: a page falling back to
+ * French formats its dates in French, because that is what the reader is
+ * reading. Callers pass the language actually served — see ./fallback.ts.
+ */
+export const formatLocale: Record<Lang, string> = {
+  fr: 'fr-CH',
+  en: 'en-CH',
+  hy: 'hy-AM',
+};
 
 /**
  * The plan du site the committee agreed to. Five pages, no more: the header,
@@ -118,6 +140,21 @@ export function languagePaths() {
 // --- Structured content -----------------------------------------------------
 // Lists and tables the pages render. Kept out of `ui` because they are not
 // single strings; kept here because they are still copy the Comité approved.
+
+/**
+ * A value the Comité has written in some languages but not necessarily all.
+ * French is required — it is what everything else falls back to.
+ */
+export type Localised<T> = { fr: T } & Partial<Record<Lang, T>>;
+
+/**
+ * The version of a list or table in one language, or the French one when that
+ * language has none. Pages call this rather than indexing by language, so that
+ * an Armenian page renders French content instead of nothing.
+ */
+export function inLang<T>(record: Localised<T>, lang: Lang): T {
+  return record[lang] ?? record[defaultLang];
+}
 
 /** Accueil — chiffres clés. */
 export const keyFigures = {
@@ -255,6 +292,9 @@ export const sponsorshipTiers = {
 export const ui = {
   fr: {
     'nav.label': 'Navigation principale',
+    // NOT APPROVED COPY — see the header of this file.
+    'nav.skip': 'Aller au contenu',
+    'nav.menu': 'Ouvrir le menu',
     'nav.home': 'Accueil',
     'nav.about': 'À propos',
     'nav.events': 'Événements',
@@ -341,6 +381,8 @@ export const ui = {
     'event.gallery': 'En images',
     'event.practical': 'Infos pratiques',
     'event.directions': 'Itinéraire',
+    // NOT APPROVED COPY — see the header of this file.
+    'event.directions_new_tab': 'Ouvre OpenStreetMap dans un nouvel onglet',
     'event.all': 'Tous les événements',
 
     // --- Faire un don ---
@@ -393,6 +435,14 @@ export const ui = {
     'contact.form_pending':
       'Le formulaire sera activé à la mise en ligne du site. D’ici là, écrivez-nous directement par e-mail.',
 
+    // --- Repli linguistique ---
+    // NOT APPROVED COPY — see the header of this file. Shown only on a page a
+    // visitor asked for in one language and that exists in another.
+    'fallback.notice':
+      "Cette page n'est pas encore traduite en arménien. Vous lisez la version française.",
+    'fallback.switch': 'Continuer en français',
+    'fallback.label': 'Langue de cette page',
+
     'footer.description':
       "L'UGAB Comité Suisse soutient l'Arménie et sa diaspora depuis Genève. Fondée en 1906.",
     'footer.copyright':
@@ -403,6 +453,9 @@ export const ui = {
   },
   en: {
     'nav.label': 'Main navigation',
+    // NOT APPROVED COPY — see the header of this file.
+    'nav.skip': 'Skip to content',
+    'nav.menu': 'Open the menu',
     'nav.home': 'Home',
     'nav.about': 'About',
     'nav.events': 'Events',
@@ -489,6 +542,8 @@ export const ui = {
     'event.gallery': 'In pictures',
     'event.practical': 'Practical information',
     'event.directions': 'Directions',
+    // NOT APPROVED COPY — see the header of this file.
+    'event.directions_new_tab': 'Opens OpenStreetMap in a new tab',
     'event.all': 'All events',
 
     // --- Donate ---
@@ -539,6 +594,13 @@ export const ui = {
     'contact.form_pending':
       'The form will be switched on when the site goes live. Until then, please write to us by email.',
 
+    // --- Language fallback ---
+    // NOT APPROVED COPY — see the header of this file.
+    'fallback.notice':
+      'This page has not been translated into Armenian yet. You are reading the French version.',
+    'fallback.switch': 'Continue in French',
+    'fallback.label': 'Language of this page',
+
     'footer.description':
       'The AGBU Swiss Committee supports Armenia and its diaspora from Geneva. Founded in 1906.',
     'footer.copyright':
@@ -548,3 +610,29 @@ export const ui = {
     'footer.accessibility': 'Accessibility statement',
   },
 } as const;
+
+/** Every key the site can ask for. French is the complete set by definition. */
+export type UiKey = keyof (typeof ui)[typeof defaultLang];
+
+/**
+ * Armenian.
+ *
+ * Empty on purpose. The Comité owes the translations (#9), and nobody on this
+ * side of the project is in a position to write Armenian on their behalf: an
+ * invented translation is worse than an admitted gap, because nobody checks a
+ * field that looks filled in.
+ *
+ * This is the only file a translator has to touch. Paste a key from the French
+ * table above with its Armenian text and it is served immediately. When every
+ * key a page uses is present, that page stops announcing a fallback and becomes
+ * Armenian — no developer, no restructuring. See ./fallback.ts for how a page
+ * decides which it is.
+ */
+export const armenian: Partial<Record<UiKey, string>> = {};
+
+/** The three tables, by language. What `useTranslations` reads. */
+export const translations: Record<Lang, Partial<Record<UiKey, string>>> = {
+  fr: ui.fr,
+  en: ui.en,
+  hy: armenian,
+};
