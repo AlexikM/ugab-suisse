@@ -1,49 +1,169 @@
 ---
 import Layout from '../layouts/Layout.astro';
-const lang = 'fr';
+import { withBase } from '../i18n/utils';
+import {
+  committee,
+  hasPlannedProcessors,
+  lastReviewed,
+  legalChrome,
+  legalLang,
+  legalPages,
+  pendingLabel,
+  preLaunchNotice,
+  processors,
+} from '../i18n/legal';
+
+const lang = legalLang('fr');
+const page = legalPages[lang].privacy;
+const chrome = legalChrome[lang];
+const notice = preLaunchNotice[lang];
+
+/**
+ * The technical-detail list at the foot of the page. `data-host` is a published
+ * contract, not decoration: tests/compliance compares it to the hosts the built
+ * site actually contacts, in both directions, so this list cannot go stale
+ * without the build failing.
+ */
+const hostRows = processors
+  .flatMap((processor) =>
+    processor.hosts.map((host) => ({
+      host,
+      status: processor.status,
+      provider: processor.name[lang],
+      purpose: processor.purpose[lang],
+    })),
+  )
+  .sort((a, b) => a.host.localeCompare(b.host));
 ---
 
-<Layout lang={lang} title="Politique de confidentialité">
+<Layout lang="fr" title={page.title} description={page.lead}>
   <section class="bg-[var(--color-ink)] text-white">
     <div class="mx-auto max-w-7xl px-6 py-24 md:py-28">
       <div class="max-w-3xl">
-        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">Données personnelles</div>
-        <h1 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">Politique de confidentialité</h1>
-        <p class="text-sm text-white/70">Conforme à la nouvelle loi suisse sur la protection des données (nLPD), en vigueur depuis le 1<sup>er</sup> septembre 2023.</p>
+        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">{page.eyebrow}</div>
+        <h1 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">{page.title}</h1>
+        <p class="text-lg text-white/80 leading-relaxed">{page.lead}</p>
       </div>
     </div>
   </section>
 
-  <section class="py-20 md:py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="max-w-3xl">
+      {hasPlannedProcessors() && (
+        <aside class="mt-12 border-l-4 border-[var(--color-gold)] bg-[var(--color-paper-soft)] p-6">
+          <h2 class="font-display uppercase tracking-wide text-sm mb-2">{notice.heading}</h2>
+          <p class="text-sm leading-relaxed text-[var(--color-ink-soft)]">{notice.body}</p>
+        </aside>
+      )}
+    </div>
+  </div>
+
+  <section class="py-16 md:py-20">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="max-w-3xl space-y-12 [&_h2]:text-2xl [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-[var(--color-ink-soft)] [&_ul]:text-[var(--color-ink-soft)]">
+      <div class="max-w-3xl space-y-12">
+        {page.sections.map((section) => (
+          <div>
+            <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{section.heading}</h2>
+            {section.paragraphs?.map((paragraph) => (
+              <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-4">{paragraph}</p>
+            ))}
+            {section.bullets && (
+              <ul class="list-disc pl-6 space-y-2 text-base leading-relaxed text-[var(--color-ink-soft)]">
+                {section.bullets.map((bullet) => <li>{bullet}</li>)}
+              </ul>
+            )}
+          </div>
+        ))}
+
         <div>
-          <h2 class="mb-3">Responsable du traitement</h2>
-          <p>UGAB Suisse, <a href="mailto:contact@ugab.ch" class="text-[var(--color-brand)] underline">contact@ugab.ch</a>.</p>
+          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.processorsHeading}</h2>
+          <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-6">{chrome.processorsIntro}</p>
+
+          <div class="space-y-6">
+            {processors.map((processor) => (
+              <article class="border border-[var(--color-line)] p-5">
+                <h3 class="font-display text-base mb-1">
+                  {processor.name[lang]}
+                  {processor.status === 'planned' && (
+                    <span class="ml-2 align-middle text-[10px] uppercase tracking-[0.18em] bg-[var(--color-paper-deep)] text-[var(--color-ink-muted)] px-2 py-1">
+                      {chrome.notYetConnected}
+                    </span>
+                  )}
+                </h3>
+                <p class="text-xs uppercase tracking-[0.15em] text-[var(--color-ink-muted)] mb-3">
+                  {chrome.columnWhere} — {processor.country[lang]}
+                </p>
+                <dl class="space-y-2 text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                  <div>
+                    <dt class="inline font-semibold">{chrome.columnRole} : </dt>
+                    <dd class="inline">{processor.purpose[lang]}</dd>
+                  </div>
+                  <div>
+                    <dt class="inline font-semibold">{chrome.columnReceives} : </dt>
+                    <dd class="inline">{processor.receives[lang]}</dd>
+                  </div>
+                  <div>
+                    <dt class="inline font-semibold">{chrome.columnKeeps} : </dt>
+                    <dd class="inline">{processor.retention[lang]}</dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
         </div>
 
         <div>
-          <h2 class="mb-3">Données collectées</h2>
-          <ul class="list-disc pl-6 space-y-2 leading-relaxed">
-            <li>Données de contact volontairement transmises via le formulaire (nom, email, message)</li>
-            <li>Données de don traitées par notre prestataire de paiement (RaiseNow)</li>
-            <li>Données techniques anonymisées (cookies de mesure d'audience, si vous y avez consenti)</li>
-          </ul>
+          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.hostsHeading}</h2>
+          <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-6">{chrome.hostsIntro}</p>
+          {hostRows.length === 0 ? (
+            <p data-hosts-none class="text-base leading-relaxed text-[var(--color-ink-soft)]">{chrome.hostsNone}</p>
+          ) : (
+            <ul class="space-y-3">
+              {hostRows.map((row) => (
+                <li
+                  data-host={row.host}
+                  data-host-status={row.status}
+                  class="border-l-2 border-[var(--color-line)] pl-4 text-sm leading-relaxed text-[var(--color-ink-soft)]"
+                >
+                  <code class="font-mono text-[var(--color-ink)]">{row.host}</code>
+                  {row.status === 'planned' && (
+                    <span class="ml-2 text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
+                      {chrome.notYetConnected}
+                    </span>
+                  )}
+                  <span class="block text-[var(--color-ink-muted)]">{row.provider} — {row.purpose}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div>
-          <h2 class="mb-3">Finalités</h2>
-          <p>Vos données sont utilisées exclusivement pour vous répondre, traiter vos dons, vous tenir informé(e) de nos activités si vous l'avez demandé, et améliorer l'expérience de ce site.</p>
+          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.contactHeading}</h2>
+          <address class="not-italic text-base leading-relaxed text-[var(--color-ink-soft)] space-y-1">
+            <div>{committee.legalName}</div>
+            <div>
+              {committee.postalAddress ?? (
+                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse postale — {pendingLabel[lang]}</span>
+              )}
+            </div>
+            <div>{committee.city}</div>
+            <div>
+              {committee.email ? (
+                <a href={`mailto:${committee.email}`} class="text-[var(--color-brand)] underline">{committee.email}</a>
+              ) : (
+                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse e-mail — {pendingLabel[lang]}</span>
+              )}
+            </div>
+          </address>
         </div>
 
-        <div>
-          <h2 class="mb-3">Vos droits</h2>
-          <p>Conformément à la nLPD, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition concernant vos données. Pour exercer ces droits, écrivez-nous à <a href="mailto:contact@ugab.ch" class="text-[var(--color-brand)] underline">contact@ugab.ch</a>.</p>
-        </div>
-
-        <div>
-          <h2 class="mb-3">Cookies</h2>
-          <p>Ce site n'utilise que des cookies essentiels au fonctionnement et, avec votre accord explicite, des cookies de mesure d'audience anonymisés.</p>
+        <div class="border-t border-[var(--color-line)] pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-[var(--color-ink-muted)]">
+          <div>{chrome.lastReviewed} : <time datetime={lastReviewed}>{lastReviewed}</time></div>
+          <div class="flex gap-5">
+            <a href={withBase('/mentions-legales')} class="underline hover:text-[var(--color-ink)]">{chrome.legalLink}</a>
+            <a href={withBase('/accessibilite')} class="underline hover:text-[var(--color-ink)]">{chrome.accessibilityLink}</a>
+          </div>
         </div>
       </div>
     </div>
