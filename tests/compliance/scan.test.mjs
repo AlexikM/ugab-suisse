@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { collectReferences, hostsOf, KIND } from './lib/scan.mjs';
+import { collectAssetReferences, collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 
 const SITE = 'example.org';
 
@@ -140,6 +140,55 @@ test('a URL built at runtime in a script is reported, because it is still a requ
     siteHost: SITE,
   });
   assert.deepEqual(hostsOf(refs, KIND.SCRIPT_LITERAL), ['analytics.example.net']);
+});
+
+test('a background image set with an inline style attribute is found', () => {
+  const refs = collectReferences({
+    page: '/',
+    html: '<div style="background-image:url(https://bg.example.net/hero.jpg)"></div>',
+    siteHost: SITE,
+  });
+  assert.deepEqual(hostsOf(refs, KIND.AUTOMATIC), ['bg.example.net']);
+});
+
+test('a lazy-load attribute is not a request the browser makes', () => {
+  const refs = collectReferences({
+    page: '/',
+    html: '<img data-src="https://lazy.example.net/a.jpg" src="/local.jpg">',
+    siteHost: SITE,
+  });
+  assert.deepEqual(
+    hostsOf(refs, KIND.AUTOMATIC),
+    [],
+    'recording it would push a host into the published processor list that the site never contacts',
+  );
+});
+
+test('a font imported by the built stylesheet is found, not just one linked from the HTML', () => {
+  const refs = collectAssetReferences({
+    route: '/_astro/index.CJq1.css',
+    source: '@font-face{font-family:Oswald;src:url("https://fonts.gstatic.com/s/oswald.woff2") format("woff2")}',
+    siteHost: SITE,
+  });
+  assert.deepEqual(hostsOf(refs, KIND.AUTOMATIC), ['fonts.gstatic.com']);
+});
+
+test('a beacon in a bundled script is found', () => {
+  const refs = collectAssetReferences({
+    route: '/_astro/page.js',
+    source: 'navigator.sendBeacon("https://analytics.example.net/hit",d)',
+    siteHost: SITE,
+  });
+  assert.deepEqual(hostsOf(refs, KIND.SCRIPT_LITERAL), ['analytics.example.net']);
+});
+
+test('a bundled asset that references nothing external is quiet', () => {
+  const refs = collectAssetReferences({
+    route: '/_astro/index.css',
+    source: '.hero{background:url(/ugab-suisse/images/hero.jpg)}',
+    siteHost: SITE,
+  });
+  assert.deepEqual(refs, []);
 });
 
 test('mailto and tel targets are not hosts', () => {

@@ -25,6 +25,24 @@ test('reading storage is not storing anything', () => {
   assert.deepEqual(apis('const seen = localStorage.getItem("k"); if (window.localStorage) {}'), []);
 });
 
+test('comparing is not assigning', () => {
+  assert.deepEqual(
+    apis('if (document.cookie === "") {} if (localStorage["k"] == "x") {} if (a!=document.cookie) {}'),
+    [],
+    'an audit that cries wolf on a comparison is an audit nobody reads',
+  );
+});
+
+test('removing and clearing are reported under their own names', () => {
+  assert.deepEqual(apis('localStorage.removeItem("k")'), ['localStorage.removeItem']);
+  assert.deepEqual(apis('localStorage.clear()'), ['localStorage.clear']);
+});
+
+test('asking how much storage is available is not using any', () => {
+  assert.deepEqual(apis('navigator.storage.estimate().then(r => r.quota)'), []);
+  assert.deepEqual(apis('navigator.storage.persist()'), ['navigator.storage.persist']);
+});
+
 test('a minified build is still readable to the audit', () => {
   assert.deepEqual(apis('!function(){localStorage.setItem("a","b")}();'), ['localStorage.setItem']);
 });

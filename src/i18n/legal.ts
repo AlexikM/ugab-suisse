@@ -249,6 +249,16 @@ export const nonEssentialStorage: Array<{
 }> = [];
 
 /**
+ * What the notice says if `nonEssentialStorage` ever stops being empty. Kept
+ * here with the rest of the legal copy so that a translator has one file to open,
+ * not two.
+ */
+export const storageNotice: Record<LegalLang, (declared: string) => string> = {
+  fr: (declared) => `Ce site dépose ceci dans votre navigateur : ${declared}.`,
+  en: (declared) => `This site stores the following in your browser: ${declared}.`,
+};
+
+/**
  * There is no analytics on this site. Recorded here rather than in a commit
  * message because it is a decision the next maintainer will be tempted to undo.
  *

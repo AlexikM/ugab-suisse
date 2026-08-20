@@ -156,25 +156,27 @@ test('the accessibility statement sets a target, admits its gaps and offers a wa
   assert.match(text, /\b30 jours\b/, 'no response time is given for an accessibility report');
 });
 
-test('every legal page carries the date its wording was last reviewed', () => {
-  for (const route of LEGAL_ROUTES) {
-    const html = legalPage(route).html;
+test('every legal page shows a reader the date its wording was last reviewed', () => {
+  for (const { route, text } of legalPagesText()) {
     assert.match(
-      html,
-      /<time datetime="\d{4}-\d{2}-\d{2}">/,
-      `${route} does not say when it was last reviewed, so a reader cannot tell whether it is current`,
+      text,
+      /\b\d{4}-\d{2}-\d{2}\b/,
+      `${route} does not show when it was last reviewed, so a reader cannot tell whether it is current`,
     );
   }
 });
 
 test('the legal pages link to one another, so finding one finds all three', () => {
   for (const route of LEGAL_ROUTES) {
-    const html = legalPage(route).html;
-    const others = LEGAL_ROUTES.filter((other) => other !== route);
-    for (const other of others) {
-      assert.ok(
-        html.includes(other.replace(/\/$/, '')),
-        `${route} does not link to ${other}`,
+    // The page's own content, not the shared footer, which already links two of
+    // the three on every page and would make this pass without proving anything.
+    const body = mainOf(legalPage(route).html);
+    for (const other of LEGAL_ROUTES.filter((candidate) => candidate !== route)) {
+      const target = other.replace(/\/$/, '');
+      assert.match(
+        body,
+        new RegExp(`href="[^"]*${target}/?"`),
+        `${route} does not link to ${other} from its own content`,
       );
     }
   }

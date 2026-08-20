@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildOutput } from './lib/build-output.mjs';
-import { collectReferences, hostsOf, KIND } from './lib/scan.mjs';
+import { buildAssets, buildOutput } from './lib/build-output.mjs';
+import { collectAssetReferences, collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 import { declaredHosts } from './lib/declared.mjs';
 import { LAUNCH_BLOCKERS, blockedHosts, describeBlockers } from './lib/launch-blockers.mjs';
 
@@ -17,9 +17,14 @@ import { LAUNCH_BLOCKERS, blockedHosts, describeBlockers } from './lib/launch-bl
 
 const site = await buildOutput();
 
-const allReferences = site.pages.flatMap((page) =>
-  collectReferences({ page: page.route, html: page.html, siteHost: site.host }),
-);
+const allReferences = [
+  ...site.pages.flatMap((page) => collectReferences({ page: page.route, html: page.html, siteHost: site.host })),
+  // Astro extracts scoped and Tailwind CSS into bundles, so a third-party
+  // `@font-face` or `@import` never appears in any HTML file.
+  ...(await buildAssets()).flatMap((asset) =>
+    collectAssetReferences({ route: asset.route, source: asset.source, siteHost: site.host }),
+  ),
+];
 
 const referencesOfKind = (kind) => allReferences.filter((reference) => reference.kind === kind);
 

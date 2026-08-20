@@ -7,11 +7,18 @@
  * answer for this project, and a fast, dependency-free one — no browser to
  * install, no flake, runs in CI in milliseconds.
  *
- * Its blind spot is a URL assembled at runtime from pieces (`'https://' + h`).
- * `KIND.SCRIPT_LITERAL` catches the ordinary case of a whole URL sitting in a
- * script; anything cleverer than that is caught by the browser pass on the
- * pre-launch checklist, which is run once against the real providers rather than
- * on every commit.
+ * It reads the output with regular expressions rather than a parser, to avoid
+ * adding a dependency a volunteer maintainer would inherit. That trade has known
+ * blind spots, listed here rather than discovered later:
+ *
+ * - A URL assembled at runtime from pieces (`'https://' + host`).
+ *   `KIND.SCRIPT_LITERAL` catches a whole URL sitting in a script; nothing
+ *   catches one built by concatenation.
+ * - An attribute value containing a literal `>`.
+ * - A comma inside a `srcset` URL truncates the URL reported in the failure
+ *   message. The host is still correct, which is what the audit compares.
+ * - What a third party's own embed loads once it is running. Only a browser sees
+ *   that, which is why the pre-launch checklist repeats this audit in one.
  */
 
 /**
@@ -96,15 +103,22 @@ const thirdPartyUrl = (rawValue, siteHost) => {
   return { host: parsed.host, url: absolute };
 };
 
-/** `a.jpg 1x, b.jpg 2x` — the descriptors are not URLs. */
+/** `a.jpg 1x, b.jpg 2x` — the descriptors are not URLs, and neither is anything
+ * after a comma that fails to parse as one. */
 const srcsetUrls = (value) =>
   decodeEntities(value)
     .split(',')
     .map((candidate) => candidate.trim().split(/\s+/)[0])
     .filter(Boolean);
 
+/**
+ * `(?<![-:\w])` keeps `src` from matching `data-src` or `xlink:src`. A lazy-load
+ * attribute is not a request the browser makes, and recording one would push a
+ * host into the published processor list that the site never actually contacts —
+ * an over-disclosure is as wrong as an omission.
+ */
 const attributeMatcher = (tag, attribute) =>
-  new RegExp(`<${tag}\\b[^>]*?\\b${attribute}\\s*=\\s*("([^"]*)"|'([^']*)')`, 'gi');
+  new RegExp(`<${tag}\\b[^>]*?(?<![-:\\w])${attribute}\\s*=\\s*("([^"]*)"|'([^']*)')`, 'gi');
 
 const push = (into, { host, url }, { page, kind, via }) => {
   into.push({ host, kind, page, url, via });
@@ -151,6 +165,15 @@ export function collectReferences({ page, html, siteHost }) {
     }
   }
 
+  // Inline `style=""` attributes. The home page sets its hero background this
+  // way, so a background image on a third-party host would otherwise be invisible
+  // to the audit while being fetched on every visit.
+  for (const match of html.matchAll(/\bstyle\s*=\s*("([^"]*)"|'([^']*)')/gi)) {
+    for (const reference of cssReferences(decodeEntities(match[2] ?? match[3] ?? ''))) {
+      record(reference, KIND.AUTOMATIC, 'style attribute');
+    }
+  }
+
   for (const match of html.matchAll(attributeMatcher('form', 'action'))) {
     record(match[2] ?? match[3] ?? '', KIND.FORM_TARGET, 'form[action]');
   }
@@ -183,6 +206,26 @@ export function cssReferences(css) {
 /** Whole http(s) URLs written literally in script source. */
 export function scriptReferences(source) {
   return [...source.matchAll(/["'`](https?:\/\/[^"'`\s]+)["'`]/gi)].map((match) => match[1]);
+}
+
+/**
+ * The same question, asked of a built stylesheet or script bundle rather than a
+ * page. Astro extracts scoped and Tailwind CSS into `dist/_astro/*.css`, so a
+ * third-party `@font-face` or `@import` lands there and never appears in any
+ * HTML file.
+ */
+export function collectAssetReferences({ route, source, siteHost }) {
+  const isStylesheet = route.endsWith('.css');
+  const references = isStylesheet ? cssReferences(source) : scriptReferences(source);
+  const kind = isStylesheet ? KIND.AUTOMATIC : KIND.SCRIPT_LITERAL;
+  const via = isStylesheet ? 'bundled stylesheet' : 'bundled script';
+
+  const found = [];
+  for (const reference of references) {
+    const hit = thirdPartyUrl(reference, siteHost);
+    if (hit) push(found, hit, { page: route, kind, via });
+  }
+  return found;
 }
 
 /** Sorted, de-duplicated hosts of one kind. Sorted so failures read the same twice. */

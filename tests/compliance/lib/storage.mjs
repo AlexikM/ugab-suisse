@@ -1,19 +1,36 @@
 /**
  * Finds anything in the build output that would put data in a visitor's browser.
  *
- * Reads only — `localStorage.getItem`, feature detection — are not flagged. What
- * matters is what gets *stored*, because that is what turns into a consent
- * question and a disclosure.
+ * Reads — `localStorage.getItem`, `document.cookie === ''`, feature detection —
+ * are not flagged. What matters is what gets *stored*, because that is what turns
+ * into a consent question and a disclosure. `removeItem` and `clear` are
+ * mutations rather than writes, but nothing removes what it never set, so they
+ * are worth surfacing too.
  */
 
+/**
+ * `ASSIGN` is an assignment, not a comparison. Without the lookarounds,
+ * `if (document.cookie === "")` — a read — is reported as a write, and the audit
+ * cries wolf about the one thing it exists to be trusted on.
+ */
+const ASSIGN = String.raw`(?<![=!<>])=(?!=)`;
+
 const WRITES = [
-  { api: 'document.cookie', pattern: /document\s*\.\s*cookie\s*=/g },
-  { api: 'localStorage.setItem', pattern: /localStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*=)/g },
-  { api: 'sessionStorage.setItem', pattern: /sessionStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*=)/g },
-  { api: 'localStorage.removeItem', pattern: /localStorage\s*\.\s*(?:removeItem|clear)\s*\(/g },
+  { api: 'document.cookie', pattern: new RegExp(String.raw`document\s*\.\s*cookie\s*${ASSIGN}`, 'g') },
+  {
+    api: 'localStorage.setItem',
+    pattern: new RegExp(String.raw`localStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`, 'g'),
+  },
+  {
+    api: 'sessionStorage.setItem',
+    pattern: new RegExp(String.raw`sessionStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`, 'g'),
+  },
+  { api: 'localStorage.removeItem', pattern: /localStorage\s*\.\s*removeItem\s*\(/g },
+  { api: 'localStorage.clear', pattern: /localStorage\s*\.\s*clear\s*\(/g },
   { api: 'indexedDB.open', pattern: /indexedDB\s*\.\s*open\s*\(/g },
   { api: 'caches.open', pattern: /\bcaches\s*\.\s*open\s*\(/g },
-  { api: 'navigator.storage', pattern: /navigator\s*\.\s*storage\b/g },
+  // `.estimate()` is a read; `.persist()` asks to keep stored data around.
+  { api: 'navigator.storage.persist', pattern: /navigator\s*\.\s*storage\s*\.\s*persist\s*\(/g },
   { api: 'serviceWorker.register', pattern: /serviceWorker\s*\.\s*register\s*\(/g },
 ];
 

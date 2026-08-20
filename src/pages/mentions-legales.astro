@@ -1,9 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { withBase } from '../i18n/utils';
-import { committee, lastReviewed, legalChrome, legalLang, legalPages, pendingLabel } from '../i18n/legal';
+import type { LegalLang } from '../i18n/legal';
+import { committee, lastReviewed, legalChrome, legalPages, pendingLabel } from '../i18n/legal';
 
-const lang = legalLang('fr');
+// These three routes are the French ones; the trilingual lane owns localised routes.
+const lang: LegalLang = 'fr';
 const page = legalPages[lang].legalNotice;
 const chrome = legalChrome[lang];
 ---

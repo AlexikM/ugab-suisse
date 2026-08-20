@@ -24,7 +24,7 @@
  * easy as an accept, nothing loaded before the visitor answers, and the answer
  * itself recorded in a way the privacy policy describes.
  */
-import { legalLang, legalPages, nonEssentialStorage } from '../i18n/legal';
+import { legalLang, legalPages, nonEssentialStorage, storageNotice } from '../i18n/legal';
 import type { Lang } from '../i18n/ui';
 
 interface Props {
@@ -43,11 +43,7 @@ const declared = nonEssentialStorage.map((item) => item.name[locale]).join(', ')
       class="fixed bottom-0 inset-x-0 z-50 bg-[var(--color-ink)] text-white px-6 py-4"
       aria-label={privacyTitle}
     >
-      <p class="mx-auto max-w-7xl text-sm leading-relaxed">
-        {locale === 'en'
-          ? `This site stores the following in your browser: ${declared}.`
-          : `Ce site dépose ceci dans votre navigateur : ${declared}.`}
-      </p>
+      <p class="mx-auto max-w-7xl text-sm leading-relaxed">{storageNotice[locale](declared)}</p>
     </aside>
   )
 }
