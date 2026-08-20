@@ -1,5 +1,5 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { declaredHosts } from './lib/declared.mjs';
 import { collectReferences, hostsOf, KIND } from './lib/scan.mjs';
@@ -12,7 +12,10 @@ import { collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 
 const policyDeclaring = (entries) =>
   `<h2>Ce que votre navigateur contacte</h2><ul>${entries
-    .map(([host, status]) => `<li data-host="${host}" data-host-status="${status}"><code>${host}</code></li>`)
+    .map(
+      ([host, status]) =>
+        `<li data-host="${host}" data-host-status="${status}"><code>${host}</code></li>`,
+    )
     .join('')}</ul>`;
 
 const undeclaredHosts = (pageHtml, policyHtml) => {
@@ -76,8 +79,14 @@ test('a host disclosed only as not-yet-connected does not count as disclosed', (
 
 test('a declared host that nothing contacts is caught as a stale disclosure', () => {
   const declared = declaredHosts(policyDeclaring([['gone.example.net', 'active']])).active;
-  const contacted = hostsOf(collectReferences({ page: '/', html: '<p>rien</p>', siteHost: 'ugab-suisse.ch' }), KIND.AUTOMATIC);
-  assert.deepEqual(declared.filter((host) => !contacted.includes(host)), ['gone.example.net']);
+  const contacted = hostsOf(
+    collectReferences({ page: '/', html: '<p>rien</p>', siteHost: 'ugab-suisse.ch' }),
+    KIND.AUTOMATIC,
+  );
+  assert.deepEqual(
+    declared.filter((host) => !contacted.includes(host)),
+    ['gone.example.net'],
+  );
 });
 
 test('a disclosure with no hosts and no explicit "none" is not mistaken for a clean site', () => {

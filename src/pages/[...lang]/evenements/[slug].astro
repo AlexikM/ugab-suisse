@@ -1,9 +1,9 @@
 ---
-import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
-import Layout from '../../../layouts/Layout.astro';
-import { useTranslations, withBase, type Lang } from '../../../i18n/utils';
+import { getCollection, render } from 'astro:content';
 import { languagePaths, localeRoute, routes } from '../../../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../../../i18n/utils';
+import Layout from '../../../layouts/Layout.astro';
 
 // An event has an address in every language, and the French one never moves —
 // ticket links get printed on invitations. The chrome follows the language of
@@ -19,7 +19,10 @@ export async function getStaticPaths() {
   );
 }
 
-interface Props { lang: Lang; event: CollectionEntry<'events'> }
+interface Props {
+  lang: Lang;
+  event: CollectionEntry<'events'>;
+}
 const { lang, event } = Astro.props;
 const t = useTranslations(lang);
 const link = (path: string) => withBase(localeRoute(path, lang));

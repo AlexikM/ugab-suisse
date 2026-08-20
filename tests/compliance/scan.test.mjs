@@ -1,5 +1,5 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { collectAssetReferences, collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 
@@ -167,7 +167,8 @@ test('a lazy-load attribute is not a request the browser makes', () => {
 test('a font imported by the built stylesheet is found, not just one linked from the HTML', () => {
   const refs = collectAssetReferences({
     route: '/_astro/index.CJq1.css',
-    source: '@font-face{font-family:Oswald;src:url("https://fonts.gstatic.com/s/oswald.woff2") format("woff2")}',
+    source:
+      '@font-face{font-family:Oswald;src:url("https://fonts.gstatic.com/s/oswald.woff2") format("woff2")}',
     siteHost: SITE,
   });
   assert.deepEqual(hostsOf(refs, KIND.AUTOMATIC), ['fonts.gstatic.com']);

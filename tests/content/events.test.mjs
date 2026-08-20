@@ -1,5 +1,5 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { buildWithContent, readPage, visibleText } from './helpers.mjs';
 
@@ -7,11 +7,7 @@ test('an event marked as demo content cannot be published', () => {
   const build = buildWithContent('demo-event');
 
   assert.notEqual(build.status, 0, 'the build should have failed but it succeeded');
-  assert.match(
-    build.output,
-    /2099-demo-gala/,
-    'the failure should name the offending entry',
-  );
+  assert.match(build.output, /2099-demo-gala/, 'the failure should name the offending entry');
 });
 
 /** One build, several questions asked of it. */
@@ -85,7 +81,11 @@ test('past events are listed with their photographs', () => {
   const build = withEventFixtures();
   const page = readPage(build.outDir, '/evenements');
 
-  assert.match(visibleText(page), /Soirée déjà passée/, 'the past event is missing from the listing');
+  assert.match(
+    visibleText(page),
+    /Soirée déjà passée/,
+    'the past event is missing from the listing',
+  );
   assert.match(page, /exemple-soiree\.jpg/, 'the past event is listed without its photograph');
 });
 

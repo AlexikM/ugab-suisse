@@ -45,7 +45,12 @@ export const routes = {
  * them — not alphabetical. Ordering the About page and validating the content
  * both read this list.
  */
-export const bureauRoles = ['president', 'vice-president', 'secretaire-general', 'tresorier'] as const;
+export const bureauRoles = [
+  'president',
+  'vice-president',
+  'secretaire-general',
+  'tresorier',
+] as const;
 
 export type BureauRole = (typeof bureauRoles)[number];
 
@@ -53,6 +58,7 @@ export type BureauRole = (typeof bureauRoles)[number];
 export const legalRoutes = {
   legal: '/mentions-legales',
   privacy: '/confidentialite',
+  accessibility: '/accessibilite',
 } as const;
 
 /** The header entries, in the order the brief lists them. */
@@ -200,16 +206,49 @@ export const suggestedAmounts = {
  */
 export const sponsorshipTiers = {
   fr: [
-    { name: 'Bronze', amount: "CHF 2'000", benefits: 'Logo sur supports · 2 invitations · Mention site internet' },
-    { name: 'Argent', amount: "CHF 5'000", benefits: 'Logo premium · 4 invitations · Table dédiée · Mention officielle en soirée' },
-    { name: 'Or', amount: "CHF 10'000", benefits: 'Logo exclusif · 6 invitations · Table VIP · Prise de parole · Dossier presse' },
-    { name: 'Platine', amount: 'Sur mesure', benefits: 'Partenariat annuel sur-mesure · Co-branding · Accès personnalisé' },
+    {
+      name: 'Bronze',
+      amount: "CHF 2'000",
+      benefits: 'Logo sur supports · 2 invitations · Mention site internet',
+    },
+    {
+      name: 'Argent',
+      amount: "CHF 5'000",
+      benefits: 'Logo premium · 4 invitations · Table dédiée · Mention officielle en soirée',
+    },
+    {
+      name: 'Or',
+      amount: "CHF 10'000",
+      benefits: 'Logo exclusif · 6 invitations · Table VIP · Prise de parole · Dossier presse',
+    },
+    {
+      name: 'Platine',
+      amount: 'Sur mesure',
+      benefits: 'Partenariat annuel sur-mesure · Co-branding · Accès personnalisé',
+    },
   ],
   en: [
-    { name: 'Bronze', amount: "CHF 2'000", benefits: 'Logo on materials · 2 invitations · Mention on the website' },
-    { name: 'Silver', amount: "CHF 5'000", benefits: 'Premium logo · 4 invitations · Dedicated table · Official mention during the evening' },
-    { name: 'Gold', amount: "CHF 10'000", benefits: 'Exclusive logo · 6 invitations · VIP table · Speaking slot · Press kit' },
-    { name: 'Platinum', amount: 'Bespoke', benefits: 'Bespoke annual partnership · Co-branding · Tailored access' },
+    {
+      name: 'Bronze',
+      amount: "CHF 2'000",
+      benefits: 'Logo on materials · 2 invitations · Mention on the website',
+    },
+    {
+      name: 'Silver',
+      amount: "CHF 5'000",
+      benefits:
+        'Premium logo · 4 invitations · Dedicated table · Official mention during the evening',
+    },
+    {
+      name: 'Gold',
+      amount: "CHF 10'000",
+      benefits: 'Exclusive logo · 6 invitations · VIP table · Speaking slot · Press kit',
+    },
+    {
+      name: 'Platinum',
+      amount: 'Bespoke',
+      benefits: 'Bespoke annual partnership · Co-branding · Tailored access',
+    },
   ],
 } as const;
 
@@ -331,16 +370,14 @@ export const ui = {
     'sponsor.package_column': 'Package',
     'sponsor.amount_column': 'Apport',
     'sponsor.benefits_column': 'Contreparties',
-    'sponsor.packages_note':
-      'Montants indicatifs — à valider par le Comité avant publication.',
+    'sponsor.packages_note': 'Montants indicatifs — à valider par le Comité avant publication.',
     'sponsor.cta': 'Discuter d’un partenariat',
 
     // --- Contact ---
     'contact.title': 'Contactez le Comité Suisse.',
     'contact.lead':
       'Une question, un projet de partenariat ? Écrivez-nous — nous revenons vers vous rapidement.',
-    'contact.organisation':
-      'Union Générale Arménienne de Bienfaisance — Comité Suisse, Genève',
+    'contact.organisation': 'Union Générale Arménienne de Bienfaisance — Comité Suisse, Genève',
     'contact.details_title': 'Coordonnées',
     // NOT APPROVED COPY — see the header of this file.
     'contact.pending':
@@ -362,12 +399,7 @@ export const ui = {
       'Union Générale Arménienne de Bienfaisance — Comité Suisse, Genève. Tous droits réservés.',
     'footer.legal': 'Mentions légales',
     'footer.privacy': 'Politique de confidentialité',
-
-    'cookies.message':
-      'Ce site utilise des cookies essentiels et, avec votre accord, des cookies de mesure d’audience anonymes.',
-    'cookies.accept': 'Accepter',
-    'cookies.reject': 'Refuser',
-    'cookies.more': 'En savoir plus',
+    'footer.accessibility': "Déclaration d'accessibilité",
   },
   en: {
     'nav.label': 'Main navigation',
@@ -490,10 +522,8 @@ export const ui = {
 
     // --- Contact ---
     'contact.title': 'Contact the Swiss Committee.',
-    'contact.lead':
-      "A question, a partnership idea? Write to us — we'll get back to you quickly.",
-    'contact.organisation':
-      'Armenian General Benevolent Union — Swiss Committee, Geneva',
+    'contact.lead': "A question, a partnership idea? Write to us — we'll get back to you quickly.",
+    'contact.organisation': 'Armenian General Benevolent Union — Swiss Committee, Geneva',
     'contact.details_title': 'Contact details',
     // NOT APPROVED COPY — see the header of this file.
     'contact.pending':
@@ -515,11 +545,6 @@ export const ui = {
       'Armenian General Benevolent Union — Swiss Committee, Geneva. All rights reserved.',
     'footer.legal': 'Legal notice',
     'footer.privacy': 'Privacy policy',
-
-    'cookies.message':
-      'This site uses essential cookies and, with your consent, anonymous analytics cookies.',
-    'cookies.accept': 'Accept',
-    'cookies.reject': 'Decline',
-    'cookies.more': 'Learn more',
+    'footer.accessibility': 'Accessibility statement',
   },
 } as const;

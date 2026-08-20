@@ -1,10 +1,10 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { buildAssets, buildOutput } from './lib/build-output.mjs';
-import { collectAssetReferences, collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 import { declaredHosts } from './lib/declared.mjs';
-import { LAUNCH_BLOCKERS, blockedHosts, describeBlockers } from './lib/launch-blockers.mjs';
+import { blockedHosts, describeBlockers, LAUNCH_BLOCKERS } from './lib/launch-blockers.mjs';
+import { collectAssetReferences, collectReferences, hostsOf, KIND } from './lib/scan.mjs';
 
 /**
  * The audit that makes the privacy policy checkable instead of aspirational.
@@ -18,7 +18,9 @@ import { LAUNCH_BLOCKERS, blockedHosts, describeBlockers } from './lib/launch-bl
 const site = await buildOutput();
 
 const allReferences = [
-  ...site.pages.flatMap((page) => collectReferences({ page: page.route, html: page.html, siteHost: site.host })),
+  ...site.pages.flatMap((page) =>
+    collectReferences({ page: page.route, html: page.html, siteHost: site.host }),
+  ),
   // Astro extracts scoped and Tailwind CSS into bundles, so a third-party
   // `@font-face` or `@import` never appears in any HTML file.
   ...(await buildAssets()).flatMap((asset) =>
@@ -164,7 +166,9 @@ test('a link a visitor may click is not treated as a processor', () => {
  * Delete the entry once the owning change lands; when the list empties, take the
  * `todo` off and this becomes an ordinary passing test.
  */
-test('no third party remains that the committee never agreed to', { todo: 'see the pre-launch checklist' }, () => {
+test('no third party remains that the committee never agreed to', {
+  todo: 'see the pre-launch checklist',
+}, () => {
   assert.deepEqual(
     LAUNCH_BLOCKERS.map((blocker) => blocker.host),
     [],

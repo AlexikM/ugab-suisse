@@ -1,7 +1,7 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
-import { storageWrites, CONSENT_DIALOGUE_MARKERS } from './lib/storage.mjs';
+import { CONSENT_DIALOGUE_MARKERS, storageWrites } from './lib/storage.mjs';
 
 const apis = (source) => storageWrites(source).map((write) => write.api);
 const looksLikeDialogue = (html) => CONSENT_DIALOGUE_MARKERS.some((marker) => marker.test(html));
@@ -27,7 +27,9 @@ test('reading storage is not storing anything', () => {
 
 test('comparing is not assigning', () => {
   assert.deepEqual(
-    apis('if (document.cookie === "") {} if (localStorage["k"] == "x") {} if (a!=document.cookie) {}'),
+    apis(
+      'if (document.cookie === "") {} if (localStorage["k"] == "x") {} if (a!=document.cookie) {}',
+    ),
     [],
     'an audit that cries wolf on a comparison is an audit nobody reads',
   );
@@ -53,12 +55,17 @@ test('a consent dialogue is recognised by its role and its words, not its stylin
     true,
   );
   assert.equal(looksLikeDialogue('<div class="banner"><button>Refuser</button></div>'), true);
-  assert.equal(looksLikeDialogue('<div class="cookie-banner-v2 xyz"><button>Accept all</button></div>'), true);
+  assert.equal(
+    looksLikeDialogue('<div class="cookie-banner-v2 xyz"><button>Accept all</button></div>'),
+    true,
+  );
 });
 
 test('an ordinary page is not mistaken for a consent dialogue', () => {
   assert.equal(
-    looksLikeDialogue('<h2>Cookies et mesure d’audience</h2><p>Ce site ne dépose aucun cookie.</p>'),
+    looksLikeDialogue(
+      '<h2>Cookies et mesure d’audience</h2><p>Ce site ne dépose aucun cookie.</p>',
+    ),
     false,
     'the privacy policy talks about cookies at length and must not trip the check',
   );

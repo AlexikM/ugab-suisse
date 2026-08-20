@@ -6,8 +6,8 @@
 // identity-critical (who the organisation says it is) or launch-blocking (a
 // claim we cannot stand behind).
 
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { allBuiltPages, readBuiltPage, visibleText } from './helpers.mjs';
 
@@ -99,7 +99,11 @@ test('nothing claims donations are tax-deductible or receipted automatically', (
   for (const page of sitePages()) {
     const text = visibleText(page.html);
     assert.doesNotMatch(text, /déductible|deductib/i, `${page.route} claims tax deductibility`);
-    assert.doesNotMatch(text, /reçu (fiscal|automatique)/i, `${page.route} promises an automatic receipt`);
+    assert.doesNotMatch(
+      text,
+      /reçu (fiscal|automatique)/i,
+      `${page.route} promises an automatic receipt`,
+    );
     assert.doesNotMatch(text, /automatic receipt/i, `${page.route} promises an automatic receipt`);
     assert.doesNotMatch(text, /utilité publique/i, `${page.route} claims public-utility status`);
   }

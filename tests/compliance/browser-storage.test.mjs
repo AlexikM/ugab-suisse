@@ -1,8 +1,8 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
-import { buildOutput, buildAssets } from './lib/build-output.mjs';
-import { storageWrites, CONSENT_DIALOGUE_MARKERS } from './lib/storage.mjs';
+import { buildAssets, buildOutput } from './lib/build-output.mjs';
+import { CONSENT_DIALOGUE_MARKERS, storageWrites } from './lib/storage.mjs';
 
 /**
  * The site's claim is that it sets nothing in your browser. That claim is worth

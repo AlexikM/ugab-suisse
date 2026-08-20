@@ -1,11 +1,13 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { useTranslations, type Lang } from '../../i18n/utils';
 import { contactEmail, languagePaths } from '../../i18n/ui';
+import { type Lang, useTranslations } from '../../i18n/utils';
+import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---

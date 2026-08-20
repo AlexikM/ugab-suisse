@@ -1,5 +1,5 @@
-import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,7 +18,10 @@ const DIST = path.join(repoRoot, 'dist');
 async function siteHost() {
   const config = await readFile(path.join(repoRoot, 'astro.config.mjs'), 'utf8');
   const match = /site\s*:\s*['"]([^'"]+)['"]/.exec(config);
-  if (!match) throw new Error('astro.config.mjs declares no `site`, so first-party cannot be told from third-party');
+  if (!match)
+    throw new Error(
+      'astro.config.mjs declares no `site`, so first-party cannot be told from third-party',
+    );
   return new URL(match[1]).host;
 }
 
@@ -42,6 +45,8 @@ const routeOf = (file) => {
  * Every built page, its route and its HTML — plus the CSS and JS bundles, which
  * are where a font import or a beacon URL hides once the build has run.
  */
+const isRedirectStub = (html) => /<meta[^>]+http-equiv=["']?refresh["']?/i.test(html);
+
 export async function buildOutput() {
   if (!existsSync(DIST)) {
     throw new Error(
@@ -64,7 +69,12 @@ export async function buildOutput() {
     pages,
     privacyPageHtml: privacyPage?.html ?? '',
     /** Pages a visitor can reach. `/admin/` is the editors' CMS shell, not part of the public site. */
-    visitorPages: pages.filter((page) => !page.route.startsWith('/admin')),
+    // A redirect stub is not a page anyone reads: it carries a meta refresh and
+    // no chrome. Excluding them keeps footer/nav assertions honest — the old
+    // /histoire route still resolves, it just has nothing to link from.
+    visitorPages: pages.filter(
+      (page) => !page.route.startsWith('/admin') && !isRedirectStub(page.html),
+    ),
   };
 }
 
@@ -76,7 +86,10 @@ export async function buildAssets() {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) await walk(full);
       else if (/\.(css|js|mjs)$/.test(entry.name)) {
-        assets.push({ route: `/${path.relative(DIST, full).split(path.sep).join('/')}`, source: await readFile(full, 'utf8') });
+        assets.push({
+          route: `/${path.relative(DIST, full).split(path.sep).join('/')}`,
+          source: await readFile(full, 'utf8'),
+        });
       }
     }
   };

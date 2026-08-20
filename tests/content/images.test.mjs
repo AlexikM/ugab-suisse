@@ -6,8 +6,8 @@
 // photographs arrive (#9) they land in a pipeline that already sizes, hashes
 // and lazy-loads them.
 
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { readBuiltPage } from './helpers.mjs';
 
@@ -25,7 +25,11 @@ test('no page serves a photograph straight out of the public directory', () => {
     const html = readBuiltPage(route);
 
     assert.doesNotMatch(html, /src="[^"]*\/images\//, `${route} serves an unprocessed image`);
-    assert.doesNotMatch(html, /url\(&#39;?[^)]*\/images\//, `${route} paints one as a CSS background`);
+    assert.doesNotMatch(
+      html,
+      /url\(&#39;?[^)]*\/images\//,
+      `${route} paints one as a CSS background`,
+    );
   }
 });
 

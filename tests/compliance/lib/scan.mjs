@@ -154,7 +154,8 @@ export function collectReferences({ page, html, siteHost }) {
     const href = /\bhref\s*=\s*("([^"]*)"|'([^']*)')/i.exec(tag);
     if (!rel || !href) continue;
     const relValue = (rel[2] ?? rel[3] ?? rel[4] ?? '').toLowerCase().trim();
-    const fetches = relValue.split(/\s+/).some((token) => FETCHING_REL.has(token)) || FETCHING_REL.has(relValue);
+    const fetches =
+      relValue.split(/\s+/).some((token) => FETCHING_REL.has(token)) || FETCHING_REL.has(relValue);
     if (!fetches) continue;
     record(href[2] ?? href[3] ?? '', KIND.AUTOMATIC, `link[rel=${relValue}]`);
   }
@@ -230,5 +231,7 @@ export function collectAssetReferences({ route, source, siteHost }) {
 
 /** Sorted, de-duplicated hosts of one kind. Sorted so failures read the same twice. */
 export function hostsOf(references, kind) {
-  return [...new Set(references.filter((reference) => reference.kind === kind).map((r) => r.host))].sort();
+  return [
+    ...new Set(references.filter((reference) => reference.kind === kind).map((r) => r.host)),
+  ].sort();
 }

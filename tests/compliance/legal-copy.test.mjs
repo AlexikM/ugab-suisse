@@ -1,6 +1,6 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
 import { repoRoot } from './lib/build-output.mjs';
@@ -28,14 +28,20 @@ try {
   loadError = error;
 }
 
-const skip = legal ? false : `legal.ts could not be loaded (${loadError?.code ?? loadError?.message})`;
+const skip = legal
+  ? false
+  : `legal.ts could not be loaded (${loadError?.code ?? loadError?.message})`;
 
 const PAGES = ['privacy', 'legalNotice', 'accessibility'];
 
 test('both languages carry the same legal pages', { skip }, () => {
   assert.deepEqual(Object.keys(legal.legalPages).sort(), ['en', 'fr']);
   for (const lang of ['fr', 'en']) {
-    assert.deepEqual(Object.keys(legal.legalPages[lang]).sort(), [...PAGES].sort(), `${lang} is missing a page`);
+    assert.deepEqual(
+      Object.keys(legal.legalPages[lang]).sort(),
+      [...PAGES].sort(),
+      `${lang} is missing a page`,
+    );
   }
 });
 
@@ -80,7 +86,10 @@ test('every processor is described in both languages', { skip }, () => {
 test('every third party the site still contacts is explained in both languages', { skip }, () => {
   for (const exception of legal.preLaunchExceptions) {
     for (const lang of ['fr', 'en']) {
-      assert.ok(exception.what?.[lang]?.trim(), `pre-launch exception “${exception.host}” has no ${lang} explanation`);
+      assert.ok(
+        exception.what?.[lang]?.trim(),
+        `pre-launch exception “${exception.host}” has no ${lang} explanation`,
+      );
     }
   }
 });

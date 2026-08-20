@@ -4,8 +4,8 @@
 // of these tests is that the section publishes anyway: an officer with nothing
 // but a role and a name must still appear, without a broken image.
 
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { buildWithContent, readPage, visibleText } from './helpers.mjs';
 

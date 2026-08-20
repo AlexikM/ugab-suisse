@@ -1,14 +1,22 @@
 ---
 import { Image } from 'astro:assets';
-import Layout from '../../layouts/Layout.astro';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
-import { useTranslations, withBase, type Lang } from '../../i18n/utils';
-import { languagePaths, localeRoute, routes, sponsorshipTiers, suggestedAmounts } from '../../i18n/ui';
+import {
+  languagePaths,
+  localeRoute,
+  routes,
+  sponsorshipTiers,
+  suggestedAmounts,
+} from '../../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../../i18n/utils';
+import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const link = (path: string) => withBase(localeRoute(path, lang));

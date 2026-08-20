@@ -1,7 +1,7 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { test } from 'node:test';
 
 import { repoRoot } from './lib/build-output.mjs';
 import { LAUNCH_BLOCKERS } from './lib/launch-blockers.mjs';
@@ -16,7 +16,9 @@ import { LAUNCH_BLOCKERS } from './lib/launch-blockers.mjs';
 const checklist = await readFile(path.join(repoRoot, 'docs/pre-launch-checklist.md'), 'utf8');
 
 test('every third party the audit still finds is written into the checklist', () => {
-  const missing = LAUNCH_BLOCKERS.map((blocker) => blocker.host).filter((host) => !checklist.includes(host));
+  const missing = LAUNCH_BLOCKERS.map((blocker) => blocker.host).filter(
+    (host) => !checklist.includes(host),
+  );
 
   assert.deepEqual(
     missing,
@@ -50,7 +52,11 @@ test('the checklist requires the audits to be re-run once the providers are conf
 
 test('the checklist covers what to do when a rights request or a breach arrives', () => {
   assert.match(checklist, /rights request/i, 'no route for a visitor exercising their rights');
-  assert.match(checklist, /breach/i, 'no route for a data breach, which is the worst time to be improvising');
+  assert.match(
+    checklist,
+    /breach/i,
+    'no route for a data breach, which is the worst time to be improvising',
+  );
 });
 
 test('every checklist item has an owner', () => {

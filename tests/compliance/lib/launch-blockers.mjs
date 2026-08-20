@@ -65,7 +65,8 @@ export const LAUNCH_BLOCKERS = [
   },
 ];
 
-export const blockedHosts = () => [...new Set(LAUNCH_BLOCKERS.map((blocker) => blocker.host))].sort();
+export const blockedHosts = () =>
+  [...new Set(LAUNCH_BLOCKERS.map((blocker) => blocker.host))].sort();
 
 export const describeBlockers = () =>
   LAUNCH_BLOCKERS.map(

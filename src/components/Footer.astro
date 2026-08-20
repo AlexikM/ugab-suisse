@@ -1,8 +1,18 @@
 ---
-import { useTranslations, withBase, type Lang } from '../i18n/utils';
-import { contactEmail, languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
+import {
+  contactEmail,
+  languages,
+  legalRoutes,
+  localeRoute,
+  primaryNav,
+  routeFromPath,
+  routes,
+} from '../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../i18n/utils';
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
@@ -61,6 +71,7 @@ const nav = primaryNav
       <div class="flex flex-wrap items-center gap-6">
         <a href={withBase(legalRoutes.legal)} class="hover:text-[var(--color-paper)]">{t('footer.legal')}</a>
         <a href={withBase(legalRoutes.privacy)} class="hover:text-[var(--color-paper)]">{t('footer.privacy')}</a>
+        <a href={withBase(legalRoutes.accessibility)} class="hover:text-[var(--color-paper)]">{t('footer.accessibility')}</a>
         <div class="flex items-center gap-3">
           {Object.entries(languages).map(([code, label]) => (
             <a

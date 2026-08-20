@@ -42,6 +42,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Two runners by design: Vitest for the build-output assertions, and
+      # node:test for the content and compliance suites, whose `todo` tests must
+      # run and be allowed to fail (Vitest's todo skips instead). `npm run test`
+      # chains both — see issue #38.
       - name: Assertions against the built output
         run: npm run test
 

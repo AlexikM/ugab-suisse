@@ -1,5 +1,5 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import { buildOutput } from './lib/build-output.mjs';
 import { footerOf, mainOf, textOf } from './lib/page-text.mjs';
@@ -25,7 +25,8 @@ const legalPage = (route) => {
   return page;
 };
 
-const legalPagesText = () => LEGAL_ROUTES.map((route) => ({ route, text: textOf(mainOf(legalPage(route).html)) }));
+const legalPagesText = () =>
+  LEGAL_ROUTES.map((route) => ({ route, text: textOf(mainOf(legalPage(route).html)) }));
 
 test('the privacy policy, the legal notices and the accessibility statement are all built', () => {
   const built = site.pages.map((page) => page.route);
@@ -37,26 +38,33 @@ test('the privacy policy, the legal notices and the accessibility statement are 
 test('the privacy policy and the legal notices are reachable from the footer of every page', () => {
   const missing = site.visitorPages
     .map((page) => ({ route: page.route, footer: footerOf(page.html) }))
-    .filter(({ footer }) => !footer.includes('/confidentialite') || !footer.includes('/mentions-legales'))
+    .filter(
+      ({ footer }) => !footer.includes('/confidentialite') || !footer.includes('/mentions-legales'),
+    )
     .map(({ route }) => route);
 
-  assert.deepEqual(missing, [], 'a visitor on these pages cannot find the legal pages without searching');
+  assert.deepEqual(
+    missing,
+    [],
+    'a visitor on these pages cannot find the legal pages without searching',
+  );
 });
 
 /**
- * Marked `todo`: expected to fail today, must pass before launch.
- *
- * The footer belongs to another workstream, so this lane could not add the link.
  * The accessibility statement offers someone a way to complete a donation the
  * site blocks them from making — worth nothing if the only route to it is through
- * the privacy policy.
+ * the privacy policy. The footer link landed when the lanes were integrated.
  */
-test('the accessibility statement is reachable from the footer too', { todo: 'the footer belongs to another workstream' }, () => {
+test('the accessibility statement is reachable from the footer too', () => {
   const missing = site.visitorPages
     .filter((page) => !footerOf(page.html).includes('/accessibilite'))
     .map((page) => page.route);
 
-  assert.deepEqual(missing, [], 'the accessibility statement is not linked from the footer of these pages');
+  assert.deepEqual(
+    missing,
+    [],
+    'the accessibility statement is not linked from the footer of these pages',
+  );
 });
 
 test('the promise the architecture cannot keep is gone', () => {
@@ -82,7 +90,11 @@ test('the true intent behind that promise is stated instead of dropped', () => {
 test('the privacy policy names every processor and says what each one receives', () => {
   const text = textOf(mainOf(legalPage('/confidentialite/').html));
   for (const expected of ['Infomaniak', 'paiement', 'billetterie', 'Cloudflare']) {
-    assert.match(text, new RegExp(expected, 'i'), `no processor matching “${expected}” is named on the privacy page`);
+    assert.match(
+      text,
+      new RegExp(expected, 'i'),
+      `no processor matching “${expected}” is named on the privacy page`,
+    );
   }
   assert.match(text, /Ce qu[’']il reçoit/i, 'the page does not say what each processor receives');
 });
@@ -92,8 +104,16 @@ test('the privacy policy states how long data is kept and how to exercise your r
   assert.match(text, /Combien de temps/i, 'no retention section');
   assert.match(text, /\b30 jours\b/, 'no stated response time for a rights request');
   assert.match(text, /nLPD/i, 'Swiss data protection law is not named');
-  assert.match(text, /RGPD/i, 'the GDPR is not named, so an EU visitor is not told their rights apply');
-  assert.match(text, /PFPDT/i, 'no supervisory authority is named for a visitor who is not satisfied');
+  assert.match(
+    text,
+    /RGPD/i,
+    'the GDPR is not named, so an EU visitor is not told their rights apply',
+  );
+  assert.match(
+    text,
+    /PFPDT/i,
+    'no supervisory authority is named for a visitor who is not satisfied',
+  );
 });
 
 test('no legal page repeats the unverified tax-deductibility claim', () => {
@@ -123,7 +143,11 @@ test('no legal page claims a public-utility status nobody has produced a decisio
 
 test('no legal page invents a contact address or a host', () => {
   for (const { route, text } of legalPagesText()) {
-    assert.doesNotMatch(text, /contact@ugab\.ch/i, `${route} carries an address the committee never confirmed`);
+    assert.doesNotMatch(
+      text,
+      /contact@ugab\.ch/i,
+      `${route} carries an address the committee never confirmed`,
+    );
     assert.doesNotMatch(
       text,
       /Cloudflare, Inc\.\s*—\s*101 Townsend/i,
@@ -151,8 +175,16 @@ test('the accessibility statement sets a target, admits its gaps and offers a wa
   const text = textOf(mainOf(legalPage('/accessibilite/').html));
   assert.match(text, /WCAG\s*2\.2/i, 'no specific target is stated');
   assert.match(text, /AA/, 'no conformance level is stated');
-  assert.match(text, /prestataires? ext[ée]rieurs?|prestataires/i, 'the third-party payment and ticketing steps are not mentioned');
-  assert.match(text, /virement bancaire/i, 'no alternative route is offered for someone the site blocks');
+  assert.match(
+    text,
+    /prestataires? ext[ée]rieurs?|prestataires/i,
+    'the third-party payment and ticketing steps are not mentioned',
+  );
+  assert.match(
+    text,
+    /virement bancaire/i,
+    'no alternative route is offered for someone the site blocks',
+  );
   assert.match(text, /\b30 jours\b/, 'no response time is given for an accessibility report');
 });
 
@@ -191,7 +223,9 @@ test('the legal pages link to one another, so finding one finds all three', () =
  * reach anyone is not a cosmetic problem: it is a rights route that silently
  * fails. The committee owes the real one (issue #9).
  */
-test('no page shows a contact address the committee never confirmed', { todo: 'blocked on the committee' }, () => {
+test('no page shows a contact address the committee never confirmed', {
+  todo: 'blocked on the committee',
+}, () => {
   const offending = site.visitorPages
     .filter((page) => /contact@ugab\.ch/i.test(page.html))
     .map((page) => page.route);
@@ -213,9 +247,15 @@ test('no page shows a contact address the committee never confirmed', { todo: 'b
  * nobody has produced the cantonal decision that would make it so, and promising
  * a receipt the chosen payment tier does not issue. See the pre-launch checklist.
  */
-test('the site tells nobody their donation is tax-deductible until that is verified', { todo: 'blocked on the committee' }, () => {
+test('the site tells nobody their donation is tax-deductible until that is verified', {
+  todo: 'blocked on the committee',
+}, () => {
   const offending = site.visitorPages
-    .filter((page) => /d[ée]ductib\w*\s+fiscal|fiscalement\s+d[ée]ductib|tax[- ]deductible/i.test(textOf(page.html)))
+    .filter((page) =>
+      /d[ée]ductib\w*\s+fiscal|fiscalement\s+d[ée]ductib|tax[- ]deductible/i.test(
+        textOf(page.html),
+      ),
+    )
     .map((page) => page.route);
 
   assert.deepEqual(

@@ -1,6 +1,4 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { withBase } from '../i18n/utils';
 import type { LegalLang } from '../i18n/legal';
 import {
   committee,
@@ -13,6 +11,8 @@ import {
   preLaunchNotice,
   processors,
 } from '../i18n/legal';
+import { withBase } from '../i18n/utils';
+import Layout from '../layouts/Layout.astro';
 
 // These three routes are the French ones; the trilingual lane owns localised routes.
 const lang: LegalLang = 'fr';

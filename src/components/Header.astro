@@ -1,8 +1,10 @@
 ---
-import { useTranslations, withBase, type Lang } from '../i18n/utils';
 import { languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../i18n/utils';
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 

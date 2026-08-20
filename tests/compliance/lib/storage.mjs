@@ -16,14 +16,23 @@
 const ASSIGN = String.raw`(?<![=!<>])=(?!=)`;
 
 const WRITES = [
-  { api: 'document.cookie', pattern: new RegExp(String.raw`document\s*\.\s*cookie\s*${ASSIGN}`, 'g') },
+  {
+    api: 'document.cookie',
+    pattern: new RegExp(String.raw`document\s*\.\s*cookie\s*${ASSIGN}`, 'g'),
+  },
   {
     api: 'localStorage.setItem',
-    pattern: new RegExp(String.raw`localStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`, 'g'),
+    pattern: new RegExp(
+      String.raw`localStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`,
+      'g',
+    ),
   },
   {
     api: 'sessionStorage.setItem',
-    pattern: new RegExp(String.raw`sessionStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`, 'g'),
+    pattern: new RegExp(
+      String.raw`sessionStorage\s*(?:\.\s*setItem\s*\(|\[[^\]]+\]\s*${ASSIGN})`,
+      'g',
+    ),
   },
   { api: 'localStorage.removeItem', pattern: /localStorage\s*\.\s*removeItem\s*\(/g },
   { api: 'localStorage.clear', pattern: /localStorage\s*\.\s*clear\s*\(/g },

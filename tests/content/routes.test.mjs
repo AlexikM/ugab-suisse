@@ -8,11 +8,11 @@
 // adding Armenian makes this test demand Armenian pages without anyone
 // remembering to come back here.
 
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
 import astroConfig from '../../astro.config.mjs';
-import { builtPageExists, readBuiltPage, headerLinks } from './helpers.mjs';
+import { builtPageExists, headerLinks, readBuiltPage } from './helpers.mjs';
 
 const AGREED_SITEMAP = ['/', '/a-propos', '/evenements', '/don', '/contact'];
 
@@ -47,10 +47,7 @@ for (const locale of locales) {
 }
 
 test('the address the committee may already have published still resolves', () => {
-  assert.ok(
-    builtPageExists('/histoire'),
-    'the old About address must not simply disappear',
-  );
+  assert.ok(builtPageExists('/histoire'), 'the old About address must not simply disappear');
   const html = readBuiltPage('/histoire');
   assert.match(
     html,

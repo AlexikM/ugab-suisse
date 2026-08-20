@@ -1,6 +1,7 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+
 import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 // Where the site is served from. Astro prefixes routes with it automatically,

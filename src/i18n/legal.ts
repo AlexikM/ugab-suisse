@@ -94,7 +94,7 @@ export const processors: Processor[] = [
     // No separate hostname, so nothing for the request audit to find.
     hosts: [],
     purpose: {
-      fr: "Héberge ce site et la messagerie du Comité. Toutes les pages que vous consultez sont servies depuis leurs serveurs, et tout message que vous nous envoyez transite par leur messagerie.",
+      fr: 'Héberge ce site et la messagerie du Comité. Toutes les pages que vous consultez sont servies depuis leurs serveurs, et tout message que vous nous envoyez transite par leur messagerie.',
       en: 'Hosts this site and the Committee mailboxes. Every page you read is served from their machines, and any message you send us passes through their mail service.',
     },
     receives: {
@@ -116,21 +116,24 @@ export const processors: Processor[] = [
     status: 'planned',
     hosts: [],
     purpose: {
-      fr: "Encaisse les dons. Le formulaire de don est le leur, pas le nôtre : votre paiement ne passe jamais par nos serveurs.",
+      fr: 'Encaisse les dons. Le formulaire de don est le leur, pas le nôtre : votre paiement ne passe jamais par nos serveurs.',
       en: 'Collects donations. The donation form is theirs, not ours: your payment never passes through our servers.',
     },
     receives: {
-      fr: "Votre nom, votre adresse e-mail, le montant, le moyen de paiement et, selon le moyen choisi, votre adresse postale. Nous ne voyons jamais votre numéro de carte.",
+      fr: 'Votre nom, votre adresse e-mail, le montant, le moyen de paiement et, selon le moyen choisi, votre adresse postale. Nous ne voyons jamais votre numéro de carte.',
       en: 'Your name, email address, the amount, the payment method and, depending on the method, your postal address. We never see your card number.',
     },
     retention: {
-      fr: "Conservation imposée par le droit comptable suisse, en principe dix ans. Le Comité conserve de son côté les justificatifs nécessaires à sa comptabilité.",
+      fr: 'Conservation imposée par le droit comptable suisse, en principe dix ans. Le Comité conserve de son côté les justificatifs nécessaires à sa comptabilité.',
       en: 'Retention imposed by Swiss accounting law, in principle ten years. The Committee separately keeps the records its own accounts require.',
     },
   },
   {
     id: 'ticketing',
-    name: { fr: 'Prestataire de billetterie (Billetweb — non encore arrêté)', en: 'Ticketing provider (Billetweb — not yet fixed)' },
+    name: {
+      fr: 'Prestataire de billetterie (Billetweb — non encore arrêté)',
+      en: 'Ticketing provider (Billetweb — not yet fixed)',
+    },
     country: { fr: 'France (Union européenne)', en: 'France (European Union)' },
     status: 'planned',
     hosts: [],
@@ -149,8 +152,14 @@ export const processors: Processor[] = [
   },
   {
     id: 'turnstile',
-    name: { fr: 'Cloudflare, Inc. (service anti-spam « Turnstile »)', en: 'Cloudflare, Inc. (“Turnstile” anti-spam service)' },
-    country: { fr: 'États-Unis, avec traitement réparti mondialement', en: 'United States, with processing distributed worldwide' },
+    name: {
+      fr: 'Cloudflare, Inc. (service anti-spam « Turnstile »)',
+      en: 'Cloudflare, Inc. (“Turnstile” anti-spam service)',
+    },
+    country: {
+      fr: 'États-Unis, avec traitement réparti mondialement',
+      en: 'United States, with processing distributed worldwide',
+    },
     status: 'planned',
     hosts: ['challenges.cloudflare.com'],
     purpose: {
@@ -317,7 +326,7 @@ const privacyFr: LegalPage = {
     {
       heading: 'En bref',
       bullets: [
-        "Nous ne collectons que ce que vous nous donnez : un message, un don, une réservation.",
+        'Nous ne collectons que ce que vous nous donnez : un message, un don, une réservation.',
         "Nous ne vendons, ne louons et n'échangeons vos données avec personne. Jamais.",
         "Quelques prestataires les traitent pour notre compte — l'hébergeur, la banque en ligne qui encaisse les dons, la billetterie, l'anti-spam. Ils sont tous nommés ci-dessous.",
         "Ce site ne dépose aucun cookie, ne mesure pas votre audience et n'héberge aucun traceur publicitaire.",
@@ -333,7 +342,7 @@ const privacyFr: LegalPage = {
       heading: 'Ce que nous collectons, et à quel moment',
       bullets: [
         "Formulaire de contact — votre nom, votre adresse e-mail, l'objet et votre message. Vous les saisissez ; rien n'est deviné.",
-        "Don — votre nom, votre adresse e-mail et le montant. Le paiement lui-même se déroule chez notre prestataire : nous ne voyons ni votre numéro de carte, ni vos identifiants bancaires.",
+        'Don — votre nom, votre adresse e-mail et le montant. Le paiement lui-même se déroule chez notre prestataire : nous ne voyons ni votre numéro de carte, ni vos identifiants bancaires.',
         "Réservation de billets — votre nom, votre adresse e-mail, l'événement et le nombre de places.",
         "Simple consultation — l'hébergeur enregistre, comme tout serveur web, votre adresse IP, la page demandée et l'heure. Nous ne consultons ces journaux qu'en cas d'incident technique.",
       ],
@@ -350,7 +359,7 @@ const privacyFr: LegalPage = {
         'Aucune vente, location ou échange de vos données.',
         'Aucune publicité, aucun profilage, aucun ciblage.',
         "Aucun réseau publicitaire, aucun pixel de suivi, aucune mesure d'audience.",
-        "Aucune newsletter : vous ne serez pas inscrit à une liste parce que vous avez donné.",
+        'Aucune newsletter : vous ne serez pas inscrit à une liste parce que vous avez donné.',
         'Aucune décision automatisée vous concernant.',
       ],
     },
@@ -381,7 +390,7 @@ const privacyFr: LegalPage = {
       heading: 'Cookies et mesure d’audience',
       paragraphs: [
         "Ce site ne dépose aucun cookie et n'écrit rien dans la mémoire de votre navigateur. Il n'y a pas d'outil de statistiques : nous ne comptons pas nos visiteurs. C'est pourquoi vous ne voyez aucune bannière de consentement — il n'y a rien à consentir.",
-        "Si le Comité décidait un jour de compter ses visiteurs, ce serait avec un outil sans cookie et sans identifiant partagé entre sites, et cette page le dirait avant que ce soit le cas.",
+        'Si le Comité décidait un jour de compter ses visiteurs, ce serait avec un outil sans cookie et sans identifiant partagé entre sites, et cette page le dirait avant que ce soit le cas.',
       ],
     },
     {
@@ -509,7 +518,7 @@ const legalNoticeFr: LegalPage = {
     {
       heading: 'Éditeur du site',
       paragraphs: [
-        "Union Générale Arménienne de Bienfaisance — Comité Suisse, association au sens des articles 60 et suivants du Code civil suisse, ayant son siège à Genève.",
+        'Union Générale Arménienne de Bienfaisance — Comité Suisse, association au sens des articles 60 et suivants du Code civil suisse, ayant son siège à Genève.',
       ],
     },
     {
@@ -521,7 +530,7 @@ const legalNoticeFr: LegalPage = {
     {
       heading: 'Hébergement',
       paragraphs: [
-        "Le site et la messagerie sont hébergés par Infomaniak Network SA, à Genève, sur des serveurs situés en Suisse.",
+        'Le site et la messagerie sont hébergés par Infomaniak Network SA, à Genève, sur des serveurs situés en Suisse.',
       ],
     },
     {
@@ -545,7 +554,7 @@ const legalNoticeFr: LegalPage = {
     {
       heading: 'Signaler une erreur',
       paragraphs: [
-        "Une date fausse, un nom mal orthographié, un lien mort ? Écrivez-nous. Ce site est tenu par des bénévoles et les corrections sont bienvenues.",
+        'Une date fausse, un nom mal orthographié, un lien mort ? Écrivez-nous. Ce site est tenu par des bénévoles et les corrections sont bienvenues.',
       ],
     },
   ],
@@ -628,7 +637,7 @@ const accessibilityFr: LegalPage = {
       bullets: [
         "Les étapes de don et de réservation sont fournies par des prestataires extérieurs. Leur accessibilité est la leur, pas la nôtre, et nous ne pouvons pas la corriger. Si l'une d'elles vous bloque, la solution de repli ci-dessous s'applique.",
         "Les cartes des lieux d'événement sont des plans interactifs difficiles à explorer autrement qu'à la souris. L'adresse est toujours écrite en toutes lettres à côté.",
-        "Les documents PDF que nous mettons en ligne, notamment le dossier de sponsoring, ne sont pas balisés pour la lecture assistée.",
+        'Les documents PDF que nous mettons en ligne, notamment le dossier de sponsoring, ne sont pas balisés pour la lecture assistée.',
         "La version arménienne du site n'est pas encore disponible.",
       ],
     },
@@ -695,7 +704,10 @@ const accessibilityEn: LegalPage = {
   ],
 };
 
-export const legalPages: Record<LegalLang, { privacy: LegalPage; legalNotice: LegalPage; accessibility: LegalPage }> = {
+export const legalPages: Record<
+  LegalLang,
+  { privacy: LegalPage; legalNotice: LegalPage; accessibility: LegalPage }
+> = {
   fr: { privacy: privacyFr, legalNotice: legalNoticeFr, accessibility: accessibilityFr },
   en: { privacy: privacyEn, legalNotice: legalNoticeEn, accessibility: accessibilityEn },
 };
@@ -737,8 +749,8 @@ export const legalChrome: Record<
     toBeRemoved: 'retiré avant le lancement',
     hostsHeading: 'Ce que votre navigateur contacte',
     hostsIntro:
-      "Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Un contrôle automatisé la compare au site réellement publié ; si un élément nouveau y apparaissait sans figurer ici, ce contrôle échouerait.",
-    hostsNone: "Aucun. Ce site ne charge rien depuis un serveur tiers.",
+      'Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Un contrôle automatisé la compare au site réellement publié ; si un élément nouveau y apparaissait sans figurer ici, ce contrôle échouerait.',
+    hostsNone: 'Aucun. Ce site ne charge rien depuis un serveur tiers.',
     contactHeading: 'Nous écrire',
     lastReviewed: 'Dernière révision',
     seeAlso: 'Voir aussi',
