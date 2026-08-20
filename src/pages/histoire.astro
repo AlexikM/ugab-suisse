@@ -1,15 +1,36 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { withBase } from '../i18n/utils';
+import Layout from '../layouts/Layout.astro';
+
 const lang = 'fr';
 const antennes = await getCollection('antennes');
 
 const pillars = [
-  { title: 'Culture', kicker: '01', image: '/images/folk-dance.jpg', text: "Concerts, expositions, conférences, publications : faire vivre la richesse culturelle arménienne en Suisse, du chant liturgique de Komitas à la littérature contemporaine." },
-  { title: 'Éducation', kicker: '02', image: '/images/library.jpg', text: "Cours de langue arménienne pour enfants et adultes, soutien scolaire, bourses d'études, camps d'été pour la jeunesse de la diaspora." },
-  { title: 'Humanitaire', kicker: '03', image: '/images/humanitarian.jpg', text: "Aide d'urgence et programmes de long terme en Arménie, en Artsakh et auprès des communautés arméniennes en difficulté à travers le monde." },
-  { title: 'Communauté', kicker: '04', image: '/images/community.jpg', text: "Rassembler la diaspora arménienne de Suisse autour d'événements fédérateurs, transmettre l'identité aux nouvelles générations." },
+  {
+    title: 'Culture',
+    kicker: '01',
+    image: '/images/folk-dance.jpg',
+    text: 'Concerts, expositions, conférences, publications : faire vivre la richesse culturelle arménienne en Suisse, du chant liturgique de Komitas à la littérature contemporaine.',
+  },
+  {
+    title: 'Éducation',
+    kicker: '02',
+    image: '/images/library.jpg',
+    text: "Cours de langue arménienne pour enfants et adultes, soutien scolaire, bourses d'études, camps d'été pour la jeunesse de la diaspora.",
+  },
+  {
+    title: 'Humanitaire',
+    kicker: '03',
+    image: '/images/humanitarian.jpg',
+    text: "Aide d'urgence et programmes de long terme en Arménie, en Artsakh et auprès des communautés arméniennes en difficulté à travers le monde.",
+  },
+  {
+    title: 'Communauté',
+    kicker: '04',
+    image: '/images/community.jpg',
+    text: "Rassembler la diaspora arménienne de Suisse autour d'événements fédérateurs, transmettre l'identité aux nouvelles générations.",
+  },
 ];
 
 // Comité — à remplacer par les vraies personnes et photos quand disponibles

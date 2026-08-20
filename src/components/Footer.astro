@@ -1,7 +1,9 @@
 ---
-import { useTranslations, localizedPath, type Lang } from '../i18n/utils';
+import { type Lang, localizedPath, useTranslations } from '../i18n/utils';
 
-interface Props { lang: Lang }
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();

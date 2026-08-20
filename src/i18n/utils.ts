@@ -1,4 +1,4 @@
-import { ui, defaultLang, type Lang } from './ui';
+import { defaultLang, type Lang, ui } from './ui';
 
 export function getLangFromUrl(url: URL): Lang {
   const [, lang] = url.pathname.split('/');
@@ -28,3 +28,5 @@ export function localizedPath(path: string, lang: Lang): string {
   if (!enRoutes.has(clean)) return withBase(clean);
   return withBase(`/${lang}${clean}`);
 }
+
+export type { Lang };

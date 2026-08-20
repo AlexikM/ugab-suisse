@@ -1,6 +1,9 @@
 ---
-import { useTranslations, type Lang } from '../i18n/utils';
-interface Props { lang: Lang }
+import { type Lang, useTranslations } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---

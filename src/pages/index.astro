@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { useTranslations, localizedPath, withBase } from '../i18n/utils';
+import { localizedPath, useTranslations, withBase } from '../i18n/utils';
+import Layout from '../layouts/Layout.astro';
 
 const lang = 'fr';
 const t = useTranslations(lang);
@@ -12,7 +12,11 @@ const events = (await getCollection('events', ({ data }) => !data.draft && data.
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
   .slice(0, 3);
 
-const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' });
+const dateFmt = new Intl.DateTimeFormat('fr-CH', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 ---
 
 <Layout lang={lang}>

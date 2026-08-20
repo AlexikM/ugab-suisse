@@ -10,10 +10,12 @@ const events = defineCollection({
     endDate: z.coerce.date().optional(),
     location: z.string(),
     address: z.string().optional(),
-    coordinates: z.object({
-      lat: z.number(),
-      lng: z.number(),
-    }).optional(),
+    coordinates: z
+      .object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+      .optional(),
     cover: z.string().optional(),
     gallery: z.array(z.string()).optional(),
     excerpt: z.string(),

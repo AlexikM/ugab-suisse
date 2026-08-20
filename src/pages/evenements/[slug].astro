@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
-import Layout from '../../layouts/Layout.astro';
 import { localizedPath, withBase } from '../../i18n/utils';
+import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', ({ data }) => !data.draft && data.lang === 'fr');
@@ -14,13 +14,20 @@ export async function getStaticPaths() {
 const { event } = Astro.props;
 const { Content } = await render(event);
 
-const dateFmt = new Intl.DateTimeFormat('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' });
+const dateFmt = new Intl.DateTimeFormat('fr-CH', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 const timeFmt = new Intl.DateTimeFormat('fr-CH', { hour: '2-digit', minute: '2-digit' });
 const isPast = event.data.date.valueOf() < Date.now();
 
-const gallery = event.data.gallery && event.data.gallery.length > 0
-  ? event.data.gallery
-  : (event.data.cover ? [event.data.cover] : []);
+const gallery =
+  event.data.gallery && event.data.gallery.length > 0
+    ? event.data.gallery
+    : event.data.cover
+      ? [event.data.cover]
+      : [];
 
 const coords = event.data.coordinates;
 const osmBbox = coords
@@ -37,7 +44,11 @@ const gMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURICom
 const allEvents = await getCollection('events', ({ data }) => !data.draft && data.lang === 'fr');
 const otherEvents = allEvents
   .filter((e) => e.id !== event.id)
-  .sort((a, b) => Math.abs(a.data.date.valueOf() - event.data.date.valueOf()) - Math.abs(b.data.date.valueOf() - event.data.date.valueOf()))
+  .sort(
+    (a, b) =>
+      Math.abs(a.data.date.valueOf() - event.data.date.valueOf()) -
+      Math.abs(b.data.date.valueOf() - event.data.date.valueOf()),
+  )
   .slice(0, 2);
 ---
 
