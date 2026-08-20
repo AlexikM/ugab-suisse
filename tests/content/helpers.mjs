@@ -13,7 +13,7 @@
 //      or deliberately minimal event without ever writing into `src/content`.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,6 +46,25 @@ export function builtPageExists(routePath) {
   const clean = routePath.replace(/^\/+|\/+$/g, '');
   const file = clean === '' ? 'index.html' : path.join(clean, 'index.html');
   return existsSync(path.join(distDir, file));
+}
+
+/** Every page in the build, as `{ route, html }`. */
+export function allBuiltPages() {
+  if (!existsSync(distDir)) {
+    throw new Error('dist/ is missing — run `npm run build` before the tests.');
+  }
+  const pages = [];
+  const walk = (dir, route) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full, `${route}/${entry.name}`);
+      else if (entry.name === 'index.html') {
+        pages.push({ route: route === '' ? '/' : route, html: readFileSync(full, 'utf8') });
+      }
+    }
+  };
+  walk(distDir, '');
+  return pages;
 }
 
 /**

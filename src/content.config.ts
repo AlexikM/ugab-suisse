@@ -25,7 +25,25 @@ const events = defineCollection({
       cover: z.string().optional(),
       gallery: z.array(z.string()).optional(),
       excerpt: z.string(),
-      registrationUrl: z.string().url().optional(),
+
+      // The fiche événement the brief specifies. All optional: the Comité
+      // publishes an event as soon as the date and the venue are settled, and
+      // fills the rest in later.
+      /** Déroulé, intervenants, dress code, informations pratiques. */
+      programme: z.string().optional(),
+      /** Free text, as the brief writes it: "CHF 150 / pers. — CHF 250 / couple". */
+      pricing: z.string().optional(),
+      /** Nombre de places. */
+      capacity: z.number().int().positive().optional(),
+      /**
+       * Set by hand when the room is full. A static site cannot know a
+       * provider's remaining stock; deriving this from live availability is
+       * PRD 6's decision to make.
+       */
+      soldOut: z.boolean().default(false),
+      /** Where a visitor buys a ticket. */
+      ticketUrl: z.string().url().optional(),
+
       draft: z.boolean().default(false),
       // Marks an entry as invented. The build refuses to publish it — see below.
       demo: z.boolean().default(false),
