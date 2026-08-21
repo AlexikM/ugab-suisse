@@ -380,37 +380,85 @@ test('no page shows a contact address the committee never confirmed', {
  *    English. That was load-bearing by accident: it is also why the legal
  *    notices' *denial* of any such status passed.
  *
- * So the question is asked a sentence at a time, and every form of the word is
- * caught. A sentence may mention deductibility only if that sentence denies it,
- * which is what the legal notices do and the only reason a page has to raise the
- * subject at all today.
+ * A third correction, from the review of that one: the rule was right and its
+ * reach was not. « A sentence may raise deductibility only if that sentence
+ * denies it » was applied to sentences cut on full stops alone, and a denial
+ * was allowed to excuse anything sharing a sentence with it. Both halves have
+ * been tightened — see `statementsOf` and `DEDUCTIBILITY` below.
  *
  * The day the committee produces the decision, this fails — as it should.
  * Publishing that claim is a deliberate act, and it changes this test with its
  * real conditions in the same commit.
  */
 
-/** Every way of saying tax deductibility, in either language, noun forms too. */
-const DEDUCTIBILITY =
-  /d[ée]ductib\p{L}*\s+fiscal\p{L}*|fiscal\p{L}*\s+d[ée]ductib\p{L}*|tax[-\s]deductib\p{L}*/iu;
+/**
+ * The prose of a page, cut into the units a denial can govern.
+ *
+ * Three cuts, each closing a way a claim was found to survive the check:
+ *
+ * 1. **Sentences.** The obvious one, and on its own not enough.
+ * 2. **Block elements.** `textOf` turns every tag into a space, so a heading
+ *    runs straight into the paragraph beneath it — the legal notices really do
+ *    read « Statut fiscal Le Comité ne fait … » as one string. A denial in the
+ *    paragraph would excuse a claim in the heading above it.
+ * 3. **Clauses.** A denial governs its own clause and no further. « … ne fait
+ *    aucune déclaration, mais vos dons restent déductibles » is two statements,
+ *    and the second one is the whole risk.
+ */
+const BLOCK_END =
+  /<\/(?:p|h[1-6]|li|dd|dt|td|th|figcaption|blockquote|div|section|article|aside)>/gi;
 
-/** Saying the association makes no such claim — the only reason to raise it. */
-const A_DENIAL = /ne fait\b[^.]*aucune d[ée]claration|makes no public statement/i;
+const BREAK =
+  /(?<=[.!?])\s+|\s*;\s*|\s+(?=\b(?:mais|toutefois|cependant|néanmoins|pourtant|but|however|though|although)\b)/iu;
+
+const statementsOf = (html) => textOf(html.replace(BLOCK_END, '. ')).split(BREAK);
+
+/**
+ * Every way this claim gets made, in either language.
+ *
+ * A list rather than one alternation because each entry answers for itself.
+ * `d[ée]ductib…` alone missed « déduction fiscale », which is how a French
+ * speaker is most likely to write it: the stem is `déduct`, not `déductib`.
+ */
+const DEDUCTIBILITY = [
+  /** déductible fiscalement, déductibilité fiscale, déduction fiscale. */
+  /d[ée]duct\p{L}*\s+fiscal\p{L}*/iu,
+  /** fiscalement déductible, and the rest of that word order. */
+  /fiscal\p{L}*\s+d[ée]duct\p{L}*/iu,
+  /** « déductible de vos impôts », « déduire de son impôt » — no « fiscal » anywhere. */
+  /d[ée]du\p{L}*[^.]{0,40}\bimp[oô]ts?\b/iu,
+  /** défiscaliser, défiscalisation. */
+  /d[ée]fiscalis\p{L}*/iu,
+  /** tax-deductible, tax deductibility, tax relief, tax break. */
+  /tax[-\s](?:deductib\p{L}*|relief|break)/iu,
+  /** deductible against tax, deductible from your taxes. */
+  /deductib\p{L}*[^.]{0,40}\btax(?:es)?\b/iu,
+];
+
+const raisesDeductibility = (statement) => DEDUCTIBILITY.some((form) => form.test(statement));
+
+/**
+ * Saying the association makes no such claim — the only reason to raise it.
+ *
+ * Bounded rather than `[^.]*`: the span between « ne fait » and « aucune
+ * déclaration » is a few words in the copy this exists for, and an unbounded
+ * one reaches across a whole statement looking for an excuse.
+ */
+const A_DENIAL = /ne fait\b[^.]{0,60}aucune d[ée]claration|makes no public statement/i;
 
 test('the site tells nobody their donation is tax-deductible until that is verified', () => {
   const offending = site.visitorPages
     .flatMap((page) =>
-      textOf(page.html)
-        .split(/(?<=[.!?])\s+/)
-        .filter((sentence) => DEDUCTIBILITY.test(sentence) && !A_DENIAL.test(sentence))
-        .map((sentence) => `${page.route} — “${sentence.trim().slice(0, 120)}”`),
+      statementsOf(page.html)
+        .filter((statement) => raisesDeductibility(statement) && !A_DENIAL.test(statement))
+        .map((statement) => `${page.route} — “${statement.trim().slice(0, 120)}”`),
     )
     .sort();
 
   assert.deepEqual(
     offending,
     [],
-    'These sentences raise tax deductibility without denying it:\n  ' +
+    'These statements raise tax deductibility without denying it:\n  ' +
       `${offending.join('\n  ')}\n` +
       'Remove the claim, or publish it only against the cantonal decision recognising the ' +
       'association as of public utility — and rewrite this test with its real conditions.',
