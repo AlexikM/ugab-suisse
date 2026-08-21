@@ -622,8 +622,8 @@ const accessibilityFr: LegalPage = {
       heading: 'Ce qui ne va pas encore',
       bullets: [
         "Les étapes de don et de réservation sont fournies par des prestataires extérieurs. Leur accessibilité est la leur, pas la nôtre, et nous ne pouvons pas la corriger. Si l'une d'elles vous bloque, la solution de repli ci-dessous s'applique.",
-        "Les cartes des lieux d'événement sont des plans interactifs difficiles à explorer autrement qu'à la souris. L'adresse est toujours écrite en toutes lettres à côté.",
-        'Les documents PDF que nous mettons en ligne, notamment le dossier de sponsoring, ne sont pas balisés pour la lecture assistée.',
+        "L'itinéraire vers un lieu d'événement vous emmène sur un site de cartographie extérieur, dont l'accessibilité n'est pas la nôtre. L'adresse complète est toujours écrite en toutes lettres sur la page : personne n'a besoin de la carte pour savoir où aller.",
+        "Si nous mettons en ligne un document PDF — le dossier de sponsoring, par exemple —, il n'est pas balisé pour la lecture assistée. Demandez-nous-en le contenu et nous vous l'envoyons autrement.",
         "La version arménienne du site n'est pas encore disponible.",
       ],
     },
@@ -637,7 +637,8 @@ const accessibilityFr: LegalPage = {
     {
       heading: 'Comment nous le vérifions',
       paragraphs: [
-        "Par un contrôle automatisé, complété par un parcours au clavier et au lecteur d'écran, menés avant chaque mise en ligne. Un contrôle automatisé ne trouve qu'une partie des problèmes ; votre signalement en trouve d'autres, et c'est pour cela que nous vous donnons une adresse.",
+        "Un contrôle automatisé s'exécute avant chaque publication, sur chaque modification du site : contraste des textes, intitulés, structure des titres, et un parcours complet au clavier. Une modification qui échoue à ce contrôle ne peut pas être publiée.",
+        "Un contrôle automatisé ne trouve qu'une partie des problèmes. Une vérification manuelle, au clavier et au lecteur d'écran, a été menée avant la mise en ligne du site. Le reste, ce sont vos signalements qui le trouvent — et c'est pour cela que nous vous donnons une adresse.",
       ],
     },
   ],
@@ -669,8 +670,8 @@ const accessibilityEn: LegalPage = {
       heading: 'What is not right yet',
       bullets: [
         'The donation and booking steps are supplied by outside providers. Their accessibility is theirs, not ours, and we cannot fix it. If one of them blocks you, the fallback below applies.',
-        'Venue maps are interactive plans that are hard to explore with anything but a mouse. The address is always written out in full beside them.',
-        'The PDFs we publish, notably the sponsorship pack, are not tagged for assistive reading.',
+        'Directions to a venue take you to an outside mapping site, whose accessibility is not ours. The full address is always written out on the page: nobody needs the map to know where to go.',
+        'If we publish a PDF — the sponsorship pack, for instance — it is not tagged for assistive reading. Ask us for what is in it and we will send it another way.',
         'The Armenian version of the site is not available yet.',
       ],
     },
@@ -684,7 +685,8 @@ const accessibilityEn: LegalPage = {
     {
       heading: 'How we check',
       paragraphs: [
-        'By an automated check, plus a keyboard and screen-reader pass, run before each release. An automated check finds only some of the problems; your report finds the others, which is why we give you an address.',
+        'An automated check runs before every publication, on every change to the site: text contrast, labels, heading structure, and a full keyboard traversal. A change that fails it cannot be published.',
+        'An automated check finds only some of the problems. A manual keyboard and screen-reader pass was carried out before the site went live. Your report finds the rest, which is why we give you an address.',
       ],
     },
   ],

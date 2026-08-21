@@ -169,7 +169,7 @@ the result.
 - [ ] **Committee** — send the contact form and the sponsorship form; confirm both arrive in a mailbox someone reads.
 - [ ] **Committee + webmaster** — every page on a phone, including the donation and booking steps.
 - [ ] **Webmaster** — keyboard-only pass over the whole site, and a screen-reader pass over the donation flow.
-- [ ] **Webmaster** — verify each claim the accessibility statement makes, rather than assuming it: full keyboard reach with a visible focus indicator, text contrast against the brand colours, heading order, alt text on meaningful images, and `prefers-reduced-motion` respected. The statement is a promise; this is where it becomes true.
+- [ ] **Webmaster** — verify each claim the accessibility statement makes, rather than assuming it: full keyboard reach with a visible focus indicator, text contrast against the brand colours, heading order, alt text on meaningful images, and `prefers-reduced-motion` respected. The statement is a promise; this is where it becomes true. **One of its sentences depends on this run and on nothing else:** it says a manual keyboard and screen-reader pass *was carried out before the site went live*. Nothing automated can make that true. Run it, or change the sentence.
 - [ ] **Webmaster** — handover of every account, per PRD 8. Nothing should be reachable only through the webmaster's own login. The transaction has a checklist of its own: [`comite/proces-verbal-de-remise.md`](comite/proces-verbal-de-remise.md), against the filled-in [`comite/carte-des-comptes.md`](comite/carte-des-comptes.md).
 
 ---
