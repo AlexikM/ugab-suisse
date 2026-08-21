@@ -1,4 +1,4 @@
-import { textOf } from './page-text.mjs';
+import { metadataTextOf, textOf } from './page-text.mjs';
 
 /**
  * The single highest-risk sentence the site could carry: a charity telling
@@ -66,6 +66,26 @@ const BREAK =
 const statementsOf = (html) => textOf(html.replace(BLOCK_END, '. ')).split(BREAK);
 
 /**
+ * The prose, and everything else the page publishes.
+ *
+ * A claim does not have to be rendered to be made. The meta description is
+ * quoted under the search result, the JSON-LD becomes the rich result, the
+ * `alt` is what a screen-reader user is told — and `textOf` sees none of them,
+ * because it strips tags and drops `<script>` entirely.
+ *
+ * Nothing exploits this today: every string that reaches a description on this
+ * site also appears in the body of the page it describes, so the prose sweep
+ * happens to cover it. That is a coincidence of how the pages are built and not
+ * a property of anything. An SEO description written to be different from the
+ * copy — which is the ordinary reason to write one — leaves the guard behind
+ * without a word.
+ */
+const publishedStatementsOf = (html) => [
+  ...statementsOf(html),
+  ...metadataTextOf(html).flatMap((field) => field.split(BREAK)),
+];
+
+/**
  * Every way this claim gets made, in either language.
  *
  * A list rather than one alternation because each entry answers for itself.
@@ -116,7 +136,7 @@ const A_DENIAL = /ne fait\b[^.]{0,60}aucune d[ée]claration|makes no public stat
  * the sweep over the built site is in `tests/compliance/legal-pages.test.mjs`.
  */
 export function deductibilityClaimsIn(html) {
-  return statementsOf(html)
+  return publishedStatementsOf(html)
     .filter((statement) => raisesDeductibility(statement) && !A_DENIAL.test(statement))
     .map((statement) => statement.trim());
 }

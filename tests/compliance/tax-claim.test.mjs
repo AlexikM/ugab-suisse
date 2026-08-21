@@ -104,6 +104,37 @@ const CAUGHT_ACROSS_BLOCKS = [
 ];
 
 /**
+ * Claims a page publishes without rendering them.
+ *
+ * None of these is prose, and all of them are published: the meta description
+ * is quoted under the search result, the JSON-LD becomes the rich result, and
+ * the `alt` is what a screen-reader user is told the picture shows. `textOf`
+ * strips tags and drops `<script>`, so a sweep built on it sees none of them.
+ */
+const CAUGHT_UNRENDERED = [
+  [
+    'the meta description, which is the ordinary place to write a different sentence',
+    '<head><meta name="description" content="Vos dons sont déductibles fiscalement en Suisse."></head><body><main><p>Faites un don.</p></main></body>',
+  ],
+  [
+    'the Open Graph description a link preview shows',
+    '<head><meta property="og:description" content="Votre don ouvre droit à une déduction fiscale."></head><body><main><p>Faites un don.</p></main></body>',
+  ],
+  [
+    'the alt text a screen-reader user is read',
+    '<main><img src="/don.jpg" alt="Vos dons sont déductibles fiscalement"><p>Faites un don.</p></main>',
+  ],
+  [
+    'the JSON-LD a rich result is built from',
+    '<main><p>Faites un don.</p></main><script type="application/ld+json">{"@type":"Organization","description":"Votre don est déductible de vos impôts."}</script>',
+  ],
+  [
+    'JSON-LD that does not parse, which is published all the same',
+    '<main><p>Faites un don.</p></main><script type="application/ld+json">{"description": "Votre don est déductible fiscalement",,}</script>',
+  ],
+];
+
+/**
  * Wordings that must not be flagged.
  *
  * A guard that cannot be satisfied gets edited until it can, and what gets
@@ -128,11 +159,16 @@ const ALLOWED = [
 ];
 
 const flagged = ([, wording]) =>
-  deductibilityClaimsIn(wording.startsWith('<main') ? wording : paragraph(wording)).length > 0;
+  deductibilityClaimsIn(wording.startsWith('<') ? wording : paragraph(wording)).length > 0;
 const label = ([name]) => name;
 
 test('every way of making the claim is caught', () => {
-  const missed = [...CAUGHT, ...CAUGHT_BEHIND_A_DENIAL, ...CAUGHT_ACROSS_BLOCKS]
+  const missed = [
+    ...CAUGHT,
+    ...CAUGHT_BEHIND_A_DENIAL,
+    ...CAUGHT_ACROSS_BLOCKS,
+    ...CAUGHT_UNRENDERED,
+  ]
     .filter((wording) => !flagged(wording))
     .map(label);
 
