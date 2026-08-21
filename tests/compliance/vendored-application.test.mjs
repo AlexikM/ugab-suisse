@@ -9,12 +9,28 @@
  * assurance and it is not one.
  *
  * What this can and cannot establish. Nobody is going to read 1.9 MB of
- * minified JavaScript, here or anywhere. What is establishable is that the bytes
- * are the ones published under that version, and that they have not moved since
- * somebody decided to trust them. The version, the source and the digest are
- * written in the shell; the file is hashed and compared. Swapping the bundle
- * without updating the record fails, and updating the record without the bundle
- * fails.
+ * minified JavaScript, here or anywhere. What is establishable is narrower than
+ * it sounds, so it is worth writing exactly: the bundle and the record agree
+ * with each other, and neither has moved since somebody wrote the record. The
+ * version, the source and the digest are written in the shell; the file is
+ * hashed and compared. Swapping the bundle without updating the record fails,
+ * and updating the record without the bundle fails.
+ *
+ * What it does not establish is that these are the bytes the registry publishes
+ * under that version. Both halves of the comparison live in this repository, so
+ * a bundle that was already wrong when it was vendored is wrong here and agrees
+ * with itself perfectly. Only fetching the tarball would answer that, and it
+ * would make this suite need a network to run — which `npm run check` does not,
+ * deliberately, and which a volunteer running it in three years would thank
+ * nobody for. That check happens once, by hand, at the moment of vendoring; the
+ * `source` line in the shell is the URL to repeat it from, and the procedure is
+ * in `../../docs/editorial/back-office-maintenance.md`.
+ *
+ * This paragraph used to claim the stronger thing — that the bytes are the ones
+ * published under that version. Saying a test checks more than it does is the
+ * exact failure this file was written to correct: `index.html` promised a check
+ * that did not exist. The shell's own wording has been accurate throughout. It
+ * was the test that overstated itself.
  *
  * Why this sits with the compliance suite: `unpkg.com` at an open version range
  * is what this replaced, and it is a launch blocker in
