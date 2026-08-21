@@ -1,0 +1,46 @@
+---
+/**
+ * Says out loud that this page is not in the language the visitor asked for.
+ *
+ * The alternative — serving French under an Armenian URL and saying nothing —
+ * is the failure this component exists to prevent. A reader who asked for
+ * Armenian and got French without explanation concludes the site is broken, or
+ * that the committee thinks Armenian is optional. Told plainly, they conclude
+ * the translation has not arrived yet, which is true.
+ *
+ * It is a banner rather than a `sr-only` note on purpose: the person it is
+ * written for is reading with their eyes, and `<html lang>` already carries the
+ * machine-readable half.
+ *
+ * It disappears on its own. The moment the Comité fills in that page's keys in
+ * `armenian` (src/i18n/ui.ts), the page stops falling back and this stops
+ * rendering — see src/i18n/fallback.ts.
+ */
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+
+interface Props {
+  /** The language the page is really written in. */
+  served: Lang;
+  /** The language the visitor asked for. */
+  requested: Lang;
+  /** This same page at its unprefixed French address. */
+  href: string;
+}
+
+const { served, requested, href } = Astro.props;
+const t = useTranslations(served);
+---
+
+<aside
+  class="border-b border-gold bg-paper-deep"
+  aria-label={t('fallback.label')}
+  data-language-fallback={requested}
+>
+  <p class="mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3 text-sm text-ink">
+    <span>{t('fallback.notice')}</span>
+    <a href={href} class="font-medium text-navy underline underline-offset-4 hover:text-red">
+      {t('fallback.switch')}
+    </a>
+  </p>
+</aside>

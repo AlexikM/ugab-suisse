@@ -1,28 +1,109 @@
 @import "tailwindcss";
+@import "./fonts.css";
+
+/*
+ * The design system. Every colour, typeface, type size and spacing rhythm the
+ * site is allowed to use is declared once, here, and nowhere else.
+ *
+ * `@theme` turns each token into a Tailwind utility: `--color-navy` gives
+ * `bg-navy`, `text-navy`, `border-navy`; `--text-display-lg` gives
+ * `text-display-lg`; `--spacing-section` gives `py-section`. Components name
+ * the token, never the value. A raw `#1a2b3c` or `bg-blue-600` in a component
+ * is a defect — `tests/build/design-tokens.test.ts` fails the build on one.
+ *
+ * Tailwind's own palette is switched off below (`--color-*: initial`) so that
+ * `bg-blue-600` does not silently exist. The committee's four colours, plus
+ * black and white, are the whole vocabulary.
+ */
 
 @theme {
-  /* Brand UGAB officiel — couleurs extraites pixel-sampled du logo et site officiel */
-  --color-brand: #243c98; /* Bleu UGAB du logo */
-  --color-brand-deep: #1a2d70; /* Hover / fond sombre */
-  --color-brand-soft: #8da8ae; /* Bleu secondaire (CTAs alternatifs) */
+  /* ---------------------------------------------------------------------
+   * Palette — the committee's four colours: Armenian red, navy, gold and an
+   * off-white ground. Ratios below are against `paper` unless stated, and are
+   * asserted in tests/build/contrast.test.ts. WCAG 2.2 AA wants 4.5:1 for body
+   * text, 3:1 for large text and for the boundary of an interactive control.
+   * ------------------------------------------------------------------- */
+  --color-*: initial;
 
-  /* Or anniversaire — deux nuances officielles */
-  --color-gold: #8f8659; /* Or olive bronze (du "120" du logo) */
-  --color-gold-light: #f3eac0; /* Crème highlight (utilisé sur photos en hero) */
+  /* Navy — the institutional voice. Headings, links, the chrome. */
+  --color-navy: #12294d; /* 13.65:1 on paper */
+  --color-navy-deep: #0a1b36; /* hover and dark grounds; 17.17:1 with white */
 
-  /* Neutres tintés vers le bleu de marque (per Impeccable: jamais #fff pur) */
-  --color-ink: #0e1426;
-  --color-ink-soft: #2a3140;
-  --color-ink-muted: #5b6675;
-  --color-paper: #fbfcfd;
-  --color-paper-soft: #f3f5f9;
-  --color-paper-deep: #e6ebf2;
-  --color-line: #d3dae3;
+  /* Armenian red — the accent, and the donation call to action. */
+  --color-red: #b4121e; /* 6.50:1 on paper; 6.89:1 with white on it */
+  --color-red-deep: #8e0d17; /* hover; 9.46:1 with white */
 
-  /* Typographies officielles UGAB */
-  --font-display: "Oswald", "Arial Narrow", sans-serif;
-  --font-serif: "EB Garamond", "Garamond", Georgia, serif;
-  --font-sans: "Lato", system-ui, -apple-system, sans-serif;
+  /* Gold — the ceremonial accent: eyebrows, rules, the footer headings. */
+  --color-gold: #8a6714; /* 4.91:1 on paper — dark enough to set text in */
+  --color-gold-light: #e8c77a; /* for dark grounds only; 10.68:1 on ink */
+
+  /* Off-white ground and its two deeper steps. */
+  --color-paper: #faf8f4;
+  --color-paper-soft: #f2efe8;
+  --color-paper-deep: #e6e1d6;
+
+  /* Text. Three weights of presence, all AA on paper and paper-soft. */
+  --color-ink: #171a21; /* 16.41:1 */
+  --color-ink-soft: #3a414f; /* 9.66:1 */
+  --color-ink-muted: #5c6474; /* 5.61:1 — the lightest text allowed */
+
+  /* Hairlines. `line` separates, `line-strong` bounds a control (3:1). */
+  --color-line: #d8d2c6;
+  --color-line-strong: #8c8473;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ---------------------------------------------------------------------
+   * Typography. Playfair Display for display and headings, Inter for body —
+   * the brief's own direction. Self-hosted; see fonts.css.
+   *
+   * An Armenian family is in EVERY stack, including the body and monospace
+   * ones. Armenian has no system fallback on most machines: a stack that
+   * forgets it renders empty boxes, and it is always the one nobody checked.
+   * tests/e2e/fonts.spec.ts asserts this for the body and heading styles.
+   * ------------------------------------------------------------------- */
+  --font-display: "Playfair Display", "Noto Serif Armenian", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Noto Sans Armenian", monospace;
+
+  /* ---------------------------------------------------------------------
+   * Type scale. The display sizes carry their own responsiveness with
+   * `clamp()`, so a heading is one class rather than a chain of breakpoints
+   * that drift apart page by page.
+   * ------------------------------------------------------------------- */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.18em;
+
+  --text-lead: clamp(1.125rem, 0.95rem + 0.7vw, 1.375rem);
+  --text-lead--line-height: 1.6;
+
+  --text-display-sm: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
+  --text-display-sm--line-height: 1.2;
+
+  --text-display-md: clamp(2rem, 1.5rem + 2.2vw, 3rem);
+  --text-display-md--line-height: 1.15;
+
+  --text-display-lg: clamp(2.5rem, 1.7rem + 3.4vw, 4rem);
+  --text-display-lg--line-height: 1.08;
+
+  --text-display-xl: clamp(2.75rem, 1.6rem + 4.6vw, 4.75rem);
+  --text-display-xl--line-height: 1.05;
+
+  --tracking-eyebrow: 0.18em;
+  --tracking-caps: 0.12em;
+
+  /* ---------------------------------------------------------------------
+   * Spacing rhythm. `py-section` is the vertical breathing room between two
+   * bands of content; `py-section-lg` is the generous version used on a page's
+   * opening band. Everything else uses Tailwind's own 0.25rem scale.
+   * ------------------------------------------------------------------- */
+  --spacing-section: 5rem;
+  --spacing-section-lg: 7rem;
+
+  /* The one content width the site uses. `max-w-page`. */
+  --container-page: 80rem;
 }
 
 @layer base {
@@ -31,33 +112,52 @@
     color: var(--color-ink);
     background: var(--color-paper);
     scroll-behavior: smooth;
+    /* The sticky header must not cover the target of an in-page link. */
+    scroll-padding-top: 5.5rem;
     -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
   }
 
-  h1 {
-    font-family: var(--font-display);
-    font-weight: 500;
-    letter-spacing: 0.005em;
-  }
+  h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    letter-spacing: -0.005em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
   }
 
-  .editorial {
-    font-family: var(--font-serif);
-    font-weight: 400;
+  /*
+   * A visible focus ring on everything a keyboard can reach. `:focus-visible`
+   * rather than `:focus` so a mouse click does not leave a ring behind, and an
+   * offset so the ring is legible against a dark button as well as a light one.
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-red);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
+  /* Dark bands invert the ring, which would otherwise sit red on navy. */
+  .on-dark :focus-visible,
+  .on-dark:focus-visible {
+    outline-color: var(--color-gold-light);
+  }
+}
+
+@layer components {
+  /*
+   * The eyebrow: the small uppercase label above a heading. Used on every page,
+   * so it is one class rather than five utilities repeated thirty times.
+   */
   .eyebrow {
     font-family: var(--font-display);
+    font-size: var(--text-eyebrow);
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.75rem;
-    font-weight: 500;
+    letter-spacing: var(--tracking-eyebrow);
+    line-height: 1.4;
   }
 }
 
@@ -72,5 +172,34 @@
   .fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/*
+ * Reduced motion. A visitor who has asked their operating system for less
+ * movement gets none: no smooth scrolling, no transitions, no transforms on
+ * hover. Written once, globally, so a new component cannot forget it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override must beat animations declared in component styles it cannot see; the alternative is motion reaching someone whose OS asked for none */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override must beat animations declared in component styles it cannot see; the alternative is motion reaching someone whose OS asked for none */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override must beat animations declared in component styles it cannot see; the alternative is motion reaching someone whose OS asked for none */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override must beat animations declared in component styles it cannot see; the alternative is motion reaching someone whose OS asked for none */
+    scroll-behavior: auto !important;
+  }
+
+  .fade-in {
+    opacity: 1;
+    transform: none;
   }
 }

@@ -19,6 +19,9 @@
  *   message. The host is still correct, which is what the audit compares.
  * - What a third party's own embed loads once it is running. Only a browser sees
  *   that, which is why the pre-launch checklist repeats this audit in one.
+ * - JSON-LD blocks are skipped: `@context` names a vocabulary, it is not
+ *   fetched. If structured data ever gains a URL that *is* fetched, this
+ *   exemption stops being correct.
  */
 
 /**
@@ -179,8 +182,14 @@ export function collectReferences({ page, html, siteHost }) {
     record(match[2] ?? match[3] ?? '', KIND.FORM_TARGET, 'form[action]');
   }
 
-  for (const match of html.matchAll(/<script\b(?![^>]*\bsrc\s*=)[^>]*>([\s\S]*?)<\/script>/gi)) {
-    for (const reference of scriptReferences(match[1])) {
+  for (const match of html.matchAll(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    // A JSON-LD block is data, not code. Its `@context` is a vocabulary
+    // identifier — browsers never dereference it, and Schema.org therefore
+    // receives nothing and processes nothing. Disclosing it as a processor
+    // would make the privacy policy less accurate, not more.
+    if (/type\s*=\s*["']?application\/ld\+json/i.test(match[1])) continue;
+
+    for (const reference of scriptReferences(match[2])) {
       record(reference, KIND.SCRIPT_LITERAL, 'inline script');
     }
   }
