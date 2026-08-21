@@ -25,11 +25,13 @@
         package : @sveltia/cms@0.193.2  (dist/sveltia-cms.js)
         source  : https://registry.npmjs.org/@sveltia/cms/-/cms-0.193.2.tgz
         sha256  : 919bad02217fe7b41a33935e4bd5861ec055e48688d64b680e2dd054b39ad212
-        licence : MIT
+        licence : MIT — sveltia-cms-0.193.2.LICENSE.txt, beside this page
 
       Updating it is a deliberate act with a written procedure — see
-      docs/editorial/back-office-maintenance.md. A test checks that the file
-      beside this page is still the file recorded here.
+      docs/editorial/back-office-maintenance.md.
+      tests/compliance/vendored-application.test.mjs hashes the file beside this
+      page and compares it with the digest above, so the record and the bundle
+      cannot drift apart.
     -->
     <script src="./sveltia-cms-0.193.2.js"></script>
   </body>

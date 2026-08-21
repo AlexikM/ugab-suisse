@@ -9,6 +9,7 @@ export default defineConfig({
       // tests/build       — the built output: URLs, metadata, sitemap
       // tests/content     — content collections and the copy they carry
       // tests/compliance  — legal, privacy and consent obligations
+      // tests/docs        — the documentation's own promises (node:test only)
       'tests/{build,content,compliance}/**/*.test.ts',
     ],
     environment: 'node',

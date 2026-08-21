@@ -12,6 +12,8 @@ maintains the site.
 | Path | What it is |
 | --- | --- |
 | `publication.md` | Draft → review → publish: the three states, what decides them, and what is still missing |
+| `back-office-maintenance.md` | The vendored CMS: why it is vendored, how to update it, and the unpkg dependency that remains |
+| `editable-text-blocks.md` | Whether the site's own copy should become editable, what it would take, and the recommendation |
 
 ## What is editable, and what is deliberately not
 
@@ -31,7 +33,8 @@ copy.** This is a decision, not a missing feature. Two reasons:
 
 The site's own copy lives in `src/i18n/`. Which parts of it should become
 editable, and what that would take, is a question worth answering properly
-rather than by accident — see `editable-text-blocks.md`.
+rather than by accident — see
+[`editable-text-blocks.md`](editable-text-blocks.md).
 
 **This has to be said to the committee out loud.** PRD 4 records it as the real
 risk in the whole workstream: a committee told they are getting "a WordPress

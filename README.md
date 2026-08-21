@@ -88,13 +88,19 @@ every redesign, and tests that break on them teach the team to ignore failures.
 | Directory | Runner | What belongs there |
 | --- | --- | --- |
 | `tests/build/` | Vitest | The built output — URLs, metadata, the sitemap |
-| `tests/content/` | Vitest | Content collections and the copy they carry |
-| `tests/compliance/` | Vitest | Legal, privacy and consent obligations |
+| `tests/content/` | node:test, and Vitest for the content boundary | Content collections and the copy they carry |
+| `tests/compliance/` | node:test | Legal, privacy and consent obligations |
+| `tests/docs/` | node:test | The documentation's own promises — no document may be referenced before it is written |
 | `tests/e2e/` | Playwright | Behaviour in a real browser — language switching, keyboard navigation |
 
-The Vitest suites read `dist/`, so they need a build first; `npm run check`
-does that for you. Playwright builds nothing itself either — it serves `dist/`
-through `npm run preview`.
+Two runners is one more than anybody wants, and [#38](https://github.com/AlexikM/ugab-suisse/issues/38)
+says why it is still two: the compliance suite needs `node:test`'s `todo`, which
+runs a test and allows it to fail, and Vitest's skips instead. `npm run test`
+chains both.
+
+Most of these read `dist/`, so they need a build first; `npm run check` does that
+for you. Playwright builds nothing itself either — it serves `dist/` through
+`npm run preview`.
 
 `tests/build/base-path.test.ts` is worth knowing about: it fails the check if
 any URL in the built output does not carry the configured path prefix, or still
