@@ -9,12 +9,19 @@
 // inventing Armenian on their behalf would be worse than admitting the gap. Add
 // a key to `armenian` below and it is served immediately — see ./fallback.ts.
 //
-// A handful of strings are NOT from the approved copy, because the site needs
-// to say something the brief never had to write: the empty events list, the
-// donation form that is not yet embedded, the contact details and bureau
-// portraits still to come, and the note that the contact form is not yet wired.
-// They are marked "NOT APPROVED COPY" below and the Comité should be asked to
+// A number of strings are NOT from the approved copy, because the site needs to
+// say something the brief never had to write: the empty events list, the
+// contact details and bureau portraits still to come, the note that the contact
+// form is not yet wired, and — the largest group — everything the donation and
+// booking surfaces have to say while no payment or ticketing account exists.
+// The brief assumed a provider that would speak for itself; there is none yet,
+// so the pages speak instead. They are marked "NOT APPROVED COPY" below, by
+// block where a whole section is unapproved, and the Comité should be asked to
 // approve or reword them before launch.
+//
+// Two of the committee's own approved sentences are carried here *short*, and
+// the comment beside each says why: both ended with a promise about an email
+// that nothing on this site sends.
 //
 // Two things are deliberately NOT here, and must not be added without the
 // compliance work in PRD 7 (#7):
@@ -462,8 +469,14 @@ export const ui = {
     'event.all': 'Tous les événements',
 
     // --- Billetterie (PRD 6) ---
+    // NOT APPROVED COPY — the whole block, except 'event.thanks_title', which is
+    // the first sentence of the committee's approved booking confirmation. The
+    // brief never had to write any of this: it assumed a booking engine that
+    // would speak for itself. See the header of this file.
     'event.tickets_title': 'Billetterie',
     'event.ticket_types': 'Types de billets',
+    'event.large_booking':
+      'Pour une table ou une réservation d’entreprise, écrivez-nous : ces places se réservent directement auprès du Comité.',
     // NOT APPROVED COPY — see the header of this file. Says out loud what the
     // brief asks for: one room capacity shared by every ticket type.
     'event.capacity_note': 'Places disponibles pour l’ensemble des tarifs.',
@@ -472,7 +485,7 @@ export const ui = {
     // Comité on the fiche. See ADR-0001 and PRD 6.
     'event.sold_out_detail':
       'Toutes les places ont été attribuées. Les réservations sont closes pour cet événement.',
-    'event.sold_out_contact': 'Une place peut se libérer : écrivez-nous et nous vous préviendrons.',
+    'event.sold_out_contact': 'Une place peut se libérer : écrivez-nous.',
     // NOT APPROVED COPY — see the header of this file.
     'event.booking_pending':
       'La billetterie en ligne sera ouverte dès l’ouverture du compte auprès du prestataire. D’ici là, écrivez-nous pour réserver.',
@@ -498,8 +511,6 @@ export const ui = {
     'donate.impact_p2':
       "Chaque don au Comité Suisse rejoint un réseau actif dans plus de 30 pays et finance des actions concrètes : aide aux familles déplacées, soutien aux écoles arméniennes, programmes culturels pour la jeunesse, reconstruction de communautés fragilisées. Aucune somme n'est trop modeste — chaque franc est intégralement affecté à la mission, où qu'il soit versé dans le monde.",
     'donate.amounts_title': 'Montants suggérés',
-    'donate.amount_column': 'Montant',
-    'donate.impact_column': 'Impact',
     // The brief's line ends with "Reçu automatique par e-mail" — deliberately
     // not carried. See PRD 7 (#7).
     'donate.terms': 'Don unique ou mensuel · Paiement 100 % sécurisé.',
@@ -508,13 +519,13 @@ export const ui = {
       'Le module de don en ligne sera intégré dès l’ouverture du compte auprès du prestataire de paiement suisse.',
 
     // --- Don en ligne (PRD 5) ---
+    // NOT APPROVED COPY — the whole block. See the header of this file.
     'donate.give_title': 'Faire un don',
     'donate.frequency_title': 'Fréquence du don',
     'donate.frequency_once': 'Une seule fois',
     'donate.frequency_monthly': 'Chaque mois',
     // NOT APPROVED COPY — see the header of this file.
-    'donate.amount_free': 'Autre montant',
-    'donate.amount_free_hint': 'En francs suisses.',
+    'donate.amount_free': 'Montant libre (CHF)',
     'donate.form_title': 'Formulaire de don en ligne',
     // NOT APPROVED COPY — see the header of this file. Nothing processes the
     // choice above yet, and a page that let someone believe otherwise would be
@@ -523,10 +534,13 @@ export const ui = {
       'Votre choix n’est donc pas encore transmis : rien n’est débité et rien n’est enregistré. Deux façons de donner fonctionnent dès aujourd’hui.',
 
     // --- Virement et QR-facture ---
+    // NOT APPROVED COPY — the whole block, except the QR-facture field names
+    // further down, which are fixed by the Swiss Payment Standards rather than
+    // chosen by anyone. See the header of this file.
     'donate.transfer_title': 'Don par virement bancaire',
     // NOT APPROVED COPY — see the header of this file.
     'donate.transfer_lead':
-      'Le virement ne coûte aucun frais de transaction : l’intégralité de votre don parvient au Comité. C’est la voie à privilégier pour les montants importants.',
+      'Le virement évite les frais du prestataire de paiement. C’est la voie à privilégier pour les montants importants.',
     'donate.transfer_cta': 'Donner par virement',
     // NOT APPROVED COPY — see the header of this file. A statement about how
     // Swiss banking works, not a promise the Comité has to keep.
@@ -552,6 +566,8 @@ export const ui = {
     'donate.qr_acceptance': 'Point de dépôt',
 
     // --- Merci (adresse de retour du prestataire) ---
+    // 'donate.thanks_body' is the committee's approved wording; 'thanks_title'
+    // and 'thanks_pending' are NOT APPROVED COPY. See the header of this file.
     // Message de confirmation — Don. Le texte approuvé se termine par « Reçu
     // envoyé par e-mail » : non repris, pour la même raison que 'donate.terms'.
     // Voir PRD 7 (#7) et la section A1 de docs/pre-launch-checklist.md.
@@ -706,13 +722,17 @@ export const ui = {
     'event.all': 'All events',
 
     // --- Booking (PRD 6) ---
+    // NOT APPROVED COPY — the whole block, except 'event.thanks_title'. See the
+    // header of this file, and the French table above.
     'event.tickets_title': 'Booking',
     'event.ticket_types': 'Ticket types',
+    'event.large_booking':
+      'For a table or a company booking, write to us: those places are reserved directly with the Committee.',
     // NOT APPROVED COPY — see the header of this file.
     'event.capacity_note': 'Places available across all ticket types together.',
     // NOT APPROVED COPY — see the header of this file.
     'event.sold_out_detail': 'Every place has been taken. Booking is closed for this event.',
-    'event.sold_out_contact': 'A place may free up: write to us and we will let you know.',
+    'event.sold_out_contact': 'A place may free up: write to us.',
     // NOT APPROVED COPY — see the header of this file.
     'event.booking_pending':
       'Online booking will open as soon as the account with the ticketing provider is open. Until then, write to us to reserve a place.',
@@ -735,31 +755,31 @@ export const ui = {
     'donate.impact_p2':
       'Every donation to the Swiss Committee joins a network active in more than 30 countries and funds concrete action: support for displaced families, Armenian schools, cultural programmes for young people, and the rebuilding of fragile communities. No amount is too small — every franc is fully dedicated to the mission, wherever in the world it is spent.',
     'donate.amounts_title': 'Suggested amounts',
-    'donate.amount_column': 'Amount',
-    'donate.impact_column': 'Impact',
     'donate.terms': 'One-time or monthly · 100% secure payment.',
     // NOT APPROVED COPY — see the header of this file.
     'donate.provider_pending':
       'The online donation form will be embedded as soon as the account with the Swiss payment provider is open.',
 
     // --- Online giving (PRD 5) ---
+    // NOT APPROVED COPY — the whole block. See the header of this file.
     'donate.give_title': 'Make a donation',
     'donate.frequency_title': 'How often',
     'donate.frequency_once': 'Once',
     'donate.frequency_monthly': 'Every month',
     // NOT APPROVED COPY — see the header of this file.
-    'donate.amount_free': 'Another amount',
-    'donate.amount_free_hint': 'In Swiss francs.',
+    'donate.amount_free': 'Free amount (CHF)',
     'donate.form_title': 'Online donation form',
     // NOT APPROVED COPY — see the header of this file.
     'donate.provider_pending_detail':
       'Your choice is therefore not sent anywhere yet: nothing is charged and nothing is stored. Two ways of giving already work today.',
 
     // --- Bank transfer and QR-bill ---
+    // NOT APPROVED COPY — the whole block, except the QR-bill field names, which
+    // the Swiss Payment Standards fix. See the header of this file.
     'donate.transfer_title': 'Donation by bank transfer',
     // NOT APPROVED COPY — see the header of this file.
     'donate.transfer_lead':
-      'A transfer carries no transaction fee: the whole of your gift reaches the Committee. It is the route to prefer for larger amounts.',
+      'A bank transfer avoids the payment provider’s fees. It is the route to prefer for larger amounts.',
     'donate.transfer_cta': 'Give by bank transfer',
     // NOT APPROVED COPY — see the header of this file.
     'donate.standing_order':
@@ -783,6 +803,8 @@ export const ui = {
     'donate.qr_acceptance': 'Acceptance point',
 
     // --- Thank you (the provider's return address) ---
+    // 'donate.thanks_body' is the committee's approved wording; the other two
+    // are NOT APPROVED COPY. See the header of this file.
     // The approved wording ends with "Receipt sent by email": not carried, for
     // the same reason as 'donate.terms'. See PRD 7 (#7).
     'donate.thanks_title': 'Thank you',

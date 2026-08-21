@@ -8,6 +8,10 @@
  * the point of the brief's "montants suggérés": each one is an argument, and an
  * argument you can act on reads differently from an argument you can only read.
  *
+ * The free amount is the committee's own "Libre" card with a field in it, not a
+ * sixth option beside it. One choice, one control: two would leave a donor
+ * wondering which of them counted.
+ *
  * **Nothing here processes a donation, and the page says so out loud.** There is
  * no `<form>`, no action, no submit control and nowhere for a value to go: the
  * payment account does not exist yet (ADR-0001, PRD 5) and inventing a control
@@ -15,10 +19,13 @@
  * choice does do today is real, if small — it fills in the amount on the
  * QR-bill further down the page, which is a route that works right now.
  *
- * When the provider is connected, this is the configuration its hosted form is
- * set up with, and `data-donation-amount` / `data-donation-frequency` are the
- * hooks that pre-select it. The values are numbers rather than the display
- * strings for exactly that reason.
+ * When the provider is connected there is a decision to take here, and it
+ * should be taken deliberately rather than by accident: the provider's hosted
+ * form brings its own amount picker, so **either** this one is deleted and the
+ * page keeps only the argument, **or** it stays and pre-selects the embed from
+ * `data-donation-amount` / `data-donation-frequency`. Two pickers on one page
+ * is the outcome nobody should end up with by default. The values are numbers
+ * rather than display strings so that the second option remains available.
  */
 
 import { donationFrequencies, inLang, suggestedAmounts } from '../i18n/ui';
@@ -38,8 +45,14 @@ const amounts = inLang(suggestedAmounts, served);
 const amountId = (index: number) => `donation-amount-${index}`;
 const frequencyId = (id: string) => `donation-frequency-${id}`;
 
+/**
+ * The card is the wrapper rather than the label, so that the free amount can
+ * put a field below its label and still sit inside one bordered choice.
+ * `border-line-strong` rather than `border-line`: this bounds an interactive
+ * control, which WCAG wants at 3:1 — see the palette notes in global.css.
+ */
 const card =
-  'block h-full cursor-pointer border border-line-strong bg-paper p-5 transition ' +
+  'h-full border border-line-strong bg-paper transition ' +
   'hover:border-navy peer-checked:border-navy peer-checked:bg-white ' +
   'peer-focus-visible:outline peer-focus-visible:outline-[3px] ' +
   'peer-focus-visible:outline-red peer-focus-visible:outline-offset-2';
@@ -61,12 +74,14 @@ const card =
             checked={frequency.id === 'once'}
             class="peer sr-only"
           />
-          <label
-            for={frequencyId(frequency.id)}
-            class:list={[card, 'font-display text-lg font-medium']}
-          >
-            {t(frequency.label)}
-          </label>
+          <div class={card}>
+            <label
+              for={frequencyId(frequency.id)}
+              class="block cursor-pointer p-5 font-display text-lg font-medium"
+            >
+              {t(frequency.label)}
+            </label>
+          </div>
         </div>
       ))}
     </div>
@@ -86,36 +101,38 @@ const card =
             data-donation-amount={row.value === null ? 'free' : String(row.value)}
             class="peer sr-only"
           />
-          <label for={amountId(index)} class={card}>
-            <span class="block font-display text-2xl font-semibold text-ink">{row.amount}</span>
-            <span class="mt-2 block text-sm leading-relaxed text-ink-soft">{row.impact}</span>
-          </label>
+          <div class={card}>
+            <label for={amountId(index)} class="block cursor-pointer p-5">
+              <span class="block font-display text-2xl font-semibold text-ink">{row.amount}</span>
+              <span class="mt-2 block text-sm leading-relaxed text-ink-soft">{row.impact}</span>
+            </label>
+
+            {/*
+              The field belongs to the committee's own "Libre" row — story 3 in
+              the PRD is a donor who does not want to be boxed in by the
+              suggestions, and that is the row that already says so.
+            */}
+            {row.value === null && (
+              <div class="flex items-center gap-2 px-5 pb-5">
+                <label for="donation-amount-free" class="sr-only">
+                  {t('donate.amount_free')}
+                </label>
+                <span aria-hidden="true" class="font-display text-lg text-ink-muted">CHF</span>
+                <input
+                  type="number"
+                  id="donation-amount-free"
+                  name="donation-amount-free"
+                  data-donation-amount-free
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  class="w-full border border-line-strong bg-white px-3 py-2 text-lg text-ink"
+                />
+              </div>
+            )}
+          </div>
         </div>
       ))}
-
-      <!--
-        The free amount, as a field rather than a card: story 3 in the PRD is a
-        donor who does not want to be boxed in by the suggestions.
-      -->
-      <div class="border border-line-strong bg-paper p-5">
-        <label for="donation-amount-free" class="block font-display text-lg font-medium text-ink">
-          {t('donate.amount_free')}
-        </label>
-        <div class="mt-3 flex items-center gap-2">
-          <span aria-hidden="true" class="font-display text-lg text-ink-muted">CHF</span>
-          <input
-            type="number"
-            id="donation-amount-free"
-            name="donation-amount-free"
-            data-donation-amount-free
-            min="1"
-            step="1"
-            inputmode="numeric"
-            class="w-full border border-line-strong bg-white px-3 py-2 text-lg text-ink"
-          />
-        </div>
-        <p class="mt-2 text-sm text-ink-muted">{t('donate.amount_free_hint')}</p>
-      </div>
     </div>
   </fieldset>
 </div>

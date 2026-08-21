@@ -201,8 +201,24 @@ const link = (path: string) => withBase(localeRoute(path, lang));
     const choice = document.querySelector('[data-donation-choice]');
     if (!choice) return;
 
-    const amountFields = document.querySelectorAll('[data-qr-field="amount"]');
+    const bill = document.querySelector('[data-qr-bill]');
     const standingOrder = document.querySelector('[data-standing-order]');
+    const free = choice.querySelector('[data-donation-amount-free]');
+
+    /**
+     * The amount is only ours to write while the bill carries no code.
+     *
+     * A Swiss QR-bill's printed amount and its encoded payload have to agree —
+     * a bank reads the code, a person reads the figure, and a slip where the
+     * two disagree is worse than one with an open amount. Once a generated
+     * image is supplied the amount belongs to the payload, and this stops
+     * touching it. See src/components/SwissQrBill.astro.
+     */
+    const amountFields =
+      bill && bill.getAttribute('data-qr-bill-state') === 'pending'
+        ? document.querySelectorAll('[data-qr-field="amount"]')
+        : [];
+
     // Whatever the page rendered for "no amount chosen", kept rather than
     // restated here, so the placeholder lives in one place.
     const openAmount = amountFields[0] ? amountFields[0].textContent : '';
@@ -210,7 +226,6 @@ const link = (path: string) => withBase(localeRoute(path, lang));
     const chosenAmount = () => {
       const selected = choice.querySelector('[data-donation-amount]:checked');
       if (selected && selected.value !== 'free') return Number(selected.value);
-      const free = choice.querySelector('[data-donation-amount-free]');
       const typed = free ? Number(free.value) : Number.NaN;
       return Number.isFinite(typed) && typed > 0 ? typed : null;
     };
@@ -226,6 +241,15 @@ const link = (path: string) => withBase(localeRoute(path, lang));
       for (const field of amountFields) field.textContent = text;
       if (standingOrder) standingOrder.hidden = !isMonthly();
     };
+
+    // Typing a figure is choosing the free amount. Without this, someone who
+    // clicks CHF 100 and then types 300 is quietly still giving 100.
+    if (free) {
+      free.addEventListener('input', () => {
+        const freeOption = choice.querySelector('[data-donation-amount="free"]');
+        if (freeOption && free.value !== '') freeOption.checked = true;
+      });
+    }
 
     choice.addEventListener('change', update);
     choice.addEventListener('input', update);

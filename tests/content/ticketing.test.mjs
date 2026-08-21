@@ -170,6 +170,30 @@ test('an event with a ticketing link but no price list renders and takes booking
   assert.match(html, /href="https:\/\/example\.invalid\/concert"/);
   assert.doesNotMatch(html, /data-ticket-types/, 'no prices were written, so none should appear');
   assert.doesNotMatch(visibleText(html), /undefined|NaN/);
+
+  // A ticket link the committee pasted onto the fiche is not a ticketing
+  // provider. The slot is where a booking widget will mount; nothing has
+  // mounted in it, whatever else the page can offer.
+  assert.doesNotMatch(
+    html,
+    /data-provider-state="connected"/,
+    'a committee-supplied ticket link is being reported as a connected provider',
+  );
+});
+
+test('a table or a company booking is pointed at the committee, not at a card', () => {
+  // PRD 6: "Large amounts go by invoice. VIP tables and sponsorship packages
+  // are handled by invoice and bank transfer, not card." On a four-figure table
+  // the card fee is material, and a corporate buyer wants an invoice anyway.
+  const html = page('2099-tarifs-sans-billetterie');
+
+  assert.match(visibleText(html), /table ou une réservation d['’]entreprise/);
+  assert.match(html, /href="[^"]*\/contact\/?"/);
+
+  assert.match(
+    visibleText(page('2099-tarifs-sans-billetterie', '/en')),
+    /table or a company booking/,
+  );
 });
 
 test('a page taking bookings does not pretend to know how many places are left', () => {

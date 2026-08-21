@@ -27,6 +27,12 @@
  * nothing here generates one. `qrImage` is the seam: supply a generated image
  * and the panel switches from `pending` to `ready`. See the pull request for
  * what that step involves.
+ *
+ * One rule for whoever does that: **the printed amount and the encoded amount
+ * have to agree.** A bank reads the code and a person reads the figure, and a
+ * slip where the two disagree is worse than one with an open amount. The
+ * donation page's amount picker writes into `[data-qr-field="amount"]` only
+ * while this panel is `pending`, and stops the moment a code exists.
  */
 
 import { type Lang, useTranslations } from '../i18n/utils';

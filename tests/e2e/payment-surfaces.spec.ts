@@ -93,6 +93,19 @@ test('choosing an amount carries it onto the QR-bill', async ({ page }) => {
   await expect(page.locator('[data-donation-amount="100"]')).toBeChecked();
 });
 
+test('a typed amount wins over a suggestion clicked a moment earlier', async ({ page }) => {
+  await page.goto('./don/');
+
+  await page.getByText('Matériel scolaire pour un enfant').click();
+  await page.locator('[data-donation-amount-free]').fill('300');
+
+  // Without this, someone who clicks CHF 100 and then types 300 is quietly
+  // still giving 100 — the field and the card would disagree in silence.
+  await expect(page.locator('[data-qr-field="amount"]').first()).toHaveText('300.00');
+  await expect(page.locator('[data-donation-amount="free"]')).toBeChecked();
+  await expect(page.locator('[data-donation-amount="100"]')).not.toBeChecked();
+});
+
 test('choosing a monthly gift reveals how to set one up by transfer', async ({ page }) => {
   await page.goto('./don/');
 

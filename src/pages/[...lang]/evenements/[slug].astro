@@ -208,6 +208,23 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             <div>
               <div class="eyebrow mb-3 text-navy">{t('event.ticket_types')}</div>
               <TicketTypes pricing={event.data.pricing} class="space-y-2" />
+              {/*
+                PRD 6: large amounts go by invoice and transfer, not by card —
+                a four-figure table costs the committee real money in card fees,
+                and a corporate buyer wants an invoice anyway. The page's share
+                of that decision is a route to a person, not a claim about how
+                the committee invoices.
+              */}
+              <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-muted">
+                {t('event.large_booking')}
+                {' '}
+                <a
+                  href={link(routes.contact)}
+                  class="text-navy underline underline-offset-4 hover:text-red"
+                >
+                  {t('event.ask')}
+                </a>
+              </p>
             </div>
           )}
 

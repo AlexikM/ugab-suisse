@@ -34,8 +34,19 @@ interface Props {
   /** What will live here, as a heading. */
   title: string;
   /**
-   * Why it is not here yet. `null` once the provider is connected: the slot
-   * then stops explaining itself and simply holds the embed.
+   * Whether the provider's own embed is mounted in this slot. Stated, not
+   * inferred: a slot with no apology in it is not the same thing as a slot with
+   * a provider in it. An event carrying a ticket link the committee pasted in
+   * by hand needs no explanation and still has no provider behind it, and
+   * deriving this from the absence of `pending` reported exactly that case as
+   * connected. A test fails the build if any page claims otherwise while the
+   * processor register in `src/i18n/legal.ts` still says `planned`.
+   */
+  connected?: boolean;
+  /**
+   * Why nothing is here, when that needs saying. Independent of `connected`:
+   * some pending slots have a working alternative sitting in them and nothing
+   * to apologise for.
    */
   pending?: string | null;
   /** The second line of the pending state — what it means for the visitor. */
@@ -44,10 +55,17 @@ interface Props {
   headingLevel?: 2 | 3;
 }
 
-const { provider, title, pending = null, pendingDetail = null, headingLevel = 3 } = Astro.props;
+const {
+  provider,
+  title,
+  connected = false,
+  pending = null,
+  pendingDetail = null,
+  headingLevel = 3,
+} = Astro.props;
 
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
-const state = pending === null ? 'connected' : 'pending';
+const state = connected ? 'connected' : 'pending';
 ---
 
 <div

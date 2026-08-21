@@ -111,6 +111,26 @@ test('nothing on the donation page can take money, because no provider is connec
   }
 });
 
+/**
+ * The processor register in `src/i18n/legal.ts` lists both the payment and the
+ * ticketing provider as `planned`, and the compliance audit fails if a `planned`
+ * processor turns out to be contacted. This is the same claim asked of the
+ * markup: no page may present a provider slot as connected while no account
+ * exists. It caught a real case — an event carrying a ticket link the committee
+ * pasted in by hand was reporting itself as having a provider behind it.
+ */
+test('no page claims a provider is connected while none is', () => {
+  for (const page of allBuiltPages()) {
+    assert.doesNotMatch(
+      page.html,
+      /data-provider-state="connected"/,
+      `${page.route} presents a provider slot as connected. No payment or ticketing account ` +
+        'exists (ADR-0001), and src/i18n/legal.ts still declares both as `planned`. Flip the ' +
+        'register first, or the privacy policy and the page disagree.',
+    );
+  }
+});
+
 test('the slot waiting for the provider is not an empty box', () => {
   const fr = visibleText(readBuiltPage('/don'));
 
