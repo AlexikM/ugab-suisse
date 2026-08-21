@@ -91,6 +91,8 @@ and the `todo` marker comes off the audit's last test.
 
 ### A4 — Facts the committee still owes
 
+- [ ] **Treasurer** — the association's IBAN and the bank holding the account, in writing. Until then the QR-bill on the donation page cannot be paid.
+
 The legal pages render these as visible "à fournir par le Comité" placeholders
 rather than inventing them. The prototype had invented `contact@ugab.ch`, which
 still appears in the site footer and reaches nobody — and which the privacy
@@ -136,6 +138,10 @@ Written but not wired. Each of these is in a file owned by another workstream.
 ---
 
 ## B. Re-run after the payment and ticketing providers are configured
+
+- [ ] **Webmaster** — set each provider's return URL to the confirmation page for the language the visitor was reading: `returnRoutes` in `src/i18n/ui.ts` lists both, and each exists in all three locales.
+- [ ] **Webmaster** — decide what happens to the first-party amount picker on the donation page once the embed brings its own.
+- [ ] **Webmaster** — restore the receipt-by-email sentences to the confirmation copy, once a provider genuinely sends them, and update the test that currently forbids them.
 
 The providers land late and are exactly what adds third-party hosts, sets
 storage and invalidates the disclosure. The policy is accurate on the day it is
