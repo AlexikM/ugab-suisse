@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { test } from 'node:test';
 
-import { buildOutput } from './lib/build-output.mjs';
+import { buildOutput, repoRoot } from './lib/build-output.mjs';
 import { footerOf, mainOf, textOf } from './lib/page-text.mjs';
 import { deductibilityClaimsIn } from './lib/tax-claim.mjs';
 
@@ -201,6 +203,67 @@ test('the accessibility statement sets a target, admits its gaps and offers a wa
     'no alternative route is offered for someone the site blocks',
   );
   assert.match(text, /\b30 jours\b/, 'no response time is given for an accessibility report');
+});
+
+/**
+ * The one sentence on this site that no automated check can make true.
+ *
+ * The accessibility statement says a manual keyboard and screen-reader pass was
+ * carried out before the site went live. Nothing performs one. The Playwright
+ * suite is an automated check — the statement says so itself, in the sentence
+ * immediately before — and the whole point of the manual sentence is that it
+ * claims the thing automation cannot do.
+ *
+ * Section C of `docs/pre-launch-checklist.md` owns this and says, of that
+ * sentence, « Run it, or change the sentence ». A checklist is as far as a
+ * checklist can go: nobody is stopped by an unticked box. The idiom this project
+ * uses for a claim that must become true before launch is a `todo` that fails,
+ * so it appears in the sweep beside the invented mailbox and unpkg — which is
+ * how the tax-deductibility hole was found.
+ *
+ * This reads the box rather than a date somebody types here, so there is one
+ * place where the pass is recorded and it is the place the webmaster is already
+ * working from. Tick it and this test passes; the marker comes off in the same
+ * commit, per the rule that a `todo` which has stopped failing is a gap.
+ */
+const MANUAL_PASS_CLAIMED =
+  /v[ée]rification manuelle[^.]{0,60}a\s+[ée]t[ée]\s+men[ée]e|manual keyboard and screen-reader pass was carried out/iu;
+
+/** The section C line that owns the claim, and whether anybody has ticked it. */
+const CHECKLIST_ITEM = /^-\s+\[([ xX])\][^\n]*manual keyboard and screen-reader pass/m;
+
+test('no page claims a manual accessibility pass until the checklist records one', {
+  todo: 'nobody has run the pass — section C of the pre-launch checklist',
+}, () => {
+  const checklist = readFileSync(path.join(repoRoot, 'docs/pre-launch-checklist.md'), 'utf8');
+  const item = CHECKLIST_ITEM.exec(checklist);
+  assert.ok(
+    item,
+    'Section C no longer carries the item this test reads. It was the only record ' +
+      'that the manual pass had been run; restore it, or move the record somewhere ' +
+      'this test can read and say so here.',
+  );
+
+  const recorded = item[1].toLowerCase() === 'x';
+  const claiming = site.visitorPages
+    .filter((page) => MANUAL_PASS_CLAIMED.test(textOf(page.html)))
+    .map((page) => page.route)
+    .sort();
+
+  // A page may say the pass was carried out only once somebody records having
+  // carried it out. Until then the sentence describes something that has not
+  // happened, which is the defect the accessibility statement was rewritten to
+  // remove and this is the half of it that survived.
+  assert.deepEqual(
+    recorded ? [] : claiming,
+    [],
+    'These pages say a manual keyboard and screen-reader pass was carried out ' +
+      'before the site went live:\n  ' +
+      `${claiming.join('\n  ')}\n` +
+      'Nobody has recorded running one. Run it and tick the item in section C of ' +
+      'docs/pre-launch-checklist.md — taking the `todo` off this test in the same ' +
+      'commit — or change the sentence to what is true.',
+  );
 });
 
 test('every legal page shows a reader the date its wording was last reviewed', () => {
