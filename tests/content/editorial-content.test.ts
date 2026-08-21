@@ -294,8 +294,28 @@ describe('the Bureau', () => {
 
   it('offers initials to stand in for the portrait that is missing', async () => {
     expect(initialsOf('Jean Dupont')).toBe('JD');
+    // A hyphen separates words the way a space does: a compound forename is one
+    // person's first name, and `MA` would read as somebody called Marie Aznavour.
     expect(initialsOf('Marie-Claire Aznavour')).toBe('MC');
     expect(initialsOf('Ani')).toBe('A');
+    // The comment on `initialsOf` promises never punctuation. Checked, not
+    // assumed — and `- -` on its own does not check it, because a hyphen is a
+    // separator the split has already eaten. These are the cases that do: the
+    // promise held for spaces and hyphens and for nothing else, so `(Jean)
+    // Dupont` gave `(D` and a name of dots gave a dot.
+    expect(initialsOf('- -')).toBe('');
+    expect(initialsOf('(Jean) Dupont')).toBe('JD');
+    expect(initialsOf('«Jean» Dupont')).toBe('JD');
+    expect(initialsOf('...')).toBe('');
+    expect(initialsOf('&')).toBe('');
+    // A letter, not an ASCII letter. The Bureau is read in Armenian too.
+    expect(initialsOf('Անի Սարգսյան')).toBe('ԱՍ');
+    expect(initialsOf('Étienne Ôdet')).toBe('ÉÔ');
+    // A name an editor typed with a leading space is still that person's name.
+    // This is the case that pins the empty-part filter: without it the leading
+    // gap counts as a word and one initial is lost. The line above does not —
+    // it holds either way.
+    expect(initialsOf(' Jean Dupont')).toBe('JD');
   });
 
   it('says the section is unfinished while an office is unfilled', async () => {
