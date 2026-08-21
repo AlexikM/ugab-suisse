@@ -14,13 +14,27 @@
  * audit fails the other way. The disclosure cannot quietly go stale.
  */
 
-export type LegalLang = 'fr' | 'en';
+/**
+ * The languages the copy in this file is written in.
+ *
+ * Not the site's languages: the site is trilingual and these pages are not. The
+ * Armenian translations are owed by the committee (#9), and until they arrive an
+ * Armenian visitor is served the French legal pages and told so — the same
+ * fallback every other page uses. `src/i18n/fallback.ts` reads this list to
+ * decide that, which is why it is a list and not a type alias.
+ */
+export const legalLanguages = ['fr', 'en'] as const;
+
+export type LegalLang = (typeof legalLanguages)[number];
 
 export const legalDefaultLang: LegalLang = 'fr';
 
+export const isLegalLang = (lang: string): lang is LegalLang =>
+  (legalLanguages as readonly string[]).includes(lang);
+
 /** Falls back to French rather than throwing: a legal page must always render. */
 export function legalLang(lang: string): LegalLang {
-  return lang === 'en' ? 'en' : legalDefaultLang;
+  return isLegalLang(lang) ? lang : legalDefaultLang;
 }
 
 // ---------------------------------------------------------------------------
@@ -701,6 +715,12 @@ export const legalChrome: Record<
     hostsIntro: string;
     hostsNone: string;
     contactHeading: string;
+    /** Headings and labels for the committee's own coordinates. */
+    addressHeading: string;
+    labelPostal: string;
+    labelEmail: string;
+    labelPhone: string;
+    labelRegistration: string;
     lastReviewed: string;
     seeAlso: string;
     privacyLink: string;
@@ -724,6 +744,11 @@ export const legalChrome: Record<
       'Le détail technique, pour qui veut vérifier : la liste complète des serveurs que votre navigateur contacte de lui-même, en dehors de celui-ci. Un contrôle automatisé la compare au site réellement publié ; si un élément nouveau y apparaissait sans figurer ici, ce contrôle échouerait.',
     hostsNone: 'Aucun. Ce site ne charge rien depuis un serveur tiers.',
     contactHeading: 'Nous écrire',
+    addressHeading: 'Coordonnées',
+    labelPostal: 'Adresse postale',
+    labelEmail: 'Adresse e-mail',
+    labelPhone: 'Téléphone',
+    labelRegistration: 'Numéro IDE',
     lastReviewed: 'Dernière révision',
     seeAlso: 'Voir aussi',
     privacyLink: 'Politique de confidentialité',
@@ -746,6 +771,11 @@ export const legalChrome: Record<
       'The technical detail, for anyone who wants to check: the complete list of servers your browser contacts on its own, apart from this one. An automated check compares it against the site as actually published; if something new appeared there without being listed here, that check would fail.',
     hostsNone: 'None. This site loads nothing from a third-party server.',
     contactHeading: 'Write to us',
+    addressHeading: 'Contact details',
+    labelPostal: 'Postal address',
+    labelEmail: 'Email address',
+    labelPhone: 'Telephone',
+    labelRegistration: 'Commercial register number',
     lastReviewed: 'Last reviewed',
     seeAlso: 'See also',
     privacyLink: 'Privacy policy',

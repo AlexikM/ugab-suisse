@@ -24,6 +24,9 @@ const PAGES = [
   { route: './contact/', name: 'contact' },
   { route: './confidentialite/', name: 'privacy policy' },
   { route: './accessibilite/', name: 'accessibility statement' },
+  // The English privacy policy is a page written for someone exercising rights
+  // under a law they may only be able to read about in English.
+  { route: './en/confidentialite/', name: 'privacy policy in English' },
   { route: './en/', name: 'home in English' },
   { route: './hy/', name: 'home falling back to French' },
 ];

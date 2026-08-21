@@ -187,6 +187,23 @@ export function withEmbedsBlocked(html) {
     .replace(/<link\b[^>]*\bhref\s*=\s*["']https?:\/\/[^>]*>/gi, '');
 }
 
+/**
+ * The legal notice and the privacy policy, at every address they are served
+ * from — French, English, and the Armenian one that serves French.
+ *
+ * The sweeps in this directory exclude them, and it is worth being precise about
+ * why, because "excluded" reads as "unchecked" and they are not. Those two pages
+ * *deny* a public-utility recognition and a tax deduction in as many words —
+ * « aucune déclaration publique quant à … la déductibilité fiscale des dons » —
+ * and a sweep looking for the substring cannot tell that denial from the claim.
+ * tests/compliance/legal-pages.test.mjs sweeps them with assertions that can.
+ *
+ * A check that cries wolf gets switched off, which costs more than the coverage
+ * it was protecting.
+ */
+export const isLegalPage = (route) =>
+  /^\/(?:en\/|hy\/)?(?:mentions-legales|confidentialite)\/?$/.test(route);
+
 /** Every href inside the page header — what the site offers a visitor. */
 export function headerLinks(html) {
   const header = html.match(/<header[\s\S]*?<\/header>/i);

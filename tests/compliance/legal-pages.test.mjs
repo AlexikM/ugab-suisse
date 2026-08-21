@@ -17,7 +17,21 @@ import { footerOf, mainOf, textOf } from './lib/page-text.mjs';
 
 const site = await buildOutput();
 
-const LEGAL_ROUTES = ['/confidentialite/', '/mentions-legales/', '/accessibilite/'];
+/**
+ * The three legal pages, at every address the site serves them from.
+ *
+ * They used to be French-only, which left an EU donor exercising GDPR rights and
+ * an English-speaking supporter reading a policy in a language they may not
+ * have. Every sweep below now runs over all nine pages: the English copy can
+ * carry a tax claim or an invented address just as easily as the French, and
+ * until this list grew nothing would have caught it.
+ */
+const LEGAL_PAGES = ['confidentialite', 'mentions-legales', 'accessibilite'];
+const LOCALES = ['', 'en/', 'hy/'];
+const legalRoute = (locale, page) => `/${locale}${page}/`;
+const LEGAL_ROUTES = LOCALES.flatMap((locale) =>
+  LEGAL_PAGES.map((page) => legalRoute(locale, page)),
+);
 
 const legalPage = (route) => {
   const page = site.pages.find((candidate) => candidate.route === route);
@@ -198,19 +212,86 @@ test('every legal page shows a reader the date its wording was last reviewed', (
   }
 });
 
+/**
+ * Every legal address a page's own content links to, as `locale/page`.
+ *
+ * The language-fallback notice is dropped first. It links this same page at its
+ * French address, which is the whole point of it, and it is injected by the
+ * layout rather than written by the page — counting it here would make the
+ * assertion below about the chrome instead of about the content.
+ */
+const legalLinksIn = (html) =>
+  [
+    ...mainOf(html)
+      .replace(/<aside\b[^>]*data-language-fallback[\s\S]*?<\/aside>/i, ' ')
+      .matchAll(/href="([^"]*)"/g),
+  ]
+    .map(([, href]) =>
+      /(?:\/(en|hy))?\/(confidentialite|mentions-legales|accessibilite)\/?$/.exec(href),
+    )
+    .filter(Boolean)
+    .map(([, locale, page]) => `${locale ? `${locale}/` : ''}${page}`);
+
 test('the legal pages link to one another, so finding one finds all three', () => {
-  for (const route of LEGAL_ROUTES) {
-    // The page's own content, not the shared footer, which already links two of
-    // the three on every page and would make this pass without proving anything.
-    const body = mainOf(legalPage(route).html);
-    for (const other of LEGAL_ROUTES.filter((candidate) => candidate !== route)) {
-      const target = other.replace(/\/$/, '');
-      assert.match(
-        body,
-        new RegExp(`href="[^"]*${target}/?"`),
-        `${route} does not link to ${other} from its own content`,
+  for (const locale of LOCALES) {
+    for (const page of LEGAL_PAGES) {
+      // The page's own content, not the shared footer, which already links two
+      // of the three on every page and would make this pass without proving
+      // anything.
+      const found = new Set(legalLinksIn(legalPage(legalRoute(locale, page)).html));
+      const expected = LEGAL_PAGES.filter((other) => other !== page).map(
+        (other) => `${locale}${other}`,
+      );
+
+      assert.deepEqual(
+        [...found].sort(),
+        expected.sort(),
+        `${legalRoute(locale, page)} should link to the other two legal pages in its own language, ` +
+          'and to nothing else: a link that changes language under the visitor is worse than no link.',
       );
     }
+  }
+});
+
+test('an English-speaking visitor gets the legal pages in English', () => {
+  for (const page of LEGAL_PAGES) {
+    const html = legalPage(legalRoute('en/', page)).html;
+    assert.match(
+      html,
+      /<html lang="en"/,
+      `${legalRoute('en/', page)} does not declare itself English`,
+    );
+  }
+
+  const text = textOf(mainOf(legalPage('/en/confidentialite/').html));
+  assert.match(text, /GDPR/i, 'the English privacy policy does not name the GDPR');
+  assert.match(text, /Who your data is passed to/i, 'the English privacy policy is not in English');
+  assert.doesNotMatch(
+    text,
+    /Politique de confidentialité/i,
+    'the English page still carries French copy',
+  );
+});
+
+/**
+ * The committee owes the Armenian translations (#9). Until they arrive the
+ * Armenian address exists, serves the French text, and says so — the same
+ * fallback every other page uses. The alternative, linking Armenian readers to a
+ * French URL, is the one thing that would make the switcher lie.
+ */
+test('an Armenian visitor is served the French legal text and told so', () => {
+  for (const page of LEGAL_PAGES) {
+    const html = legalPage(legalRoute('hy/', page)).html;
+    assert.match(
+      html,
+      /<html lang="fr"/,
+      `${legalRoute('hy/', page)} claims to be Armenian while serving French text`,
+    );
+    assert.match(
+      html,
+      /data-language-fallback="hy"/,
+      `${legalRoute('hy/', page)} falls back to French without telling the visitor`,
+    );
   }
 });
 

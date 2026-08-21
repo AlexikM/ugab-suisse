@@ -32,12 +32,18 @@ function pages(dir = DIST, found: Array<{ route: string; html: string }> = []) {
 
 const all = pages();
 
-/** Redirect stubs are not pages; the legal pages are French-only by design. */
+/**
+ * Redirect stubs are not pages, and `/admin` is the editors' shell.
+ *
+ * The legal pages used to be excluded here as "French-only by design". They are
+ * not any more: they have an address in all three languages, the Armenian one
+ * serving French and saying so, exactly like every other page. Every assertion
+ * below now applies to them too, which is the point of removing the exclusion
+ * rather than adding a second list.
+ */
 const localised = all.filter(
   ({ route, html }) =>
-    !/<meta[^>]+http-equiv=["']?refresh/i.test(html) &&
-    !route.startsWith('/admin') &&
-    !/^\/(mentions-legales|confidentialite|accessibilite)\//.test(route),
+    !/<meta[^>]+http-equiv=["']?refresh/i.test(html) && !route.startsWith('/admin'),
 );
 
 describe('the build produces pages at all', () => {

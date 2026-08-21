@@ -15,9 +15,10 @@ interface Props {
   /** The language the URL asked for. */
   lang?: Lang;
   /**
-   * Which part of the site this page belongs to. Present on the pages that
-   * exist in every language; absent on the three French-only legal pages, which
-   * therefore declare no alternates and never fall back.
+   * Which part of the site this page belongs to. It decides which language the
+   * page is really in, and therefore whether it announces a fallback. Every
+   * page passes one; it stays optional because a page without a section still
+   * renders, declaring no alternates and never falling back.
    */
   section?: Section;
   /** Extra Schema.org blocks — an Event, for instance. See src/seo.ts. */

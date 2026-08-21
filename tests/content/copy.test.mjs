@@ -9,20 +9,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { allBuiltPages, readBuiltPage, visibleText } from './helpers.mjs';
+import { allBuiltPages, isLegalPage, readBuiltPage, visibleText } from './helpers.mjs';
 
 /**
- * The legal notice and the privacy policy belong to PRD 7 (#7) and are not
- * touched by this PRD. Both currently fail the assertions below — the legal
- * notice calls the organisation a "section suisse" and asserts recognised
- * public-utility status, which is one of the two claims that block launch.
- *
- * Delete this list when PRD 7 rewrites those pages; the assertions are already
- * written and will start covering them.
+ * The legal notice and the privacy policy are swept by
+ * tests/compliance/legal-pages.test.mjs instead, in every language. See
+ * `isLegalPage` in ./helpers.mjs for why the blunter sweeps below would misread
+ * those two pages — they deny the claims these assertions look for, and a
+ * substring cannot tell a denial from an assertion.
  */
-const OWNED_BY_PRD_7 = ['/mentions-legales', '/confidentialite'];
-
-const sitePages = () => allBuiltPages().filter((page) => !OWNED_BY_PRD_7.includes(page.route));
+const sitePages = () => allBuiltPages().filter((page) => !isLegalPage(page.route));
 
 test('the site calls the organisation what the committee calls itself', () => {
   assert.match(

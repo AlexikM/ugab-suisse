@@ -1,5 +1,5 @@
 ---
-import { languages, legalRoutes, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
+import { languages, localeRoute, primaryNav, routeFromPath, routes } from '../i18n/ui';
 import { type Lang, useTranslations, withBase } from '../i18n/utils';
 
 interface Props {
@@ -15,12 +15,11 @@ const link = (path: string, target: Lang = requested) => withBase(localeRoute(pa
 
 /**
  * Where the language selector sends a visitor: the same page in the other
- * language. Every page of the site exists in every language except the legal
- * ones, which are French-only until the Comité supplies translations — from
- * those, the selector goes home rather than to an address that does not exist.
+ * language. Every page of the site has an address in every language, the legal
+ * ones included — the Armenian ones serve French and say so — so the selector
+ * never has to send anybody home from the page they were reading.
  */
-const here = routeFromPath(Astro.url.pathname, withBase('/'));
-const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
+const currentRoute = routeFromPath(Astro.url.pathname, withBase('/'));
 
 const nav = primaryNav.map((item) => ({
   href: link(item.path),

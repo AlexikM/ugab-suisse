@@ -22,10 +22,10 @@ const year = new Date().getFullYear();
 
 const link = (path: string, target: Lang = requested) => withBase(localeRoute(path, target));
 
-// The same page in another language — see the header. The legal pages exist in
-// French only until the Comité supplies translations.
-const here = routeFromPath(Astro.url.pathname, withBase('/'));
-const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
+// The same page in another language — see the header. Every page has an address
+// in every language now, the legal ones included, so the switcher keeps you on
+// the page you were reading rather than sending you home from three of them.
+const currentRoute = routeFromPath(Astro.url.pathname, withBase('/'));
 
 const nav = primaryNav
   .filter((item) => item.path !== routes.home)
@@ -78,13 +78,14 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
     <div class="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-paper-deep md:flex-row">
       <p>© {year} {t('footer.copyright')}</p>
       <!--
-        The legal pages exist in French only for now, so they are linked without
-        a language prefix rather than at an address that does not exist.
+        Linked in the language being read. The Armenian addresses exist and serve
+        the French text with the notice every other page uses, which is a better
+        answer than a link that changes language under the visitor.
       -->
       <div class="flex flex-wrap items-center gap-6">
-        <a href={withBase(legalRoutes.legal)} class="hover:text-white">{t('footer.legal')}</a>
-        <a href={withBase(legalRoutes.privacy)} class="hover:text-white">{t('footer.privacy')}</a>
-        <a href={withBase(legalRoutes.accessibility)} class="hover:text-white">
+        <a href={link(legalRoutes.legal)} class="hover:text-white">{t('footer.legal')}</a>
+        <a href={link(legalRoutes.privacy)} class="hover:text-white">{t('footer.privacy')}</a>
+        <a href={link(legalRoutes.accessibility)} class="hover:text-white">
           {t('footer.accessibility')}
         </a>
         <nav class="flex items-center gap-3" aria-label={t('fallback.label')}>

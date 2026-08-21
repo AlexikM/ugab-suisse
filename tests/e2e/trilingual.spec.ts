@@ -66,6 +66,12 @@ test('the Armenian route exists for every page, even while it falls back', async
     './hy/evenements/',
     './hy/don/',
     './hy/contact/',
+    // The legal pages too, since they stopped being French-only. An Armenian
+    // reader following the footer must land somewhere, and be told what they
+    // landed on.
+    './hy/mentions-legales/',
+    './hy/confidentialite/',
+    './hy/accessibilite/',
   ]) {
     const response = await page.goto(route);
     expect(response?.ok(), `${route} should be reachable`).toBe(true);
