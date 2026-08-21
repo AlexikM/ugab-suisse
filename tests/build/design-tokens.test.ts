@@ -23,11 +23,15 @@ import { findTokenViolations, readComponents } from './design-tokens.js';
  */
 
 describe('findTokenViolations', () => {
-  const file = (contents: string) => [{ path: 'src/components/X.astro', contents }];
+  // Named without a directory on purpose: a synthetic fixture should not claim
+  // a path in this repository. tests/docs/references.test.mjs reads every file
+  // for paths it names, and a plausible-looking one here would be a reference
+  // to a component that does not exist.
+  const file = (contents: string) => [{ path: 'a-component.astro', contents }];
 
   it('reports a raw colour, in markup or in a style attribute', () => {
     expect(findTokenViolations(file('<div style="color:#12294d">'))).toEqual([
-      { file: 'src/components/X.astro', value: '#12294d', reason: 'raw-colour' },
+      { file: 'a-component.astro', value: '#12294d', reason: 'raw-colour' },
     ]);
     expect(findTokenViolations(file('<p>#fff</p>')).map((v) => v.value)).toEqual(['#fff']);
   });

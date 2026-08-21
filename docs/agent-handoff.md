@@ -73,10 +73,17 @@ two webmaster items that were code and unblocked. Both are done. So, precisely:
 boundary (#47); the publication flow exists as far as it can without staging,
 and the staging deploy shows drafts (#42); the legal pages are served in every
 language the site is read in, with the Armenian ones falling back and saying so;
-the contact page says what becomes of a message before it is sent; the vendored
-CMS carries its licence and an integrity test; and three guards were added —
-documents may not be referenced before they are written, links may not lead
-nowhere, and the back-office bundle may not drift from its record.
+the contact page says what becomes of a message before it is sent; the
+accessibility statement says what is actually done; and the vendored CMS carries
+its licence.
+
+Five guards were added and one was repaired. Nothing may be referenced before it
+is written, no link may lead nowhere, the back-office bundle may not drift from
+its record, the palette may not fall below its contrast floor, and a component
+may not name a colour instead of a token. The repair is the one worth knowing
+about: the assertion keeping the tax-deductibility claim off the site was marked
+`todo` and had stopped failing, so it gated nothing — and it could not see
+« déductibilité fiscale » anyway.
 
 **Still code, and small:**
 
@@ -87,3 +94,18 @@ nowhere, and the back-office bundle may not drift from its record.
 **Before concluding there is nothing left:** read
 `docs/pre-launch-checklist.md` and ask, of each unticked item, whether it is
 waiting on a person or on a commit. The ones waiting on a commit are the work.
+
+And run this one sweep, which is a minute's work and has paid for itself twice:
+
+```sh
+npm run build && npm run test:site 2>&1 | grep TODO
+```
+
+Every `todo` in the suite, with whether it is still failing. It found a launch
+blocker that had quietly stopped guarding anything — see the entry above.
+
+The sweep that went with it — every path this repository names, and whether it
+exists — is `tests/docs/references.test.mjs` now, so it runs on every commit
+instead of when somebody remembers. It found four documents and two tests that
+were referenced and had never been written, one of which was the only thing
+standing between the palette and a contrast failure.
