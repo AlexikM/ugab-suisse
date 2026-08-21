@@ -8,16 +8,18 @@ import { repoRoot } from './lib/build-output.mjs';
 /**
  * Keeps the French and English legal copy in step.
  *
- * Only the French pages have routes today (`enRoutes` in `src/i18n/utils.ts`
- * lists `/` alone), so the English half of the copy renders nowhere and nothing
- * would notice it rotting. That is the maintenance liability ADR-0001 warns
- * about: text that exists, is never seen, and quietly stops matching the version
- * people do see. Publishing the English routes is on the pre-launch checklist;
- * until then, this keeps the two halves from diverging.
+ * It was written when only the French pages had routes and the English half
+ * rendered nowhere — text that exists, is never seen, and quietly stops matching
+ * the version people do see. Both halves are published now, which makes this
+ * more useful rather than less: a section added in one language and forgotten in
+ * the other is a policy that says less to one of its readers, and every other
+ * assertion in this suite would pass.
  *
- * Loaded through Node's TypeScript support, which needs Node 22.18 or newer. On
- * anything older it skips rather than failing, because a version-dependent red
- * suite teaches people to ignore red suites.
+ * Loaded through Node's TypeScript support, which needs Node 22.18 or newer —
+ * `engines` in package.json asks for at least that, for this reason. On anything
+ * older these skip rather than fail, because a version-dependent red suite
+ * teaches people to ignore red suites; the engine floor is what stops the skip
+ * from being how the suite normally runs.
  */
 
 let legal = null;

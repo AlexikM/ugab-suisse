@@ -22,7 +22,7 @@ site has to still work, untouched, in three years. The reasoning is in
 
 ## Running it locally
 
-You need **Node 22.12 or newer** and npm. Nothing else — no database, no
+You need **Node 22.18 or newer** and npm. Nothing else — no database, no
 Docker, no environment variables.
 
 ```sh
@@ -112,6 +112,14 @@ exactly that.
 
 `internal-links.test.ts` asks whether anything is there. A perfectly prefixed
 link can still lead nowhere, and 404 is what the visitor meets.
+
+Two more are the design system's: `contrast.test.ts` computes every colour pair
+the palette promises and fails below the WCAG floor — `gold` clears it by 0.41,
+so a nudge nobody thought about is a real risk — and `design-tokens.test.ts`
+fails on a raw hex or a Tailwind palette class in a component. The second reads
+source rather than `dist/`, because Tailwind's own colours are switched off:
+`bg-blue-600` produces no CSS at all, so the class survives into the markup doing
+nothing and there is nothing in the output to find.
 
 ## Deployment
 

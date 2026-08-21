@@ -34,7 +34,10 @@
   --color-red-deep: #8e0d17; /* hover; 9.46:1 with white */
 
   /* Gold — the ceremonial accent: eyebrows, rules, the footer headings. */
-  --color-gold: #8a6714; /* 4.91:1 on paper — dark enough to set text in */
+  --color-gold: #8a6714; /* 4.91:1 on paper — dark enough to set text on paper,
+                          * and only there: it is 4.00:1 on paper-deep, below
+                          * AA. Nothing sets gold text today; tests/build/
+                          * contrast.test.ts pins both halves of that. */
   --color-gold-light: #e8c77a; /* for dark grounds only; 10.68:1 on ink */
 
   /* Off-white ground and its two deeper steps. */
@@ -47,7 +50,9 @@
   --color-ink-soft: #3a414f; /* 9.66:1 */
   --color-ink-muted: #5c6474; /* 5.61:1 — the lightest text allowed */
 
-  /* Hairlines. `line` separates, `line-strong` bounds a control (3:1). */
+  /* Hairlines. `line` separates; `line-strong` bounds a control — 3.50:1 on
+   * paper and 3.71:1 on white, against the 3:1 a boundary needs. It is 2.84:1
+   * on paper-deep, so no control is drawn there. */
   --color-line: #d8d2c6;
   --color-line-strong: #8c8473;
 
