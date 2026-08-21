@@ -20,7 +20,28 @@ import { repoRoot } from './lib/build-output.mjs';
  * older these skip rather than fail, because a version-dependent red suite
  * teaches people to ignore red suites; the engine floor is what stops the skip
  * from being how the suite normally runs.
+ *
+ * **A skip is invisible to an exit code.** `node --test` reports success for a
+ * skipped test, so a suite that skips everything says `# fail 0` and exits 0
+ * while asserting nothing. That is only honest when the runtime genuinely
+ * cannot read TypeScript. For every other reason a module will not load — a
+ * syntax slip, an import that moved — stepping aside is the same defect as the
+ * `todo` that had stopped failing: five compliance assertions gone, and a green
+ * tick where the gap is. So the skip is conditioned on the runtime rather than
+ * on the failure, and on a runtime that should manage it a module that will not
+ * load is a failure like any other.
+ *
+ * The exit code is the whole point. `npm run check` would catch this anyway,
+ * because the build imports `legal.ts` too — but the pre-launch checklist tells
+ * a webmaster to run `node --test "tests/compliance/**​/*.test.mjs"` on its own,
+ * and that is the moment a false green costs the most.
  */
+
+/** Node reads TypeScript from 22.18. Below that, these cannot run at all. */
+function runtimeReadsTypeScript() {
+  const [major, minor] = process.versions.node.split('.').map(Number);
+  return major > 22 || (major === 22 && minor >= 18);
+}
 
 let legal = null;
 let loadError = null;
@@ -30,9 +51,24 @@ try {
   loadError = error;
 }
 
-const skip = legal
-  ? false
-  : `legal.ts could not be loaded (${loadError?.code ?? loadError?.message})`;
+const skip =
+  legal || runtimeReadsTypeScript()
+    ? false
+    : `Node ${process.versions.node} cannot read TypeScript; package.json asks for >= 22.18.0`;
+
+/**
+ * First, so that a module which will not load says so once and plainly instead
+ * of five assertions each throwing on `legal.legalPages` in their own way.
+ */
+test('the legal copy can be read at all', { skip }, () => {
+  assert.ok(
+    legal,
+    `src/i18n/legal.ts could not be loaded on Node ${process.versions.node}: ` +
+      `${loadError?.code ?? ''} ${loadError?.message ?? ''}`.trim() +
+      '\nEvery assertion below reads that module. Fix the module — skipping here ' +
+      'would report success while checking none of the legal copy.',
+  );
+});
 
 const PAGES = ['privacy', 'legalNotice', 'accessibility'];
 
