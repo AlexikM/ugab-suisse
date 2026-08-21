@@ -204,8 +204,8 @@ export const preLaunchExceptions: Array<{
   {
     host: 'unpkg.com',
     what: {
-      fr: "L'outil d'édition réservé au Comité charge son code depuis un dépôt public. Cette page n'est pas accessible aux visiteurs et ne traite aucune de vos données.",
-      en: 'The Committee’s editing tool loads its code from a public repository. That page is not reachable by visitors and processes none of your data.',
+      fr: "L'outil d'édition réservé au Comité est désormais installé sur nos serveurs, mais il va encore chercher certains de ses composants sur un dépôt public lorsqu'il fonctionne. Cette page n'est pas accessible aux visiteurs et ne traite aucune de vos données.",
+      en: 'The Committee’s editing tool now runs from our own servers, but still fetches some of its components from a public repository while running. That page is not reachable by visitors and processes none of your data.',
     },
   },
 ];

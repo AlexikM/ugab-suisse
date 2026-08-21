@@ -1,5 +1,11 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "exclude": [
+    "dist",
+    // The vendored CMS is 1.9 MB of minified third-party code. Type-checking it
+    // exhausts the heap and tells us nothing — it is an application we serve,
+    // not source we maintain. See tests/compliance/lib/vendored.mjs.
+    "public/admin/sveltia-cms-*.js"
+  ]
 }

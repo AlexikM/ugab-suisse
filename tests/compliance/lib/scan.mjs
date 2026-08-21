@@ -1,3 +1,5 @@
+import { isVendoredApplication } from './vendored.mjs';
+
 /**
  * Finds every host a built page would cause a browser to contact.
  *
@@ -225,6 +227,9 @@ export function scriptReferences(source) {
  * HTML file.
  */
 export function collectAssetReferences({ route, source, siteHost }) {
+  // See lib/vendored.mjs for why this one file is read as an application.
+  if (isVendoredApplication(route)) return [];
+
   const isStylesheet = route.endsWith('.css');
   const references = isStylesheet ? cssReferences(source) : scriptReferences(source);
   const kind = isStylesheet ? KIND.AUTOMATIC : KIND.SCRIPT_LITERAL;

@@ -29,8 +29,8 @@ export const LAUNCH_BLOCKERS = [
     introducedBy: 'public/admin/index.html',
     owner: 'PRD 4 — editorial back-office',
     effect:
-      'The Committee’s editing tool is fetched whole from a public CDN at an open version range, so whoever controls that range controls the tool that can rewrite the site. No visitor page reaches it.',
-    fix: 'Pin the version and self-host the asset alongside the site.',
+      'Half fixed. The shell and the application bundle are now vendored at a pinned version, so an open version range no longer decides what code the back-office runs. But the application still fetches components (Shiki, its own packages) from unpkg at runtime, so an editor session still depends on that CDN. No visitor page reaches any of it.',
+    fix: 'Vendor the runtime-fetched components too, or accept the residual dependency in writing — it affects editors only, never visitors, and the register says so.',
   },
 ];
 
