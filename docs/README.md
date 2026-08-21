@@ -6,6 +6,7 @@
 | `prd/` | Product requirements, one per delivery slice; each is also a GitHub issue |
 | `content/site-copy.md` | The committee's approved FR/EN site copy — source of truth for content |
 | `content/placeholder-inventory.md` | Every element on the site that is still a placeholder, and what replaces it |
+| `comite/` | Task guides for the committee, in French — publishing an event, updating the bureau |
 | `gap-analysis-prototype-vs-brief.md` | What the prototype gets wrong vs. the brief |
 
 ## Source documents

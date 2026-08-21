@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { buildAssets, buildOutput } from './lib/build-output.mjs';
 import { CONSENT_DIALOGUE_MARKERS, storageWrites } from './lib/storage.mjs';
+import { isVendoredApplication } from './lib/vendored.mjs';
 
 /**
  * The site's claim is that it sets nothing in your browser. That claim is worth
@@ -24,11 +25,15 @@ const sources = [
   ...assets.map((asset) => ({ where: asset.route, source: asset.source })),
 ];
 
+// The editor's own session storage inside the vendored CMS is not a visitor
+// consent question — see lib/vendored.mjs.
+const auditable = sources.filter(({ where }) => !isVendoredApplication(where));
+
 const report = (writes) =>
   writes.map((write) => `  ${write.where}\n    ${write.api} — ${write.snippet}`).join('\n');
 
 test('nothing on any page writes to cookies or browser storage', () => {
-  const writes = sources.flatMap(({ where, source }) =>
+  const writes = auditable.flatMap(({ where, source }) =>
     storageWrites(source).map((write) => ({ where, ...write })),
   );
 

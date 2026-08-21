@@ -317,10 +317,7 @@ export function createEditorialContent(source: EditorialSource): EditorialConten
 
     async pastEvents(query) {
       const events = await read(query);
-      return capped(
-        events.filter((event) => event.isPast).reverse(),
-        query?.limit,
-      );
+      return capped(events.filter((event) => event.isPast).reverse(), query?.limit);
     },
 
     async event(id, query) {
