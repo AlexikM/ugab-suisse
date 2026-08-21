@@ -27,6 +27,24 @@ sont obligatoires. Vous compléterez plus tard.
    valider par un autre membre du Comité.
 6. **Publiez** quand vous êtes prêt.
 
+## Les trois états d'une annonce
+
+**Brouillon** — la case « Brouillon » est cochée. Vous préparez l'annonce ;
+elle n'apparaît nulle part sur le site, et son adresse n'existe pas encore.
+
+**En relecture** — la case est toujours cochée, et une autre personne du Comité
+relit l'annonce. C'est l'étape qui évite les erreurs de date et les fautes de
+frappe sur un nom propre : deux paires d'yeux avant que ce soit public.
+
+**Publiée** — vous décochez la case. L'annonce est en ligne pour tout le monde,
+tout de suite.
+
+Un **site de préproduction** est prévu : une copie privée du site, protégée par
+un mot de passe, où les brouillons s'affichent comme de vraies pages. La
+relecture s'y fera alors sur la page elle-même plutôt que sur le formulaire. Il
+dépend de l'hébergement, qui n'est pas encore ouvert ; tant qu'il n'est pas en
+place, faites relire l'annonce directement dans l'interface d'édition.
+
 ## Après l'événement
 
 Revenez sur la fiche et ajoutez des photos dans la **galerie**. L'événement
@@ -60,9 +78,16 @@ pas pouvoir être modifiés par erreur la veille d'un gala. Pour tout cela,
 
 ## Si quelque chose ne va pas
 
-Toute modification est réversible. Rien n'est perdu : chaque version est
-conservée et peut être rétablie. En cas de doute, ne supprimez rien et
-signalez-le.
+**Rien n'est perdu.** Chaque enregistrement est conservé, y compris la
+suppression d'une fiche : l'historique des modifications s'affiche dans le
+panneau « History », à droite de l'éditeur.
+
+**Mais il n'y a pas de bouton pour rétablir une version précédente.** Le bouton
+« Revert Changes » annule seulement les modifications que vous n'avez pas encore
+enregistrées. Pour revenir à une version antérieure, écrivez au webmaster : c'est
+possible à tout moment, et c'est l'affaire de quelques minutes.
+
+En cas de doute, ne supprimez rien et signalez-le.
 
 ---
 

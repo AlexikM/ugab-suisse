@@ -115,8 +115,10 @@ collections:
     label_singular: Événement
     description: >-
       Les soirées, concerts et conférences du Comité. Une fiche par événement et
-      par langue. Après l'événement, ajoutez les photos dans la galerie : la
-      fiche rejoint automatiquement « Événements passés ».
+      par langue. Une annonce passe par trois états — brouillon, relecture,
+      publiée : voir le champ « Brouillon » en bas de la fiche. Après
+      l'événement, ajoutez les photos dans la galerie : la fiche rejoint
+      automatiquement « Événements passés ».
     icon: event
     folder: src/content/events
     create: true
@@ -277,13 +279,24 @@ collections:
           « Événements passés ».
 
       # --- Publication ------------------------------------------------------
+      #
+      # One stored field, three states an editor lives in. The middle one is not
+      # a third value: it is the same draft, seen on the préproduction site,
+      # which is where a second person reads it. The site knows about it because
+      # the staging deploy builds with UGAB_SHOW_DRAFTS — no page decides this.
+      # The whole flow, and what is still missing from it, is in
+      # docs/editorial/publication.md.
       - label: Brouillon
         name: draft
         widget: boolean
         default: false
         hint: >-
-          Coché, l'événement n'apparaît pas sur le site : vous préparez
-          l'annonce tranquillement. Décochez pour publier.
+          Trois états. « Brouillon » — case cochée : vous préparez l'annonce,
+          elle n'apparaît nulle part sur le site. « En relecture » — toujours
+          cochée : le même brouillon est visible sur le site de préproduction,
+          où un autre membre du Comité le relit. « Publiée » — case décochée :
+          l'annonce est en ligne pour tout le monde. Le site de préproduction
+          n'existe pas encore ; d'ici là, faites relire l'annonce ici même.
 
       - label: Texte de présentation
         name: body

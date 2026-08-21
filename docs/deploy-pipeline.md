@@ -53,6 +53,7 @@ pushing a quick correction straight to main is the case that protects.
 | Branch | `main` | `staging` |
 | Indexed | Yes | **No** |
 | Public | Yes | **No** — HTTP basic authentication |
+| Drafts built | No | **Yes** — it is where an announcement is reviewed |
 | Secret prefix | `PROD_` | `STAGING_` |
 
 `workflow_dispatch` publishes any branch or tag to either environment, chosen
@@ -60,7 +61,9 @@ from a dropdown. It defaults to staging.
 
 ### Why staging is shut, twice
 
-The committee reviews real names, real photographs and test transactions there.
+The committee reviews real names, real photographs and test transactions there —
+and, because the staging build sets `UGAB_SHOW_DRAFTS`, announcements that are
+not public yet. See [`editorial/publication.md`](editorial/publication.md).
 
 The layout already reads `PUBLIC_SITE_INDEXABLE` to decide whether to emit a
 `noindex` meta tag. The pipeline sets it — `true` for production, `false` for

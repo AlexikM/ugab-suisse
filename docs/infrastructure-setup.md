@@ -136,11 +136,18 @@ A key used for nothing else, so that revoking it costs nothing.
 - [ ] **Directory protection (HTTP basic authentication) on**, in the Infomaniak
       manager. One username and one password, shared with the committee.
 - [ ] Confirm in a private window that the staging URL asks for a password.
+- [ ] In `public/admin/config.yml`: set `site_url` to this address, add
+      `preview_path` to the two collections, and set `show_preview_links: true`.
+      Then delete the last sentence of the hint under **Brouillon**, which says
+      the préproduction site does not exist yet.
 
 The committee will review real names, real photographs and test transactions
-here. The pipeline refuses to publish to staging unless an unauthenticated
-request is refused, so this step is not optional — the deploy fails without it,
-by design.
+here — and the announcements it is still preparing: the staging build shows
+drafts, which is what makes the review step of the publishing flow possible.
+See [`editorial/publication.md`](editorial/publication.md).
+
+The pipeline refuses to publish to staging unless an unauthenticated request is
+refused, so this step is not optional — the deploy fails without it, by design.
 
 ## 9. Repository secrets and variables — **Webmaster**
 

@@ -25,6 +25,14 @@ on:
           src/layouts/Layout.astro already reads to decide the robots meta tag.
         required: true
         type: boolean
+      show_drafts:
+        description: >-
+          Whether announcements the Comité is still preparing are built. True
+          for staging only: it is where a draft is read before it is public.
+          Feeds UGAB_SHOW_DRAFTS, which src/lib/content.ts reads — no page
+          decides this. See docs/editorial/publication.md.
+        required: true
+        type: boolean
       site_url:
         description: The address the smoke check requests once the transfer is in place
         required: true
@@ -142,6 +150,11 @@ jobs:
           # One flag decides indexing, and the layout already reads it. Staging
           # gets `false`, so every page it serves asks not to be indexed.
           PUBLIC_SITE_INDEXABLE: ${{ inputs.indexable }}
+          # And one decides whether drafts are built. Staging gets `true`, which
+          # is what makes the review step of the publishing flow possible: the
+          # Comité reads the announcement on the real page, at its real address,
+          # before anyone else can. Production gets `false`.
+          UGAB_SHOW_DRAFTS: ${{ inputs.show_drafts }}
         run: npm run build
 
       - name: Refuse to publish a site built for a subdirectory
