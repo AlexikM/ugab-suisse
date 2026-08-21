@@ -19,8 +19,16 @@ npm run build
 node --test "tests/compliance/**/*.test.mjs"
 ```
 
-Three checks are marked `todo` in that suite. They are expected to fail today and
-must pass before launch — each one is a section A item below.
+Two checks are marked `todo` in that suite. A `todo` runs and is allowed to fail:
+they are expected to fail today and must pass before launch, and each one is a
+section A item below.
+
+**A `todo` that has stopped failing is not good news, it is a gap.** It is
+reported as `ok … # TODO` and gates nothing, so the defect it was written for can
+walk back in unnoticed. That happened to the tax-deductibility check, which sat
+passing behind its marker for a fortnight. When a blocker clears, take the marker
+off in the same commit — the assertion then holds the line instead of watching
+it.
 
 ---
 
@@ -32,10 +40,16 @@ nobody agreed to.
 
 ### A1 — The tax-deductibility claim
 
-The donation page tells donors their gift is deductible in Switzerland and that a
-receipt is sent automatically. **Neither half is verified.** This is the single
-highest-risk sentence on the site: a charity telling a donor something untrue
-about their taxes.
+The donation page told donors their gift is deductible in Switzerland and that a
+receipt is sent automatically. **Neither half is verified**, and this is the
+single highest-risk sentence the site could carry: a charity telling a donor
+something untrue about their taxes.
+
+Both sentences were removed under PRD 2, and two assertions now hold that state:
+no page may raise tax deductibility except to deny it, and no page may promise a
+receipt by email. The committee's answer is still needed — not to keep the site
+safe, but to decide whether the claim can ever be published. If it can, both the
+copy and those assertions change in the same commit, with the real conditions.
 
 - [ ] **President** — produce the cantonal decision recognising the association as being of public utility (*reconnaissance d'utilité publique*, Administration fiscale cantonale genevoise), or confirm in writing that there is none.
 - [ ] **Treasurer** — state how a donor actually obtains an attestation: who issues it, on what trigger, and by when in the year.
@@ -57,7 +71,10 @@ The question to send, verbatim:
 > déductibilité à un donateur qui ne pourra pas déduire est le seul risque que
 > nous ne pouvons pas prendre à votre place.
 
-*Automated check: `no third party...` — see `legal-pages.test.mjs`, marked `todo`.*
+*Automated check: `the site tells nobody their donation is tax-deductible until
+that is verified` and `no page promises a donor a receipt by email` — see
+`legal-pages.test.mjs` and `donations.test.mjs`. Both are ordinary assertions:
+they pass today and fail the build if either sentence returns.*
 
 ### A2 — The privacy correction
 
