@@ -32,7 +32,9 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          # Pinned to match publish.yml. Astro 6 requires Node >= 22.12.
+          # Pinned to match publish.yml. Astro 6 needs >= 22.12, and the compliance
+          # suite reads src/i18n/legal.ts through Node's TypeScript support,
+          # which needs >= 22.18 — so package.json asks for that.
           node-version: 22
           cache: npm
 
