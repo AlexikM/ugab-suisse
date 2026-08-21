@@ -54,6 +54,7 @@ belongs to another PRD's file boundary.
 | Sponsorship tiers — confirmed amounts and counterparts | The Don page shows them marked "montants indicatifs, à valider" | ⬜ awaited |
 | Armenian translations | The locale is not built at all yet (PRD 3, #3) | ⬜ awaited |
 | Real events | `src/content/events/` is empty; the Événements page says so | ⬜ awaited |
+| Coordonnées bancaires — IBAN de l'association et banque | `bankAccount` in `src/i18n/ui.ts` is `null`; the QR-bill on the Don page renders « IBAN à fournir par le Comité » | ⬜ awaited |
 
 ## Claims that must be verified or deleted before launch
 
