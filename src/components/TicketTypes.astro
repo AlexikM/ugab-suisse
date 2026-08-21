@@ -1,0 +1,64 @@
+---
+/**
+ * The price list, shown as ticket types rather than one line of prose.
+ *
+ * PRD 6's second, third and fourth user stories are all the same request: a
+ * visitor wants to see *which* tickets exist before booking, because a gala
+ * routinely carries several — per person, per couple, a VIP table — against one
+ * room. The committee writes them as a single free-text `tarifs` field, exactly
+ * as the brief's own fiche événement does:
+ *
+ *     CHF 150 / pers. — CHF 250 / couple — CHF 1'200 / table VIP
+ *
+ * The field stays free text on purpose. Modelling three price rows in the CMS
+ * would buy nothing the provider does not already own — the provider is where
+ * ticket types are configured against the capacity — and would cost the events
+ * officer a form they have to fill in correctly for the page to render at all.
+ *
+ * So the splitting happens here, at the last possible moment, and it is
+ * deliberately timid: a separator is only honoured when *every* resulting
+ * fragment reads like a ticket type. `CHF 50 – 100` is a range, not two
+ * tickets, and it is left alone because "100" carries no words. When in doubt
+ * the whole string is shown as written, which is never wrong — only less
+ * useful.
+ */
+
+interface Props {
+  /** The `tarifs` field, as the committee typed it. */
+  pricing: string;
+  class?: string;
+}
+
+/**
+ * Not exported, and the patterns are inside it. Astro hoists an exported
+ * frontmatter function to module scope while leaving `const`s behind in the
+ * component's setup, so an exported helper that closes over one throws at
+ * render time. Keeping both together keeps them in the same scope.
+ */
+function ticketTypes(pricing: string): string[] {
+  // Separators the committee actually uses between ticket types.
+  const separators = /\s+[—–·]\s+|\r?\n+/;
+  // A fragment worth its own line says something, rather than being a bare
+  // number: `CHF 50 – 100` is one range, not two tickets.
+  const readsAsATicket = /\p{L}/u;
+
+  const fragments = pricing
+    .split(separators)
+    .map((fragment) => fragment.trim())
+    .filter(Boolean);
+
+  if (fragments.length < 2 || !fragments.every((fragment) => readsAsATicket.test(fragment))) {
+    return [pricing.trim()];
+  }
+  return fragments;
+}
+
+const { pricing, class: className = '' } = Astro.props;
+const types = ticketTypes(pricing);
+---
+
+<ul data-ticket-types class:list={['space-y-1', className]}>
+  {types.map((type) => (
+    <li data-ticket-type class="text-lg leading-snug font-medium text-ink">{type}</li>
+  ))}
+</ul>

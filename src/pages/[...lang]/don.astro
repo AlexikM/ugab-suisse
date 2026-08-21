@@ -2,14 +2,17 @@
 import { Image } from 'astro:assets';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
+import DonationChoice from '../../components/DonationChoice.astro';
+import ProviderSlot from '../../components/ProviderSlot.astro';
+import SwissQrBill from '../../components/SwissQrBill.astro';
 import { pageContext } from '../../i18n/fallback';
 import {
+  bankAccount,
   inLang,
   languagePaths,
   localeRoute,
   routes,
   sponsorshipTiers,
-  suggestedAmounts,
 } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
@@ -44,7 +47,13 @@ const link = (path: string) => withBase(localeRoute(path, lang));
     </div>
   </section>
 
-  <!-- TEXTE D'IMPACT -->
+  <!--
+    TEXTE D'IMPACT — first, and before anything transactional.
+
+    PRD 5 is explicit that the page's centre of gravity stays on the argument:
+    the committee wrote a genuinely good impact text and the form should follow
+    it, not replace it.
+  -->
   <section class="py-section-lg">
     <div class="mx-auto max-w-3xl px-6 space-y-6 text-lg leading-[1.75] text-ink-soft">
       <p>{t('donate.impact_p1')}</p>
@@ -52,47 +61,89 @@ const link = (path: string) => withBase(localeRoute(path, lang));
     </div>
   </section>
 
-  <!-- MONTANTS SUGGÉRÉS -->
-  <section class="bg-paper-soft py-section">
+  <!-- FAIRE UN DON — montants suggérés, fréquence, et l'emplacement du module -->
+  <section id="don" class="bg-paper-soft py-section">
     <div class="mx-auto max-w-5xl px-6">
-      <h2 class="text-display-sm mb-10">{t('donate.amounts_title')}</h2>
+      <h2 class="text-display-sm mb-10">{t('donate.give_title')}</h2>
 
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="border-b border-line">
-            <th scope="col" class="eyebrow py-4 pr-6 text-navy">{t('donate.amount_column')}</th>
-            <th scope="col" class="eyebrow py-4 text-navy">{t('donate.impact_column')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inLang(suggestedAmounts, served).map((row) => (
-            <tr class="border-b border-line">
-              <th scope="row" class="py-5 pr-6 text-lg font-display font-medium whitespace-nowrap align-top">{row.amount}</th>
-              <td class="py-5 text-ink-soft align-top">{row.impact}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DonationChoice served={served} />
 
       <p class="mt-8 text-sm text-ink-soft">{t('donate.terms')}</p>
 
       <!--
-        The online donation module — a Swiss provider carrying TWINT,
-        PostFinance, card and QR-bill — is embedded by PRD 5. The account does
-        not exist yet, and no promise of a receipt or of tax deductibility is
-        shown until PRD 7 has verified them.
+        The Swiss provider's hosted form mounts inside this slot — TWINT,
+        PostFinance, card and wallets, one-off and recurring — once the
+        committee's account exists. Nothing is loaded from a payment host today
+        and no key is present: see ADR-0001 and section B of the pre-launch
+        checklist for what connecting it involves.
+
+        Until then the slot is not empty. It carries the two routes that do work
+        right now: a bank transfer, and the committee's own address.
       -->
-      <div class="mt-10 border border-line bg-paper p-8">
-        <p class="text-sm text-ink-soft leading-relaxed">{t('donate.provider_pending')}</p>
-        <a href={link(routes.contact)} class="eyebrow mt-6 inline-flex items-center border-b border-navy pb-1 text-navy">
-          {t('nav.contact')} →
-        </a>
+      <div class="mt-10">
+        <ProviderSlot
+          provider="payment"
+          headingLevel={3}
+          title={t('donate.form_title')}
+          pending={t('donate.provider_pending')}
+          pendingDetail={t('donate.provider_pending_detail')}
+        >
+          <div class="flex flex-wrap items-center gap-4">
+            <a
+              href="#virement"
+              class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep"
+            >
+              {t('donate.transfer_cta')} →
+            </a>
+            <a
+              href={link(routes.contact)}
+              class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+            >
+              {t('nav.contact')} →
+            </a>
+          </div>
+        </ProviderSlot>
       </div>
     </div>
   </section>
 
+  <!--
+    VIREMENT & QR-FACTURE — alongside the online form, never instead of it.
+
+    Zero fee to the committee, and it reaches the donor profile that gives the
+    most and trusts a web form the least. The IBAN is owed by the Comité (#9)
+    and is rendered as a visible placeholder rather than invented.
+  -->
+  <section id="virement" class="py-section">
+    <div class="mx-auto max-w-5xl px-6">
+      <h2 class="text-display-sm mb-4">{t('donate.transfer_title')}</h2>
+      <p class="mb-10 max-w-2xl text-lg leading-relaxed text-ink-soft">
+        {t('donate.transfer_lead')}
+      </p>
+
+      <SwissQrBill
+        served={served}
+        creditor={t('contact.organisation')}
+        iban={bankAccount.iban}
+        bank={bankAccount.bank}
+        currency={bankAccount.currency}
+        reference={bankAccount.reference}
+      />
+
+      <p class="mt-6 max-w-2xl text-sm leading-relaxed text-ink-muted">
+        {t('donate.bank_pending')}
+      </p>
+      <p
+        data-standing-order
+        class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted"
+      >
+        {t('donate.standing_order')}
+      </p>
+    </div>
+  </section>
+
   <!-- SPONSORING -->
-  <section id="sponsoring" class="py-section-lg">
+  <section id="sponsoring" class="bg-paper-soft py-section-lg">
     <div class="mx-auto max-w-5xl px-6">
       <h2 class="font-display text-display-md mb-10">
         {t('sponsor.title')}
@@ -135,3 +186,73 @@ const link = (path: string) => withBase(localeRoute(path, lang));
     </div>
   </section>
 </Layout>
+
+<!--
+  The only thing on this page that runs, and it is first-party, storage-free and
+  optional: it carries the amount the visitor picked down into the QR-bill, and
+  shows the standing-order note only to someone giving monthly.
+
+  Everything the page promises works without it. With scripting off the QR-bill
+  shows an open amount — which is the normal state of a donation slip anyway,
+  since the donor decides — and the standing-order note simply stays visible.
+-->
+<script is:inline>
+  (() => {
+    const choice = document.querySelector('[data-donation-choice]');
+    if (!choice) return;
+
+    const bill = document.querySelector('[data-qr-bill]');
+    const standingOrder = document.querySelector('[data-standing-order]');
+    const free = choice.querySelector('[data-donation-amount-free]');
+
+    /**
+     * The amount is only ours to write while the bill carries no code.
+     *
+     * A Swiss QR-bill's printed amount and its encoded payload have to agree —
+     * a bank reads the code, a person reads the figure, and a slip where the
+     * two disagree is worse than one with an open amount. Once a generated
+     * image is supplied the amount belongs to the payload, and this stops
+     * touching it. See src/components/SwissQrBill.astro.
+     */
+    const amountFields =
+      bill && bill.getAttribute('data-qr-bill-state') === 'pending'
+        ? document.querySelectorAll('[data-qr-field="amount"]')
+        : [];
+
+    // Whatever the page rendered for "no amount chosen", kept rather than
+    // restated here, so the placeholder lives in one place.
+    const openAmount = amountFields[0] ? amountFields[0].textContent : '';
+
+    const chosenAmount = () => {
+      const selected = choice.querySelector('[data-donation-amount]:checked');
+      if (selected && selected.value !== 'free') return Number(selected.value);
+      const typed = free ? Number(free.value) : Number.NaN;
+      return Number.isFinite(typed) && typed > 0 ? typed : null;
+    };
+
+    const isMonthly = () => {
+      const selected = choice.querySelector('[data-donation-frequency]:checked');
+      return selected ? selected.value === 'monthly' : false;
+    };
+
+    const update = () => {
+      const amount = chosenAmount();
+      const text = amount === null ? openAmount : amount.toFixed(2);
+      for (const field of amountFields) field.textContent = text;
+      if (standingOrder) standingOrder.hidden = !isMonthly();
+    };
+
+    // Typing a figure is choosing the free amount. Without this, someone who
+    // clicks CHF 100 and then types 300 is quietly still giving 100.
+    if (free) {
+      free.addEventListener('input', () => {
+        const freeOption = choice.querySelector('[data-donation-amount="free"]');
+        if (freeOption && free.value !== '') freeOption.checked = true;
+      });
+    }
+
+    choice.addEventListener('change', update);
+    choice.addEventListener('input', update);
+    update();
+  })();
+</script>

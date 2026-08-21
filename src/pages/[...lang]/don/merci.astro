@@ -1,0 +1,89 @@
+---
+/**
+ * Where a payment provider returns a donor once the gift is made.
+ *
+ * It exists before the provider does, and on purpose: the return address is the
+ * first thing typed into a provider's dashboard, and a return address that
+ * 404s is how a donor's last impression of the committee becomes an error page.
+ * Building it now means the configuration step is a copy-and-paste rather than
+ * a small project.
+ *
+ * One address per language — `/don/merci`, `/en/don/merci`, `/hy/don/merci` —
+ * because the experience must not switch language at the last step. The
+ * provider is configured with the address matching the locale the donor was
+ * reading; `returnRoutes.donation` in `src/i18n/ui.ts` is the single place both
+ * this page and that configuration are derived from.
+ *
+ * On the wording: the committee's approved confirmation is carried verbatim,
+ * minus its last sentence. That sentence promised a receipt by email, which
+ * nothing sends today and which is half of the launch-blocking claim in section
+ * A1 of the pre-launch checklist. `donate.terms` drops the same sentence for the
+ * same reason. When the committee produces the cantonal decision — or confirms
+ * there is none — PRD 7 decides what this page is allowed to say about receipts.
+ */
+
+import { pageContext } from '../../../i18n/fallback';
+import { languagePaths, localeRoute, routes } from '../../../i18n/ui';
+import { type Lang, withBase } from '../../../i18n/utils';
+import Layout from '../../../layouts/Layout.astro';
+
+export const getStaticPaths = languagePaths;
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const { t } = pageContext(lang, 'donate');
+const link = (path: string) => withBase(localeRoute(path, lang));
+---
+
+<Layout
+  lang={lang}
+  section="donate"
+  title={t('donate.thanks_title')}
+  description={t('donate.thanks_body')}
+>
+  <section data-thanks="donation" class="bg-ink text-white">
+    <div class="mx-auto max-w-page px-6 py-section-lg">
+      <div class="max-w-3xl">
+        <h1 class="font-display text-display-xl mb-8">{t('donate.thanks_title')}</h1>
+        <p class="text-lead max-w-2xl text-white">{t('donate.thanks_body')}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-section">
+    <div class="mx-auto max-w-3xl px-6">
+      <!--
+        Somebody can reach this page today without having given anything —
+        by typing the address, or by following a link from a test run. Saying
+        plainly that online giving is not switched on yet is kinder than a
+        thank-you for a gift that never happened.
+      -->
+      <p class="border-l-4 border-gold bg-paper-soft px-6 py-5 text-base leading-relaxed text-ink-soft">
+        {t('donate.thanks_pending')}
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-6">
+        <a
+          href={link(routes.home)}
+          class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('nav.home')} →
+        </a>
+        <a
+          href={link(routes.events)}
+          class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('nav.events')} →
+        </a>
+        <a
+          href={link(routes.contact)}
+          class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('nav.contact')} →
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

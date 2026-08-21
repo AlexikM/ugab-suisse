@@ -1,0 +1,138 @@
+---
+/**
+ * The two choices the brief asks a donor to make: how much, and how often.
+ *
+ * The amounts and their stated impact are the committee's own approved table —
+ * CHF 50, 100, 250, 500 and a free amount — and they are shown here as
+ * something you can actually pick rather than as a row in a price list. That is
+ * the point of the brief's "montants suggérés": each one is an argument, and an
+ * argument you can act on reads differently from an argument you can only read.
+ *
+ * The free amount is the committee's own "Libre" card with a field in it, not a
+ * sixth option beside it. One choice, one control: two would leave a donor
+ * wondering which of them counted.
+ *
+ * **Nothing here processes a donation, and the page says so out loud.** There is
+ * no `<form>`, no action, no submit control and nowhere for a value to go: the
+ * payment account does not exist yet (ADR-0001, PRD 5) and inventing a control
+ * that appeared to take money would be far worse than showing none. What the
+ * choice does do today is real, if small — it fills in the amount on the
+ * QR-bill further down the page, which is a route that works right now.
+ *
+ * When the provider is connected there is a decision to take here, and it
+ * should be taken deliberately rather than by accident: the provider's hosted
+ * form brings its own amount picker, so **either** this one is deleted and the
+ * page keeps only the argument, **or** it stays and pre-selects the embed from
+ * `data-donation-amount` / `data-donation-frequency`. Two pickers on one page
+ * is the outcome nobody should end up with by default. The values are numbers
+ * rather than display strings so that the second option remains available.
+ */
+
+import { donationFrequencies, inLang, suggestedAmounts } from '../i18n/ui';
+import { type Lang, useTranslations } from '../i18n/utils';
+
+interface Props {
+  /** The language the page is written in. */
+  served: Lang;
+}
+
+const { served } = Astro.props;
+const t = useTranslations(served);
+
+const amounts = inLang(suggestedAmounts, served);
+
+/** A stable id per option: two fieldsets on one page must not collide. */
+const amountId = (index: number) => `donation-amount-${index}`;
+const frequencyId = (id: string) => `donation-frequency-${id}`;
+
+/**
+ * The card is the wrapper rather than the label, so that the free amount can
+ * put a field below its label and still sit inside one bordered choice.
+ * `border-line-strong` rather than `border-line`: this bounds an interactive
+ * control, which WCAG wants at 3:1 — see the palette notes in global.css.
+ */
+const card =
+  'h-full border border-line-strong bg-paper transition ' +
+  'hover:border-navy peer-checked:border-navy peer-checked:bg-white ' +
+  'peer-focus-visible:outline peer-focus-visible:outline-[3px] ' +
+  'peer-focus-visible:outline-red peer-focus-visible:outline-offset-2';
+---
+
+<div data-donation-choice class="space-y-10">
+  <!-- FRÉQUENCE — don unique ou mensuel -->
+  <fieldset>
+    <legend class="eyebrow mb-4 text-navy">{t('donate.frequency_title')}</legend>
+    <div class="flex flex-wrap gap-4">
+      {donationFrequencies.map((frequency) => (
+        <div class="relative">
+          <input
+            type="radio"
+            id={frequencyId(frequency.id)}
+            name="donation-frequency"
+            value={frequency.id}
+            data-donation-frequency={frequency.id}
+            checked={frequency.id === 'once'}
+            class="peer sr-only"
+          />
+          <div class={card}>
+            <label
+              for={frequencyId(frequency.id)}
+              class="block cursor-pointer p-5 font-display text-lg font-medium"
+            >
+              {t(frequency.label)}
+            </label>
+          </div>
+        </div>
+      ))}
+    </div>
+  </fieldset>
+
+  <!-- MONTANTS SUGGÉRÉS — each with the impact the committee wrote for it -->
+  <fieldset>
+    <legend class="eyebrow mb-4 text-navy">{t('donate.amounts_title')}</legend>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {amounts.map((row, index) => (
+        <div class="relative">
+          <input
+            type="radio"
+            id={amountId(index)}
+            name="donation-amount"
+            value={row.value === null ? 'free' : String(row.value)}
+            data-donation-amount={row.value === null ? 'free' : String(row.value)}
+            class="peer sr-only"
+          />
+          <div class={card}>
+            <label for={amountId(index)} class="block cursor-pointer p-5">
+              <span class="block font-display text-2xl font-semibold text-ink">{row.amount}</span>
+              <span class="mt-2 block text-sm leading-relaxed text-ink-soft">{row.impact}</span>
+            </label>
+
+            {/*
+              The field belongs to the committee's own "Libre" row — story 3 in
+              the PRD is a donor who does not want to be boxed in by the
+              suggestions, and that is the row that already says so.
+            */}
+            {row.value === null && (
+              <div class="flex items-center gap-2 px-5 pb-5">
+                <label for="donation-amount-free" class="sr-only">
+                  {t('donate.amount_free')}
+                </label>
+                <span aria-hidden="true" class="font-display text-lg text-ink-muted">CHF</span>
+                <input
+                  type="number"
+                  id="donation-amount-free"
+                  name="donation-amount-free"
+                  data-donation-amount-free
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  class="w-full border border-line-strong bg-white px-3 py-2 text-lg text-ink"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </fieldset>
+</div>

@@ -1,0 +1,73 @@
+---
+/**
+ * Where a ticketing provider returns a buyer once a booking is paid for.
+ *
+ * The mirror of `/don/merci`, and it exists for the same reason: the return
+ * address is configuration, it is typed in before anyone tests a booking, and
+ * it must not 404 on the one evening a year it gets used.
+ *
+ * A static page cannot fill in the committee's approved wording. That line is
+ * "Réservation confirmée. Rendez-vous le [date] à [lieu] — billet envoyé par
+ * e-mail", and the date, the venue and the ticket are all things only the
+ * provider knows: they arrive in its confirmation email, not here. So the page
+ * carries the approved first sentence, points at the ticket for the rest, and
+ * does not promise an email that nothing currently sends.
+ *
+ * It shares a directory with `[slug].astro`, so this address shadows an event
+ * whose slug is literally `merci`. A content test fails the build if one ever
+ * appears, rather than leaving a page silently unreachable.
+ */
+
+import { pageContext } from '../../../i18n/fallback';
+import { languagePaths, localeRoute, routes } from '../../../i18n/ui';
+import { type Lang, withBase } from '../../../i18n/utils';
+import Layout from '../../../layouts/Layout.astro';
+
+export const getStaticPaths = languagePaths;
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const { t } = pageContext(lang, 'events');
+const link = (path: string) => withBase(localeRoute(path, lang));
+---
+
+<Layout
+  lang={lang}
+  section="events"
+  title={t('event.thanks_title')}
+  description={t('event.thanks_body')}
+>
+  <section data-thanks="booking" class="bg-ink text-white">
+    <div class="mx-auto max-w-page px-6 py-section-lg">
+      <div class="max-w-3xl">
+        <h1 class="font-display text-display-xl mb-8">{t('event.thanks_title')}</h1>
+        <p class="text-lead max-w-2xl text-white">{t('event.thanks_body')}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-section">
+    <div class="mx-auto max-w-3xl px-6">
+      <p class="border-l-4 border-gold bg-paper-soft px-6 py-5 text-base leading-relaxed text-ink-soft">
+        {t('event.thanks_pending')}
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-6">
+        <a
+          href={link(routes.events)}
+          class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('event.all')} →
+        </a>
+        <a
+          href={link(routes.contact)}
+          class="eyebrow inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('nav.contact')} →
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

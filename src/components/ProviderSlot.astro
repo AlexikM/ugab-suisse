@@ -1,0 +1,92 @@
+---
+/**
+ * Where a rented provider's own form or widget will be mounted.
+ *
+ * ADR-0001 delegates every money flow to a provider: the site presents the
+ * committee's argument and hosts the provider's form, and owns nothing else.
+ * That decision leaves a deliberate hole in two places — the donation page and
+ * every event page still taking bookings — and this component is that hole,
+ * marked, so that it is an integration point rather than an omission.
+ *
+ * It is one component rather than two blocks written inline for three reasons:
+ *
+ * 1. **It is the integration point.** When the accounts exist, the provider's
+ *    embed goes inside `[data-provider-slot]` and nothing else on the page has
+ *    to move. One selector, in one file, named in the pull request.
+ * 2. **It must never render as an empty box.** A slot that shows nothing when a
+ *    third-party script is blocked — or, today, when there is no script at all —
+ *    is worse than no slot: the visitor concludes the site is broken rather than
+ *    that a route is not open yet. Whatever the page can genuinely offer instead
+ *    goes in the default slot, and it is not optional.
+ * 3. **The state has to be machine-readable.** `data-provider-state` is what the
+ *    tests assert on, so "not connected yet" is a fact about the markup and not
+ *    a sentence somebody has to read and interpret.
+ *
+ * What it deliberately does not do: load anything, name a provider's hostname,
+ * or carry a key. No account exists. See the pre-launch checklist, section B.
+ */
+
+/** Which account the slot is waiting on. */
+export type ProviderKind = 'payment' | 'ticketing';
+
+interface Props {
+  provider: ProviderKind;
+  /** What will live here, as a heading. */
+  title: string;
+  /**
+   * Whether the provider's own embed is mounted in this slot. Stated, not
+   * inferred: a slot with no apology in it is not the same thing as a slot with
+   * a provider in it. An event carrying a ticket link the committee pasted in
+   * by hand needs no explanation and still has no provider behind it, and
+   * deriving this from the absence of `pending` reported exactly that case as
+   * connected. A test fails the build if any page claims otherwise while the
+   * processor register in `src/i18n/legal.ts` still says `planned`.
+   */
+  connected?: boolean;
+  /**
+   * Why nothing is here, when that needs saying. Independent of `connected`:
+   * some pending slots have a working alternative sitting in them and nothing
+   * to apologise for.
+   */
+  pending?: string | null;
+  /** The second line of the pending state — what it means for the visitor. */
+  pendingDetail?: string | null;
+  /** Heading level, so the slot does not break the page's heading order. */
+  headingLevel?: 2 | 3;
+}
+
+const {
+  provider,
+  title,
+  connected = false,
+  pending = null,
+  pendingDetail = null,
+  headingLevel = 3,
+} = Astro.props;
+
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const state = connected ? 'connected' : 'pending';
+---
+
+<div
+  data-provider-slot={provider}
+  data-provider-state={state}
+  class="border border-line-strong bg-paper p-6 sm:p-8"
+>
+  <Heading class="font-display text-xl font-semibold text-ink">{title}</Heading>
+
+  {pending && (
+    <p class="mt-4 border-l-4 border-gold pl-4 text-base leading-relaxed text-ink-soft">
+      {pending}
+    </p>
+  )}
+  {pendingDetail && <p class="mt-3 text-sm leading-relaxed text-ink-muted">{pendingDetail}</p>}
+
+  {/*
+    What the page offers while the slot is empty. Never conditional: see the
+    second reason in the note above.
+  */}
+  <div class="mt-6">
+    <slot />
+  </div>
+</div>

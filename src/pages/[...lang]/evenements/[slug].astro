@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { getCollection, render } from 'astro:content';
+import BookingPanel from '../../../components/BookingPanel.astro';
+import TicketTypes from '../../../components/TicketTypes.astro';
 import { pageContext } from '../../../i18n/fallback';
 import { formatLocale, languagePaths, localeRoute, routes } from '../../../i18n/ui';
 import { type Lang, withBase } from '../../../i18n/utils';
@@ -36,14 +38,26 @@ const dateFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long',
 const timeFmt = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
 
 const isPast = event.data.date.valueOf() < Date.now();
-const canBook = !isPast && !event.data.soldOut && Boolean(event.data.ticketUrl);
+
+// Whether the event is still taking bookings is decided in one place, by
+// <BookingPanel>, and asked twice here — once in the facts strip and once in
+// the section a ticketing widget will mount into. See that component for why.
+const ticketUrl = event.data.ticketUrl ?? null;
 
 const programme = (event.data.programme ?? '')
   .split(/\n{2,}/)
   .map((paragraph) => paragraph.trim())
   .filter(Boolean);
 
+/**
+ * A past event is an archive entry, and the brief asks for photographs rather
+ * than dead booking links. When the Comité has uploaded a gallery it is the
+ * gallery; when it has only ever supplied the cover, the cover is the archive.
+ * One photograph is worth more than an empty section.
+ */
 const gallery = event.data.gallery ?? [];
+const photographs =
+  gallery.length > 0 ? gallery : isPast && event.data.cover ? [event.data.cover] : [];
 
 /**
  * A link, not a map.
@@ -94,9 +108,16 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     </div>
   </section>
 
-  <!-- L'ESSENTIEL -->
+  <!--
+    L'ESSENTIEL — the facts strip.
+
+    Tarifs and Nombre de places are separate cells. They used to share one, with
+    the capacity printed under the "Tarifs" label, which read as though two
+    hundred were part of the price. They answer different questions and the
+    committee fills them in independently.
+  -->
   <section class="bg-paper border-b border-line">
-    <div class="mx-auto max-w-page px-6 py-8 md:py-10 grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+    <div class="mx-auto max-w-page px-6 py-8 md:py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
       <div>
         <div class="eyebrow mb-2 text-navy">{t('event.date')}</div>
         <div class="text-lg font-medium leading-snug">{dateFmt.format(event.data.date)}</div>
@@ -111,33 +132,38 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
         {event.data.address && <div class="text-sm text-ink-muted mt-1">{event.data.address}</div>}
       </div>
 
-      {(event.data.pricing || event.data.capacity) && (
+      {event.data.pricing && (
         <div>
-          <div class="eyebrow mb-2 text-navy">
-            {event.data.pricing ? t('event.pricing') : t('event.capacity')}
+          <div class="eyebrow mb-2 text-navy">{t('event.pricing')}</div>
+          <TicketTypes pricing={event.data.pricing} />
+        </div>
+      )}
+
+      {event.data.capacity && (
+        <div>
+          <div class="eyebrow mb-2 text-navy">{t('event.capacity')}</div>
+          <div class="text-lg font-medium leading-snug">
+            {event.data.capacity} {t('event.places')}
           </div>
-          {event.data.pricing && <div class="text-lg font-medium leading-snug">{event.data.pricing}</div>}
-          {event.data.capacity && (
-            <div class="text-sm text-ink-muted mt-1">{event.data.capacity} {t('event.places')}</div>
-          )}
+          <div class="text-sm text-ink-muted mt-1">{t('event.capacity_note')}</div>
         </div>
       )}
 
       <div>
-        <div class="eyebrow mb-2 text-navy">{t('event.book')}</div>
-        {isPast ? (
-          <div class="text-lg text-ink-muted leading-snug">{t('event.finished')}</div>
-        ) : event.data.soldOut ? (
-          <div class="text-lg font-medium leading-snug text-ink">{t('event.sold_out')}</div>
-        ) : canBook ? (
-          <a href={event.data.ticketUrl} class="inline-block text-lg font-medium text-navy underline underline-offset-4">
-            {t('event.book')} →
-          </a>
-        ) : (
-          <a href={link(routes.contact)} class="inline-block text-lg font-medium text-navy underline underline-offset-4">
-            {t('event.ask')} →
-          </a>
-        )}
+        <!--
+          Labelled "Billetterie", not "Réserver": the cell holds four possible
+          answers and only one of them is an invitation to book. "Réserver /
+          Complet" reads as a contradiction.
+        -->
+        <div class="eyebrow mb-2 text-navy">{t('event.tickets_title')}</div>
+        <BookingPanel
+          served={served}
+          requested={lang}
+          variant="summary"
+          isPast={isPast}
+          soldOut={event.data.soldOut}
+          ticketUrl={ticketUrl}
+        />
       </div>
     </div>
   </section>
@@ -167,13 +193,67 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     </section>
   )}
 
-  <!-- GALERIE -->
-  {gallery.length > 0 && (
+  <!--
+    BILLETTERIE — the price list and the slot a provider's booking widget mounts
+    into. Absent entirely on a past event: an archive page has nothing to book.
+  -->
+  {!isPast && (
     <section class="py-section">
+      <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
+        <div class="lg:col-span-4">
+          <h2 class="text-display-sm">{t('event.tickets_title')}</h2>
+        </div>
+        <div class="lg:col-span-8 space-y-8">
+          {event.data.pricing && (
+            <div>
+              <div class="eyebrow mb-3 text-navy">{t('event.ticket_types')}</div>
+              <TicketTypes pricing={event.data.pricing} class="space-y-2" />
+              {/*
+                PRD 6: large amounts go by invoice and transfer, not by card —
+                a four-figure table costs the committee real money in card fees,
+                and a corporate buyer wants an invoice anyway. The page's share
+                of that decision is a route to a person, not a claim about how
+                the committee invoices.
+              */}
+              <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-muted">
+                {t('event.large_booking')}
+                {' '}
+                <a
+                  href={link(routes.contact)}
+                  class="text-navy underline underline-offset-4 hover:text-red"
+                >
+                  {t('event.ask')}
+                </a>
+              </p>
+            </div>
+          )}
+
+          {event.data.capacity && (
+            <p class="text-sm leading-relaxed text-ink-muted">
+              {event.data.capacity} {t('event.places')} — {t('event.capacity_note')}
+            </p>
+          )}
+
+          <BookingPanel
+            served={served}
+            requested={lang}
+            variant="full"
+            isPast={isPast}
+            soldOut={event.data.soldOut}
+            ticketUrl={ticketUrl}
+          />
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- GALERIE -->
+  {photographs.length > 0 && (
+    <section class="bg-paper-soft py-section">
       <div class="mx-auto max-w-page px-6">
         <h2 class="text-display-sm mb-10">{t('event.gallery')}</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-          {gallery.map((src, index) => (
+          {photographs.map((src, index) => (
             <figure class="aspect-[4/3] overflow-hidden bg-paper-deep">
               <img src={withBase(src)} alt={`${event.data.title} — ${index + 1}`} loading="lazy" class="h-full w-full object-cover" />
             </figure>
@@ -184,7 +264,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
   )}
 
   <!-- INFOS PRATIQUES -->
-  <section class="bg-paper-soft py-section">
+  <section class="py-section">
     <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
       <div class="lg:col-span-4">
         <h2 class="text-display-sm">{t('event.practical')}</h2>
@@ -205,14 +285,6 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             <span class="sr-only">{t('event.directions_new_tab')}</span>
           </a>
         </div>
-
-        {canBook && (
-          <div class="pt-8 border-t border-line">
-            <a href={event.data.ticketUrl} class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep">
-              {t('event.book')} →
-            </a>
-          </div>
-        )}
       </div>
     </div>
   </section>
