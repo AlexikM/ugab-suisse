@@ -16,8 +16,8 @@
  */
 
 import type { CollectionEntry } from 'astro:content';
-import { type Lang, formatLocale, languages, localeRoute, ui } from './i18n/ui';
-import { withBase } from './i18n/utils';
+import { formatLocale, type Lang, languages, localeRoute } from './i18n/ui';
+import { useTranslations, withBase } from './i18n/utils';
 
 /** Astro serves `/a-propos/index.html`; the canonical URL says so. */
 const withTrailingSlash = (path: string): string => (path.endsWith('/') ? path : `${path}/`);
@@ -73,13 +73,15 @@ export function socialImage(site: URL | undefined): string {
  * indexed identifies the organisation, not just the home page.
  */
 export function organizationSchema(lang: Lang, site: URL | undefined): Record<string, unknown> {
-  const t = ui[lang] ?? ui.fr;
+  // Through the shared translator, so structured data falls back exactly the
+  // way the rendered page does instead of having a second opinion.
+  const t = useTranslations(lang);
   return {
     '@context': 'https://schema.org',
     '@type': 'NGO',
     name: 'Union Générale Arménienne de Bienfaisance — Comité Suisse',
-    alternateName: t['site.title'],
-    description: t['site.description'],
+    alternateName: t('site.title'),
+    description: t('site.description'),
     url: absoluteUrl(withBase(localeRoute('/', lang)), site),
     logo: new URL(withBase('/logo.png'), site ?? 'http://localhost:4321/').href,
     // The approved footer copy — "Fondée en 1906" — is the committee's own
@@ -139,9 +141,7 @@ export function eventSchema(
     schema.offers = {
       '@type': 'Offer',
       url: data.ticketUrl,
-      availability: data.soldOut
-        ? 'https://schema.org/SoldOut'
-        : 'https://schema.org/InStock',
+      availability: data.soldOut ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
     };
   }
 

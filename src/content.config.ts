@@ -13,7 +13,7 @@ const events = defineCollection({
   schema: z
     .object({
       title: z.string(),
-      lang: z.enum(['fr', 'en']).default('fr'),
+      lang: z.enum(['fr', 'en', 'hy']).default('fr'),
       date: z.coerce.date(),
       endDate: z.coerce.date().optional(),
       location: z.string(),
@@ -76,7 +76,9 @@ const bureau = defineCollection({
       .object({
         fr: z.string().optional(),
         en: z.string().optional(),
-        // Add `hy` here when the Comité delivers the Armenian translations.
+        // Optional like the others: the Comité owes the Armenian translations
+        // (#9) and the bureau section publishes without them.
+        hy: z.string().optional(),
       })
       .optional(),
   }),

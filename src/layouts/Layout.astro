@@ -33,7 +33,9 @@ const { title, description, lang = 'fr', section, schema = [] } = Astro.props;
  * pronounces the page by this attribute, and telling it "Armenian" over French
  * text makes the page unusable rather than merely untranslated.
  */
-const page = section ? resolveLanguage(lang, section) : { requested: lang, served: lang, fellBack: false };
+const page = section
+  ? resolveLanguage(lang, section)
+  : { requested: lang, served: lang, fellBack: false };
 const t = useTranslations(page.served);
 
 const fullTitle = title

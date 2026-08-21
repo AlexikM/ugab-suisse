@@ -17,7 +17,7 @@
  * No developer, no restructuring, no deploy checklist.
  */
 
-import { defaultLang, type Lang, type UiKey, translations, ui } from './ui';
+import { defaultLang, type Lang, translations, type UiKey, ui } from './ui';
 import { useTranslations } from './utils';
 
 /**

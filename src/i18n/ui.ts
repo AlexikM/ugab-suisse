@@ -157,7 +157,7 @@ export function inLang<T>(record: Localised<T>, lang: Lang): T {
 }
 
 /** Accueil — chiffres clés. */
-export const keyFigures = {
+export const keyFigures: Localised<ReadonlyArray<{ value: string; label: string }>> = {
   fr: [
     { value: '1906', label: 'Fondée au Caire' },
     { value: '30+', label: 'pays' },
@@ -173,13 +173,13 @@ export const keyFigures = {
 } as const;
 
 /** À propos — mission et valeurs. */
-export const values = {
+export const values: Localised<ReadonlyArray<string>> = {
   fr: ['Solidarité', 'Identité', 'Excellence', 'Humanisme', 'Engagement'],
   en: ['Solidarity', 'Identity', 'Excellence', 'Humanism', 'Commitment'],
 } as const;
 
 /** À propos — axes d'action. */
-export const actionAreas = {
+export const actionAreas: Localised<ReadonlyArray<{ title: string; body: string }>> = {
   fr: [
     {
       title: 'Humanitaire',
@@ -219,7 +219,7 @@ export const actionAreas = {
 } as const;
 
 /** Don — montants suggérés. */
-export const suggestedAmounts = {
+export const suggestedAmounts: Localised<ReadonlyArray<{ amount: string; impact: string }>> = {
   fr: [
     { amount: 'CHF 50', impact: 'Un repas pour une famille déplacée' },
     { amount: 'CHF 100', impact: 'Matériel scolaire pour un enfant' },
@@ -241,7 +241,9 @@ export const suggestedAmounts = {
  * The amounts are marked indicative in the brief and are NOT confirmed. The
  * page says so, visibly, until the Comité confirms them (#9).
  */
-export const sponsorshipTiers = {
+export const sponsorshipTiers: Localised<
+  ReadonlyArray<{ name: string; amount: string; benefits: string }>
+> = {
   fr: [
     {
       name: 'Bronze',

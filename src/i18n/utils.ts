@@ -1,4 +1,4 @@
-import { defaultLang, type Lang, type UiKey, languages, translations, ui } from './ui';
+import { defaultLang, type Lang, languages, translations, type UiKey, ui } from './ui';
 
 export type { Lang };
 
