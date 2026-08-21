@@ -112,6 +112,7 @@ A legal notice naming the wrong host is a false statement, however harmless it
 looks.
 
 - [ ] **Webmaster** — confirm the site is served from Infomaniak before launch, or correct the notices to name whoever actually serves it.
+- [ ] **Comité + webmaster** — the hosting account, the domain and the deploy credentials do not exist yet. The ordered list of what has to happen, and in what order, is [`infrastructure-setup.md`](infrastructure-setup.md). The pipeline that will use them is [`deploy-pipeline.md`](deploy-pipeline.md).
 
 ### A6 — Photograph consent
 
@@ -125,7 +126,7 @@ Written but not wired. Each of these is in a file owned by another workstream.
 - [ ] **Webmaster** — link the accessibility statement from the site footer. It offers someone a way to complete a donation the site blocks them from making; a route only reachable through the privacy policy is not a route.
 - [ ] **Webmaster** — publish the English legal pages. The English copy is already written in `src/i18n/legal.ts` and renders nowhere: `enRoutes` in `src/i18n/utils.ts` lists only `/`. Two visitors the policy is written for — an EU donor exercising GDPR rights, an English-speaking supporter — currently get French or nothing.
 - [ ] **Committee** — supply the Armenian translations of the three legal pages, or decide explicitly that the legal pages stay FR/EN on a trilingual site. Either is defensible; silence is not.
-- [ ] **Webmaster** — wire the compliance suite into `npm run test` and the pull-request workflow. Until then, the privacy policy's claim that an automated check compares its list against the published site is true of the code and untrue of the pipeline. Nothing else on this checklist matters if the check never runs.
+- [x] **Webmaster** — wire the compliance suite into `npm run test` and the pull-request workflow: **done**, and it now also gates publication. `npm run test` chains the compliance suite, `ci.yml` runs it on every pull request, and `deploy.yml` calls that same workflow as a job every publish depends on. A commit that fails it cannot reach the published site. Until that last part landed, the privacy policy's claim that an automated check compares its list against the published site was true of the code and untrue of the pipeline — see [issue #33](https://github.com/AlexikM/ugab-suisse/issues/33) and [`deploy-pipeline.md`](deploy-pipeline.md).
 - [ ] **Webmaster** — tell people what happens to a contact message *before* they send it, next to the send button, with a link to the policy. Written for, but not reachable from, the contact page.
 
 ### A8 — The ADR is still Proposed
@@ -161,7 +162,7 @@ the result.
 - [ ] **Committee + webmaster** — every page on a phone, including the donation and booking steps.
 - [ ] **Webmaster** — keyboard-only pass over the whole site, and a screen-reader pass over the donation flow.
 - [ ] **Webmaster** — verify each claim the accessibility statement makes, rather than assuming it: full keyboard reach with a visible focus indicator, text contrast against the brand colours, heading order, alt text on meaningful images, and `prefers-reduced-motion` respected. The statement is a promise; this is where it becomes true.
-- [ ] **Webmaster** — handover of every account, per PRD 8. Nothing should be reachable only through the webmaster's own login.
+- [ ] **Webmaster** — handover of every account, per PRD 8. Nothing should be reachable only through the webmaster's own login. The transaction has a checklist of its own: [`comite/proces-verbal-de-remise.md`](comite/proces-verbal-de-remise.md), against the filled-in [`comite/carte-des-comptes.md`](comite/carte-des-comptes.md).
 
 ---
 
@@ -169,6 +170,11 @@ the result.
 
 Someone will write asking what you hold about them, or asking you to delete it.
 The privacy policy promises an answer within 30 days.
+
+The committee's own copy of this, in French and alongside the other things that
+go wrong, is in [`comite/en-cas-de-probleme.md`](comite/en-cas-de-probleme.md).
+The procedure below is the source; that page points back here rather than
+restating it.
 
 - [ ] **Committee** — decide who monitors the mailbox and who answers.
 - [ ] **Committee** — the routine: acknowledge; search the contact mailbox, the donation provider's dashboard and the ticketing provider's dashboard; reply with what is held, why, and for how long.

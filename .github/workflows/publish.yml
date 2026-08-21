@@ -1,0 +1,346 @@
+# One publish, parameterised by where it lands. Called twice from deploy.yml —
+# once for production, once for staging — so that the transfer, the swap and the
+# smoke check exist in one place and cannot drift apart between environments.
+#
+# It is called rather than triggered: every caller reaches it through a job that
+# `needs` the CI check, which is what makes a failing check stop the deploy
+# (issue #33).
+#
+# Nothing here can run until a human opens the accounts and adds the secrets.
+# That is deliberate, and it is loud: the preflight job below names exactly what
+# is missing. See docs/infrastructure-setup.md.
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: production or staging — decides the messages and the checks
+        required: true
+        type: string
+      indexable:
+        description: >-
+          Whether search engines may index what is published. True for
+          production only. Feeds PUBLIC_SITE_INDEXABLE, which
+          src/layouts/Layout.astro already reads to decide the robots meta tag.
+        required: true
+        type: boolean
+      site_url:
+        description: The address the smoke check requests once the transfer is in place
+        required: true
+        type: string
+    secrets:
+      # Every one is optional so that a missing secret produces the preflight
+      # job's message rather than a failure GitHub words for us.
+      ssh_host:
+        required: false
+      ssh_port:
+        required: false
+      ssh_user:
+        required: false
+      ssh_key:
+        required: false
+      ssh_known_hosts:
+        required: false
+      deploy_path:
+        required: false
+      basic_auth:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Fail here, by name, rather than half way through an rsync.
+  # ---------------------------------------------------------------------------
+  preflight:
+    name: Credentials for ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every credential this deploy needs
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          SITE_URL: ${{ inputs.site_url }}
+          SSH_HOST: ${{ secrets.ssh_host }}
+          SSH_USER: ${{ secrets.ssh_user }}
+          SSH_KEY: ${{ secrets.ssh_key }}
+          SSH_KNOWN_HOSTS: ${{ secrets.ssh_known_hosts }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
+          BASIC_AUTH: ${{ secrets.basic_auth }}
+        run: |
+          set -euo pipefail
+
+          # The repository-level names, which are what somebody has to go and
+          # create. Inside this workflow they arrive renamed, and telling
+          # somebody that a secret called `ssh_host` is missing helps nobody.
+          case "$ENVIRONMENT" in
+            production) prefix=PROD ;;
+            staging)    prefix=STAGING ;;
+            *) echo "::error::Unknown environment '$ENVIRONMENT'."; exit 1 ;;
+          esac
+
+          missing=()
+          for field in SSH_HOST SSH_USER SSH_KEY SSH_KNOWN_HOSTS DEPLOY_PATH; do
+            if [ -z "${!field}" ]; then
+              missing+=("${prefix}_${field}")
+            fi
+          done
+
+          # Staging holds draft content, real names and test transactions. It is
+          # protected by HTTP basic authentication at Infomaniak, and the smoke
+          # check below proves that rather than assuming it — which it can only
+          # do with the credentials.
+          if [ "$ENVIRONMENT" = staging ] && [ -z "$BASIC_AUTH" ]; then
+            missing+=("STAGING_BASIC_AUTH")
+          fi
+
+          variables=()
+          if [ -z "$SITE_URL" ]; then
+            variables+=("${prefix}_SITE_URL")
+          fi
+
+          if [ ${#missing[@]} -eq 0 ] && [ ${#variables[@]} -eq 0 ]; then
+            echo "All ${ENVIRONMENT} credentials are present."
+            exit 0
+          fi
+
+          echo "Deployment to ${ENVIRONMENT} is not configured yet." >&2
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Missing repository secrets:   ${missing[*]}" >&2
+          fi
+          if [ ${#variables[@]} -gt 0 ]; then
+            echo "Missing repository variables: ${variables[*]}" >&2
+          fi
+          echo "Add them under Settings -> Secrets and variables -> Actions." >&2
+          echo "docs/infrastructure-setup.md says what goes in each and where to get it." >&2
+          echo "Nothing was transferred. The published site is untouched." >&2
+
+          echo "::error title=Deploy to ${ENVIRONMENT} is not configured::Missing ${missing[*]} ${variables[*]} — see docs/infrastructure-setup.md"
+          exit 1
+
+  # ---------------------------------------------------------------------------
+  # Build, transfer beside the live site, swap in with a rename, then prove it.
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish to ${{ inputs.environment }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Pinned to match ci.yml. Astro 6 requires Node >= 22.12.
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          # One flag decides indexing, and the layout already reads it. Staging
+          # gets `false`, so every page it serves asks not to be indexed.
+          PUBLIC_SITE_INDEXABLE: ${{ inputs.indexable }}
+        run: npm run build
+
+      - name: Refuse to publish a site built for a subdirectory
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+        run: |
+          set -euo pipefail
+          if grep -qE '(href|src)="/ugab-suisse/' dist/index.html; then
+            echo "The build still targets a subdirectory." >&2
+            echo "Every URL in dist/ carries the /ugab-suisse/ prefix, which is the path" >&2
+            echo "GitHub Pages served this site from. Published at the root of ${SITE_URL}" >&2
+            echo "those links all 404 and the site looks catastrophically broken." >&2
+            echo "Before the first deploy, in astro.config.mjs: set site to the real domain," >&2
+            echo "and remove base along with the base prefixes in redirects." >&2
+            echo "tests/build/base-path.test.ts already asserts the other direction and fails" >&2
+            echo "the check if a literal /ugab-suisse survives that removal." >&2
+            echo "This is the last open item of PRD 1 (#1), blocked on the domain." >&2
+            echo "::error title=Built for a subdirectory::astro.config.mjs still sets base '/ugab-suisse' — see docs/infrastructure-setup.md"
+            exit 1
+          fi
+
+      - name: Keep staging out of the search results
+        if: ${{ !inputs.indexable }}
+        run: |
+          set -euo pipefail
+          # The layout's noindex meta tag is the mechanism, and this step is
+          # driven by the same flag — for the crawlers that read robots.txt and
+          # never fetch the page. No public/robots.txt exists in the repository
+          # today, so nothing is overwritten; if one appears, production keeps
+          # whatever the build produces and only staging is forced shut.
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+
+      - name: Install the deploy key
+        env:
+          SSH_KEY: ${{ secrets.ssh_key }}
+          SSH_KNOWN_HOSTS: ${{ secrets.ssh_known_hosts }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          # Pinned host keys rather than trust-on-first-use, which is what makes
+          # StrictHostKeyChecking below mean anything: an unexpected host key
+          # aborts instead of being accepted and recorded.
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Transfer the build beside the live site
+        env:
+          SSH_HOST: ${{ secrets.ssh_host }}
+          SSH_PORT: ${{ secrets.ssh_port }}
+          SSH_USER: ${{ secrets.ssh_user }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
+        run: |
+          set -euo pipefail
+          port="${SSH_PORT:-22}"
+          live="${DEPLOY_PATH%/}"
+          incoming="${live}.incoming-${GITHUB_RUN_ID}"
+
+          # A sibling of the live directory, so that the swap is a rename inside
+          # one filesystem rather than a copy. Nothing under the live path is
+          # touched until the whole transfer has succeeded.
+          rsync --archive --compress --no-perms --omit-dir-times --chmod=D755,F644 \
+            -e "ssh -i $HOME/.ssh/deploy_key -p ${port} -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o BatchMode=yes" \
+            dist/ "${SSH_USER}@${SSH_HOST}:${incoming}/"
+
+      - name: Swap it in
+        env:
+          SSH_HOST: ${{ secrets.ssh_host }}
+          SSH_PORT: ${{ secrets.ssh_port }}
+          SSH_USER: ${{ secrets.ssh_user }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
+        run: |
+          set -euo pipefail
+          port="${SSH_PORT:-22}"
+          live="${DEPLOY_PATH%/}"
+          incoming="${live}.incoming-${GITHUB_RUN_ID}"
+
+          # Two renames. There is a sub-second window in which the live path does
+          # not exist; there is never a window in which it holds half a site,
+          # which is the failure this exists to prevent. The release it replaces
+          # stays on disk as <live>.previous — see the rollback recipe in
+          # docs/deploy-pipeline.md.
+          ssh -i "$HOME/.ssh/deploy_key" -p "$port" \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o BatchMode=yes \
+            "${SSH_USER}@${SSH_HOST}" \
+            "LIVE='${live}' INCOMING='${incoming}' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          if [ ! -f "${INCOMING}/index.html" ]; then
+            echo "The transferred directory has no index.html. Refusing to swap." >&2
+            exit 1
+          fi
+
+          previous="${LIVE}.previous"
+          discard="${LIVE}.discard-$$"
+
+          if [ -e "$LIVE" ]; then
+            if [ -e "$previous" ]; then
+              mv "$previous" "$discard"
+            fi
+            mv "$LIVE" "$previous"
+          fi
+
+          mv "$INCOMING" "$LIVE"
+          rm -rf "$discard"
+
+          # Anything left behind by a transfer that died before reaching its swap.
+          parent="$(dirname "$LIVE")"
+          find "$parent" -maxdepth 1 -name "$(basename "$LIVE").incoming-*" -mtime +0 \
+            -exec rm -rf {} + 2>/dev/null || true
+
+          echo "Published. The release it replaced is kept at ${previous}."
+          REMOTE
+
+      - name: Check the site answers
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          INDEXABLE: ${{ inputs.indexable }}
+          BASIC_AUTH: ${{ secrets.basic_auth }}
+        run: |
+          set -euo pipefail
+          url="${SITE_URL%/}/"
+          retry="--max-time 30 --retry 5 --retry-delay 5"
+
+          # The highest seam available: one request exercises DNS, TLS, the
+          # transfer and the web server together. A deploy that reports success
+          # while the site is unreachable is worse than one that fails.
+
+          # Staging is asked first without credentials, and has to refuse. The
+          # protection is configured at Infomaniak and cannot be asserted from
+          # this repository any other way, and assuming it is there is how draft
+          # content and real names end up publicly readable.
+          if [ "$INDEXABLE" != "true" ]; then
+            anonymous=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' $retry "$url") || anonymous=000
+            if [ "$anonymous" != "401" ]; then
+              echo "::error title=Staging is not protected::An unauthenticated request to ${url} answered HTTP ${anonymous}, not 401. Staging carries draft content, real names and test transactions. Turn on directory protection at Infomaniak — see docs/infrastructure-setup.md."
+              exit 1
+            fi
+            echo "Staging refused an unauthenticated request, as it should."
+          fi
+
+          # Two spellings of the same request rather than one built from an
+          # array: an empty array under `set -u` is a portability trap, and this
+          # has to behave the same wherever somebody reproduces it by hand.
+          if [ "$INDEXABLE" = "true" ]; then
+            code=$(curl --silent --show-error --output page.html --write-out '%{http_code}' $retry --retry-all-errors "$url") || code=000
+          else
+            code=$(curl --silent --show-error --output page.html --write-out '%{http_code}' $retry --retry-all-errors --user "$BASIC_AUTH" "$url") || code=000
+          fi
+
+          if [ "$code" != "200" ]; then
+            echo "::error title=The published site did not answer::${url} answered HTTP ${code}. The release it replaced is still on the server beside it, with the suffix .previous — docs/deploy-pipeline.md has the rollback."
+            exit 1
+          fi
+
+          # A marker rather than a byte comparison: it has to survive every
+          # redesign and still fail on an Apache error page, a directory listing
+          # or a parked-domain placeholder.
+          if ! grep -q '<html lang=' page.html; then
+            echo "::error title=The published page is not this site::${url} answered 200 but the body is not a page this site builds."
+            exit 1
+          fi
+
+          if [ "$INDEXABLE" != "true" ]; then
+            robots=$(curl --silent --show-error $retry --user "$BASIC_AUTH" "${SITE_URL%/}/robots.txt") || robots=""
+            # A whole-site disallow, not merely a line that starts like one:
+            # `Disallow: /admin` would satisfy a substring match and leave every
+            # other page crawlable.
+            if printf '%s\n' "$robots" | grep -qE '^[[:space:]]*Disallow:[[:space:]]*/[[:space:]]*$'; then
+              echo "Staging asks crawlers to stay out."
+            else
+              echo "::error title=Staging is indexable::robots.txt at ${SITE_URL%/}/robots.txt does not disallow the whole site."
+              exit 1
+            fi
+          fi
+
+          echo "${url} is serving the new release."
+
+      - name: Clear the incoming directory after a failure
+        if: failure()
+        continue-on-error: true
+        env:
+          SSH_HOST: ${{ secrets.ssh_host }}
+          SSH_PORT: ${{ secrets.ssh_port }}
+          SSH_USER: ${{ secrets.ssh_user }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
+        run: |
+          set -uo pipefail
+          [ -f "$HOME/.ssh/deploy_key" ] || exit 0
+          [ -n "${DEPLOY_PATH:-}" ] || exit 0
+          port="${SSH_PORT:-22}"
+          live="${DEPLOY_PATH%/}"
+          ssh -i "$HOME/.ssh/deploy_key" -p "$port" \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o BatchMode=yes \
+            "${SSH_USER}@${SSH_HOST}" \
+            "rm -rf '${live}.incoming-${GITHUB_RUN_ID}'"
+
+      - name: Forget the key
+        if: always()
+        run: rm -f "$HOME/.ssh/deploy_key"

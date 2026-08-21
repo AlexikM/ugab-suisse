@@ -1,22 +1,27 @@
-# Runs on every pull request, and on main so that a direct push is not
-# unchecked. Mirrors `npm run check`, step for step and in the same order, so
-# that anything failing here can be reproduced with one local command.
+# Mirrors `npm run check`, step for step and in the same order, so that anything
+# failing here can be reproduced with one local command.
 #
-# Deployment lives in deploy.yml and is untouched by this workflow — including
-# the fact that it does not wait for these checks. See issue #33.
+# Runs on every pull request, and — through `workflow_call` — as the first job
+# of deploy.yml. That is why there is no `push` trigger for main: a push to main
+# starts the deploy, the deploy calls this workflow, and nothing publishes until
+# it is green. Calling it rather than copying its steps is what keeps the gate
+# honest; a duplicated list of steps drifts. See issue #33.
 name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Keyed by the calling workflow as well as the ref, so that a pull-request run
+  # cannot cancel the check a deploy is waiting on — and cancellation is off
+  # entirely when this workflow is somebody's gate. A superseded pull-request run
+  # is waste; a superseded check under a deploy fails that deploy.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -27,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          # Pinned to match deploy.yml. Astro 6 requires Node >= 22.12.
+          # Pinned to match publish.yml. Astro 6 requires Node >= 22.12.
           node-version: 22
           cache: npm
 
