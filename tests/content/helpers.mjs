@@ -152,6 +152,34 @@ export function visibleText(html) {
     .trim();
 }
 
+/**
+ * The page as a browser would render it with every third-party embed blocked.
+ *
+ * This is the seam PRD 5 and PRD 6 both ask to be tested against: a donation
+ * page that is blank when a script is blocked is worse than one with no form,
+ * and an event page that is blank without third-party scripts is worse than one
+ * with no booking button. A browser extension, a corporate proxy or a provider
+ * having a bad afternoon all produce the same result, and none of them are rare.
+ *
+ * Today nothing is stripped, because no provider is connected — which is worth
+ * asserting separately, and is. The value of the helper is that the assertion
+ * keeps its meaning on the day an embed does arrive: the page will still have to
+ * carry the argument, the QR-bill, the prices and a route to a human without it.
+ *
+ * Deliberately blunter than a browser: any absolutely-addressed script or
+ * stylesheet goes, not only the cross-origin ones. Over-blocking can only make
+ * the assertion harder to pass.
+ */
+export function withEmbedsBlocked(html) {
+  return html
+    .replace(/<iframe\b[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<iframe\b[^>]*\/?>/gi, '')
+    .replace(/<object\b[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed\b[^>]*\/?>/gi, '')
+    .replace(/<script\b[^>]*\bsrc\s*=\s*["']https?:\/\/[\s\S]*?<\/script>/gi, '')
+    .replace(/<link\b[^>]*\bhref\s*=\s*["']https?:\/\/[^>]*>/gi, '');
+}
+
 /** Every href inside the page header — what the site offers a visitor. */
 export function headerLinks(html) {
   const header = html.match(/<header[\s\S]*?<\/header>/i);

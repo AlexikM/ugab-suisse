@@ -1,0 +1,282 @@
+// The ticketing surfaces. Builds the site against the event fixtures.
+//
+// PRD 6 rents ticketing: stock, payment, e-tickets and the door list belong to
+// the provider, permanently. None of them are tested here — asserting them
+// would test somebody else's software and break whenever they ship.
+//
+// What is tested is the part that is ours, and the first of these is the one
+// most likely to embarrass the committee if it ever stops being true:
+//
+//   - a full room shows a sold-out state and no active booking control;
+//   - ticket types and capacity come from the fields the committee fills in;
+//   - an incomplete event renders — which is the normal case, not the exception;
+//   - a past event shows its photographs rather than a dead booking link;
+//   - the provider's return address resolves, in every language;
+//   - the pages still work with third-party embeds blocked.
+
+import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
+import { test } from 'node:test';
+
+import astroConfig from '../../astro.config.mjs';
+import { collectReferences, hostsOf, KIND } from '../compliance/lib/scan.mjs';
+import {
+  buildWithContent,
+  builtPageExists,
+  readBuiltPage,
+  readPage,
+  repoRoot,
+  visibleText,
+  withEmbedsBlocked,
+} from './helpers.mjs';
+
+const siteHost = new URL(astroConfig.site).host;
+
+/** One build of the fixtures, several questions asked of it. */
+let fixtures;
+function events() {
+  if (!fixtures) {
+    fixtures = buildWithContent('event-fields');
+    assert.equal(fixtures.status, 0, `the build failed:\n${fixtures.output}`);
+  }
+  return fixtures;
+}
+
+const page = (slug, locale = '') =>
+  readPage(events().outDir, `${locale}/evenements/${slug}`.replace(/^\/+/, '/'));
+
+// ---------------------------------------------------------------------------
+// A full room
+// ---------------------------------------------------------------------------
+
+/**
+ * The assertion this file exists for.
+ *
+ * A statically generated page will happily show a working booking button until
+ * somebody rebuilds it, however full the room is. The committee's answer is the
+ * `soldOut` flag on the fiche, and its whole value is that setting it removes
+ * every way to book — not most of them. Oversold seats at a seated dinner is
+ * the failure that costs the committee an evening.
+ */
+test('a full room shows a sold-out state and offers no way to book, in every language', () => {
+  for (const locale of ['', '/en', '/hy']) {
+    const html = page('2099-complet', locale);
+    const where = `${locale || '/fr'}/evenements/2099-complet`;
+
+    assert.match(html, /data-booking="sold-out"/, `${where} does not declare the room full`);
+
+    assert.doesNotMatch(
+      html,
+      /data-booking-control/,
+      `${where} still renders an active booking control on a full room`,
+    );
+    assert.doesNotMatch(
+      html,
+      /<a\b[^>]*href="https:\/\/example\.invalid/i,
+      `${where} still links to the ticket shop for a full room`,
+    );
+    // No widget either: with the flag set by hand there is nothing a booking
+    // widget could usefully say next to the committee's own answer.
+    assert.doesNotMatch(
+      html,
+      /data-provider-slot="ticketing"/,
+      `${where} still mounts a booking widget on a full room`,
+    );
+  }
+
+  const fr = visibleText(page('2099-complet'));
+  assert.match(fr, /Complet/, 'a sold-out event must say so');
+  assert.match(fr, /Toutes les places ont été attribuées/, 'it must say what sold out means');
+
+  assert.match(visibleText(page('2099-complet', '/en')), /Sold out/);
+  assert.match(visibleText(page('2099-complet', '/en')), /Every place has been taken/);
+});
+
+test('the listing says a room is full, and offers no booking control of its own', () => {
+  const listing = readPage(events().outDir, '/evenements');
+
+  assert.match(visibleText(listing), /Complet/, 'the listing must show that the room is full');
+  assert.doesNotMatch(
+    listing,
+    /data-booking-control/,
+    'the listing offers a booking control, which is a second place for the rule to drift',
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Ticket types and capacity
+// ---------------------------------------------------------------------------
+
+test('ticket types and prices come from the fiche, split into the types they name', () => {
+  // The brief's own fiche événement: one gala, three ticket types, one room.
+  const html = page('2099-tarifs-sans-billetterie');
+  const types = [...html.matchAll(/data-ticket-type\b/g)];
+  assert.ok(types.length >= 3, `three ticket types were written, ${types.length} were rendered`);
+
+  const text = visibleText(html);
+  assert.match(text, /CHF 150 \/ pers\./);
+  assert.match(text, /CHF 250 \/ couple/);
+  assert.match(text, /CHF 1'200 \/ table VIP/, 'the VIP table is not offered as its own ticket');
+});
+
+test('a price list the committee wrote as one line is not mangled into fragments', () => {
+  // Two types here, not three: whatever the committee typed comes back whole.
+  const text = visibleText(page('2099-complet'));
+  assert.match(text, /CHF 150 \/ pers\./);
+  assert.match(text, /CHF 250 \/ couple/);
+});
+
+test('the room capacity is shown, and said to cover every ticket type together', () => {
+  const fr = visibleText(page('2099-complet'));
+  assert.match(fr, /200/, 'the number of places is not shown');
+  // The copy mixes straight and typographic apostrophes; the assertions accept
+  // either rather than depending on which one a given string happens to carry.
+  assert.match(fr, /Places disponibles pour l['’]ensemble des tarifs/);
+
+  assert.match(visibleText(page('2099-complet', '/en')), /across all ticket types together/);
+});
+
+// ---------------------------------------------------------------------------
+// Incomplete events — the normal case
+// ---------------------------------------------------------------------------
+
+test('an event with prices but no ticketing link renders, and offers a route to a human', () => {
+  const html = page('2099-tarifs-sans-billetterie');
+  const text = visibleText(html);
+
+  assert.match(text, /CHF 150 \/ pers\./, 'the prices the committee published are missing');
+  assert.match(html, /data-booking="unavailable"/);
+  assert.doesNotMatch(
+    html,
+    /data-booking-control/,
+    'there is nowhere to book, so nothing to click',
+  );
+  assert.match(
+    html,
+    /data-provider-slot="ticketing"/,
+    'the slot the booking widget will mount into is not marked',
+  );
+  assert.match(html, /data-provider-state="pending"/);
+  assert.match(html, /href="[^"]*\/contact\/?"/, 'no way to ask the committee for a place');
+  assert.doesNotMatch(text, /undefined|NaN/);
+});
+
+test('an event with a ticketing link but no price list renders and takes bookings', () => {
+  const html = page('2099-billetterie-sans-tarifs');
+
+  assert.match(html, /data-booking="open"/);
+  assert.match(html, /data-booking-control/, 'an open event should offer a way to book');
+  assert.match(html, /href="https:\/\/example\.invalid\/concert"/);
+  assert.doesNotMatch(html, /data-ticket-types/, 'no prices were written, so none should appear');
+  assert.doesNotMatch(visibleText(html), /undefined|NaN/);
+});
+
+test('a page taking bookings does not pretend to know how many places are left', () => {
+  // A prebuilt page cannot know a provider's remaining stock. Saying so is the
+  // honest answer, and it is what the embedded widget will replace.
+  assert.match(
+    visibleText(page('2099-billetterie-sans-tarifs')),
+    /n['’]est pas affiché sur cette page/,
+  );
+  assert.match(visibleText(page('2099-billetterie-sans-tarifs', '/en')), /not shown on this page/);
+});
+
+test('an event with only a date and a venue still renders', () => {
+  const html = page('2099-minimal');
+  const text = visibleText(html);
+
+  assert.match(text, /Événement au strict minimum/);
+  assert.match(text, /Genève/);
+  assert.match(html, /data-booking="unavailable"/);
+  assert.doesNotMatch(text, /undefined|NaN/, 'a missing optional field leaked into the page');
+  assert.doesNotMatch(html, /src="undefined"/, 'a missing photograph became a broken image');
+});
+
+// ---------------------------------------------------------------------------
+// Past events
+// ---------------------------------------------------------------------------
+
+test('a past event shows its photographs and no booking control', () => {
+  const html = page('2020-passe');
+
+  assert.match(html, /data-booking="past"/);
+  assert.doesNotMatch(html, /data-booking-control/, 'a past event must not take bookings');
+  assert.doesNotMatch(
+    html,
+    /data-provider-slot="ticketing"/,
+    'a past event has nothing for a booking widget to do',
+  );
+
+  const text = visibleText(html);
+  assert.match(text, /En images/, 'the archive page shows no gallery');
+  assert.match(html, /exemple-soiree\.jpg/, 'the photograph the committee supplied is not shown');
+});
+
+// ---------------------------------------------------------------------------
+// The provider's return address
+// ---------------------------------------------------------------------------
+
+test('the booking confirmation page is reachable directly, in every language', () => {
+  for (const route of ['/evenements/merci', '/en/evenements/merci', '/hy/evenements/merci']) {
+    assert.ok(builtPageExists(route), `no booking confirmation was built at ${route}`);
+    assert.match(readBuiltPage(route), /data-thanks="booking"/, `${route} is not the confirmation`);
+  }
+
+  assert.match(visibleText(readBuiltPage('/evenements/merci')), /Réservation confirmée/);
+  assert.match(visibleText(readBuiltPage('/en/evenements/merci')), /Booking confirmed/);
+  assert.match(visibleText(readBuiltPage('/hy/evenements/merci')), /Réservation confirmée/);
+});
+
+test('no event may claim the address the booking confirmation uses', () => {
+  // `/evenements/merci` is a static route in the same directory as the event
+  // slug route, so an event called `merci` would be silently unreachable.
+  const dir = path.join(repoRoot, 'src', 'content', 'events');
+  const slugs = readdirSync(dir)
+    .filter((file) => file.endsWith('.md'))
+    .map((file) => file.replace(/\.md$/, ''));
+
+  assert.ok(
+    !slugs.includes('merci'),
+    'an event slug "merci" collides with the booking confirmation page — rename the entry',
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Degradation
+// ---------------------------------------------------------------------------
+
+test('an event page still shows the event and a contact route with embeds blocked', () => {
+  for (const slug of ['2099-complet', '2099-tarifs-sans-billetterie', '2099-minimal']) {
+    const blocked = withEmbedsBlocked(page(slug));
+    const text = visibleText(blocked);
+
+    assert.match(text, /Genève|Salle de test/, `${slug} loses its venue`);
+    assert.match(text, /2099/, `${slug} loses its date`);
+    assert.match(blocked, /href="[^"]*\/contact\/?"/, `${slug} loses its route to the committee`);
+  }
+
+  assert.match(
+    visibleText(withEmbedsBlocked(page('2099-complet'))),
+    /CHF 150 \/ pers\./,
+    'a blocked embed must not take the price list with it',
+  );
+});
+
+test('an event page loads nothing from a ticketing host today', () => {
+  for (const slug of ['2099-complet', '2099-billetterie-sans-tarifs', '2020-passe']) {
+    const references = collectReferences({
+      page: slug,
+      html: page(slug),
+      siteHost,
+    });
+
+    assert.deepEqual(
+      hostsOf(references, KIND.AUTOMATIC),
+      [],
+      `${slug} fetches from a third party while the page loads. No ticketing account exists ` +
+        '(ADR-0001); when one does, its hosts belong in the processor register in ' +
+        'src/i18n/legal.ts before they belong on a page.',
+    );
+  }
+});

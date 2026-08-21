@@ -1,0 +1,158 @@
+---
+/**
+ * Whether an event is taking bookings, decided once, for the whole site.
+ *
+ * The assertion this component exists to protect is the one most likely to
+ * embarrass the committee: **a full room must never show a working booking
+ * button.** That went wrong easily before, because the decision was written out
+ * three times — once in the event page's summary strip, once in its practical
+ * information, once in the listing — and three copies of a rule drift.
+ *
+ * There are four answers and they are not the same answer:
+ *
+ * - `past` — the evening happened. Nothing to book, and the page's centre of
+ *   gravity moves to the photographs.
+ * - `sold-out` — the committee has marked the room full. No booking control and
+ *   **no provider slot either**: with the flag set by hand there is nothing a
+ *   widget could usefully say, and a widget that mounted anyway would be a
+ *   second opinion about availability sitting next to the committee's own.
+ * - `open` — an upcoming event with somewhere to book.
+ * - `unavailable` — an upcoming event with no ticketing link yet. The normal
+ *   case for an announcement made as soon as the date and the venue are settled;
+ *   it offers the committee's own address instead of a dead end.
+ *
+ * `past` wins over `sold-out`, which wins over the presence of a link: a sold-out
+ * evening that has already happened is simply past.
+ *
+ * On the static-site problem: a prebuilt page cannot know a provider's remaining
+ * stock, so this page never claims to. It shows the room's capacity, which is a
+ * fact about the venue, and says plainly that the number of places left is not
+ * on this page. ADR-0001 accepted that; PRD 6 resolves it by mounting the
+ * provider's own availability widget in the slot below, where the system that
+ * owns the stock reports it. That is the follow-up, and it changes this file
+ * only by filling the slot.
+ */
+
+import { localeRoute, routes } from '../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../i18n/utils';
+import ProviderSlot from './ProviderSlot.astro';
+
+export type BookingState = 'open' | 'sold-out' | 'past' | 'unavailable';
+
+export function bookingState(event: {
+  isPast: boolean;
+  soldOut: boolean;
+  ticketUrl: string | null | undefined;
+}): BookingState {
+  if (event.isPast) return 'past';
+  if (event.soldOut) return 'sold-out';
+  return event.ticketUrl ? 'open' : 'unavailable';
+}
+
+interface Props {
+  /** The language the page is written in. */
+  served: Lang;
+  /** The language the URL asked for — what internal links stay inside. */
+  requested: Lang;
+  isPast: boolean;
+  soldOut: boolean;
+  ticketUrl?: string | null;
+  /**
+   * `summary` is the one line in the event's facts strip; `full` is the section
+   * lower down that a provider's widget mounts into. Same decision, two sizes.
+   */
+  variant: 'summary' | 'full';
+}
+
+const { served, requested, isPast, soldOut, ticketUrl = null, variant } = Astro.props;
+
+const t = useTranslations(served);
+const state = bookingState({ isPast, soldOut, ticketUrl });
+const contactHref = withBase(localeRoute(routes.contact, requested));
+---
+
+{variant === 'summary' ? (
+  <div data-booking={state}>
+    {state === 'past' && <div class="text-lg leading-snug text-ink-muted">{t('event.finished')}</div>}
+
+    {state === 'sold-out' && (
+      <div class="text-lg leading-snug font-medium text-ink">{t('event.sold_out')}</div>
+    )}
+
+    {state === 'open' && ticketUrl && (
+      <a
+        href={ticketUrl}
+        data-booking-control
+        rel="noopener"
+        class="inline-block text-lg font-medium text-navy underline underline-offset-4 hover:text-red"
+      >
+        {t('event.book')} →
+      </a>
+    )}
+
+    {state === 'unavailable' && (
+      <a
+        href={contactHref}
+        class="inline-block text-lg font-medium text-navy underline underline-offset-4 hover:text-red"
+      >
+        {t('event.ask')} →
+      </a>
+    )}
+  </div>
+) : (
+  <div data-booking={state}>
+    {/*
+      A full room gets no provider slot at all — see the note at the top. It
+      gets a statement, and a way to ask about a place that frees up, which is
+      the only thing left that can actually help the visitor.
+    */}
+    {state === 'sold-out' && (
+      <div class="border-l-4 border-ink bg-paper-soft p-6 sm:p-8">
+        <p class="font-display text-2xl text-ink">{t('event.sold_out')}</p>
+        <p class="mt-3 text-base leading-relaxed text-ink-soft">{t('event.sold_out_detail')}</p>
+        <p class="mt-4 text-sm leading-relaxed text-ink-muted">{t('event.sold_out_contact')}</p>
+        <a
+          href={contactHref}
+          class="eyebrow mt-6 inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('event.ask')} →
+        </a>
+      </div>
+    )}
+
+    {state === 'open' && ticketUrl && (
+      <ProviderSlot provider="ticketing" title={t('event.tickets_title')}>
+        <a
+          href={ticketUrl}
+          data-booking-control
+          rel="noopener"
+          class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep"
+        >
+          {t('event.book')} →
+        </a>
+        <p class="mt-5 text-sm leading-relaxed text-ink-muted">{t('event.booking_external')}</p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-muted">{t('event.availability_note')}</p>
+      </ProviderSlot>
+    )}
+
+    {state === 'unavailable' && (
+      <ProviderSlot
+        provider="ticketing"
+        title={t('event.tickets_title')}
+        pending={t('event.booking_pending')}
+      >
+        <a
+          href={contactHref}
+          class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep"
+        >
+          {t('event.ask')} →
+        </a>
+      </ProviderSlot>
+    )}
+
+    {/*
+      Nothing for a past event: the summary line already says it took place, and
+      the photographs below are what the visitor came for.
+    */}
+  </div>
+)}

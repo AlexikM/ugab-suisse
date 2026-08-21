@@ -1,0 +1,74 @@
+---
+/**
+ * Where a rented provider's own form or widget will be mounted.
+ *
+ * ADR-0001 delegates every money flow to a provider: the site presents the
+ * committee's argument and hosts the provider's form, and owns nothing else.
+ * That decision leaves a deliberate hole in two places — the donation page and
+ * every event page still taking bookings — and this component is that hole,
+ * marked, so that it is an integration point rather than an omission.
+ *
+ * It is one component rather than two blocks written inline for three reasons:
+ *
+ * 1. **It is the integration point.** When the accounts exist, the provider's
+ *    embed goes inside `[data-provider-slot]` and nothing else on the page has
+ *    to move. One selector, in one file, named in the pull request.
+ * 2. **It must never render as an empty box.** A slot that shows nothing when a
+ *    third-party script is blocked — or, today, when there is no script at all —
+ *    is worse than no slot: the visitor concludes the site is broken rather than
+ *    that a route is not open yet. Whatever the page can genuinely offer instead
+ *    goes in the default slot, and it is not optional.
+ * 3. **The state has to be machine-readable.** `data-provider-state` is what the
+ *    tests assert on, so "not connected yet" is a fact about the markup and not
+ *    a sentence somebody has to read and interpret.
+ *
+ * What it deliberately does not do: load anything, name a provider's hostname,
+ * or carry a key. No account exists. See the pre-launch checklist, section B.
+ */
+
+/** Which account the slot is waiting on. */
+export type ProviderKind = 'payment' | 'ticketing';
+
+interface Props {
+  provider: ProviderKind;
+  /** What will live here, as a heading. */
+  title: string;
+  /**
+   * Why it is not here yet. `null` once the provider is connected: the slot
+   * then stops explaining itself and simply holds the embed.
+   */
+  pending?: string | null;
+  /** The second line of the pending state — what it means for the visitor. */
+  pendingDetail?: string | null;
+  /** Heading level, so the slot does not break the page's heading order. */
+  headingLevel?: 2 | 3;
+}
+
+const { provider, title, pending = null, pendingDetail = null, headingLevel = 3 } = Astro.props;
+
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const state = pending === null ? 'connected' : 'pending';
+---
+
+<div
+  data-provider-slot={provider}
+  data-provider-state={state}
+  class="border border-line-strong bg-paper p-6 sm:p-8"
+>
+  <Heading class="font-display text-xl font-semibold text-ink">{title}</Heading>
+
+  {pending && (
+    <p class="mt-4 border-l-4 border-gold pl-4 text-base leading-relaxed text-ink-soft">
+      {pending}
+    </p>
+  )}
+  {pendingDetail && <p class="mt-3 text-sm leading-relaxed text-ink-muted">{pendingDetail}</p>}
+
+  {/*
+    What the page offers while the slot is empty. Never conditional: see the
+    second reason in the note above.
+  */}
+  <div class="mt-6">
+    <slot />
+  </div>
+</div>
