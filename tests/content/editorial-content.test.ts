@@ -154,6 +154,51 @@ describe('order', () => {
     expect((await content.events({ now: BEFORE_IT }))[0].isPast).toBe(false);
     expect((await content.events({ now: AFTER_IT }))[0].isPast).toBe(true);
   });
+
+  /**
+   * A weekend festival is one entry with two dates, which is what `endDate` in
+   * `src/content.config.ts` is for. Measuring "past" from the opening night
+   * retires it on its own first evening: it leaves the Événements page, appears
+   * in the gallery of things that have already happened, and the visitors still
+   * walking through the door read that it is over.
+   */
+  describe('an event that runs for more than one day', () => {
+    const festival = minimal({
+      title: 'Festival de trois jours',
+      date: new Date('2026-11-13T18:00:00+01:00'),
+      endDate: new Date('2026-11-15T23:00:00+01:00'),
+      ticketUrl: 'https://billetterie.example/festival',
+    });
+    /** The Saturday: the opening night has passed, the closing night has not. */
+    const MID_FESTIVAL = new Date('2026-11-14T12:00:00+01:00');
+
+    it('is not past while it is still running', async () => {
+      const content = contentWith({ id: 'festival', data: festival });
+
+      expect((await content.events({ now: MID_FESTIVAL }))[0].isPast).toBe(false);
+    });
+
+    it('is still listed as coming up, not as a past evening', async () => {
+      const content = contentWith({ id: 'festival', data: festival });
+
+      expect(await content.upcomingEvents({ now: MID_FESTIVAL })).toHaveLength(1);
+      expect(await content.pastEvents({ now: MID_FESTIVAL })).toHaveLength(0);
+    });
+
+    it('can still be booked by somebody coming tomorrow', async () => {
+      const content = contentWith({ id: 'festival', data: festival });
+
+      expect((await content.events({ now: MID_FESTIVAL }))[0].canBook).toBe(true);
+    });
+
+    it('is past once the closing night has gone', async () => {
+      const content = contentWith({ id: 'festival', data: festival });
+      const AFTER_THE_FESTIVAL = new Date('2026-11-16T09:00:00+01:00');
+
+      expect((await content.events({ now: AFTER_THE_FESTIVAL }))[0].isPast).toBe(true);
+      expect((await content.events({ now: AFTER_THE_FESTIVAL }))[0].canBook).toBe(false);
+    });
+  });
 });
 
 describe('whether the booking button is offered', () => {
