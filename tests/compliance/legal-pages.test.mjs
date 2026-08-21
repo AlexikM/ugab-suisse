@@ -296,6 +296,47 @@ test('an Armenian visitor is served the French legal text and told so', () => {
 });
 
 /**
+ * A person deciding whether to write to a committee is deciding with what the
+ * page tells them, not with what a policy two clicks away tells them afterwards.
+ *
+ * The retention is asserted by comparison rather than by literal, so there is no
+ * third copy of "twelve months" to go stale: whatever period the contact page
+ * states is looked for, in the same words, on the privacy page of the same
+ * language. Change one and this fails naming the other.
+ */
+test('the contact page says what becomes of a message before it is sent, and agrees with the policy', () => {
+  for (const locale of ['', 'en/']) {
+    const contact = site.pages.find((page) => page.route === `/${locale}contact/`);
+    assert.ok(contact, `/${locale}contact/ was not built`);
+    const text = textOf(mainOf(contact.html));
+
+    assert.match(
+      text,
+      /Infomaniak/,
+      `/${locale}contact/ does not say where a message goes before asking for one`,
+    );
+    assert.match(
+      mainOf(contact.html),
+      new RegExp(`href="[^"]*/${locale}confidentialite/?"`),
+      `/${locale}contact/ does not link the privacy policy beside the send control`,
+    );
+
+    const retention = /([\p{L}\d-]+\s+(?:mois|months))/iu.exec(text);
+    assert.ok(
+      retention,
+      `/${locale}contact/ does not say how long a message is kept — a visitor should not have to go and look`,
+    );
+
+    const policy = textOf(mainOf(legalPage(legalRoute(locale, 'confidentialite')).html));
+    assert.match(
+      policy,
+      new RegExp(retention[1], 'i'),
+      `/${locale}contact/ promises to keep a message for ${retention[1]} and the privacy policy says something else`,
+    );
+  }
+});
+
+/**
  * Marked `todo`: expected to fail today, must pass before launch.
  *
  * `contact@ugab.ch` was invented by the prototype and sits in the footer of every

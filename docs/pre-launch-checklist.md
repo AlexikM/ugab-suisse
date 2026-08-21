@@ -123,13 +123,15 @@ looks.
 
 ### A7 — The legal pages must be reachable, in every language, and actually checked
 
-Written but not wired. Each of these is in a file owned by another workstream.
+Written but not wired, when this section was drafted. Four of the five are done;
+the one that remains is a translation the committee owes, and the site behaves
+correctly without it in the meantime.
 
 - [x] **Webmaster** — link the accessibility statement from the site footer: **done.** It is in the footer of every page, and a test fails if it leaves. It offers someone a way to complete a donation the site blocks them from making; a route only reachable through the privacy policy is not a route.
 - [x] **Webmaster** — publish the English legal pages: **done.** The three pages are served at `/en/…` from the English copy in `src/i18n/legal.ts`, the footer links them in the language being read, and the compliance sweeps run over all nine addresses rather than the three French ones. The two visitors the policy is written for — an EU donor exercising GDPR rights, an English-speaking supporter — read it in English.
 - [ ] **Committee** — supply the Armenian translations of the three legal pages, or decide explicitly that the legal pages stay FR/EN on a trilingual site. Either is defensible; silence is not. **In the meantime** `/hy/mentions-legales`, `/hy/confidentialite` and `/hy/accessibilite` exist, serve the French text and say so, exactly as every other Armenian route does — so the decision changes a translation, not a routing table.
 - [x] **Webmaster** — wire the compliance suite into `npm run test` and the pull-request workflow: **done**, and it now also gates publication. `npm run test` chains the compliance suite, `ci.yml` runs it on every pull request, and `deploy.yml` calls that same workflow as a job every publish depends on. A commit that fails it cannot reach the published site. Until that last part landed, the privacy policy's claim that an automated check compares its list against the published site was true of the code and untrue of the pipeline — see [issue #33](https://github.com/AlexikM/ugab-suisse/issues/33) and [`deploy-pipeline.md`](deploy-pipeline.md).
-- [ ] **Webmaster** — tell people what happens to a contact message *before* they send it, next to the send button, with a link to the policy. Written for, but not reachable from, the contact page.
+- [x] **Webmaster** — tell people what happens to a contact message *before* they send it: **done.** The sentence sits beside the address that sends it — where the message goes, who reads it, how long it is kept — with the policy linked in the language being read. A test compares the retention it states against the privacy policy of the same language, so the two cannot drift. When PRD 1 replaces the mailto with the Infomaniak form, the block moves under the submit control and the wording stands.
 
 ### A8 — The ADR is still Proposed
 

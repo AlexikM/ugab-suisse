@@ -609,6 +609,12 @@ export const ui = {
     // NOT APPROVED COPY — see the header of this file.
     'contact.form_pending':
       'Le formulaire sera activé à la mise en ligne du site. D’ici là, écrivez-nous directement par e-mail.',
+    // NOT APPROVED COPY — see the header of this file. Said before the message
+    // is sent rather than only in the policy: telling someone afterwards what
+    // became of what they wrote is not telling them.
+    'contact.before_sending':
+      'Votre message arrive dans la boîte du Comité, hébergée en Suisse chez Infomaniak, et ne sert qu’à vous répondre. Nous le conservons jusqu’à douze mois après notre réponse, puis nous le supprimons.',
+    'contact.before_sending_more': 'Le détail, et vos droits :',
 
     // --- Repli linguistique ---
     // NOT APPROVED COPY — see the header of this file. Shown only on a page a
@@ -842,6 +848,10 @@ export const ui = {
     'contact.form_message': 'Message',
     'contact.form_submit': 'Send the message',
     'contact.confirmation': 'Message received. The Swiss Committee will reply shortly.',
+    // NOT APPROVED COPY — see the header of this file.
+    'contact.before_sending':
+      'Your message arrives in the Committee mailbox, hosted in Switzerland by Infomaniak, and is used only to reply to you. We keep it for up to twelve months after we reply, then delete it.',
+    'contact.before_sending_more': 'The detail, and your rights:',
     // NOT APPROVED COPY — see the header of this file.
     'contact.form_pending':
       'The form will be switched on when the site goes live. Until then, please write to us by email.',
