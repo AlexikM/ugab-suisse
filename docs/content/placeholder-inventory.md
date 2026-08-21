@@ -41,8 +41,12 @@ Event covers and bureau portraits are still plain path strings rather than
 build-processed images: where the CMS uploads media is PRD 4's decision, and the
 pipeline choice follows it.
 
-`public/hero.jpg` is unused and left in place: `public/` outside `images/`
-belongs to another PRD's file boundary.
+`public/hero.jpg` is **not unused** — this file said it was, and it is the one
+placeholder that leaves the site. `socialImage()` in `src/seo.ts` makes it the
+`og:image` of every page, so it is the picture that appears whenever anybody
+shares any address of this site anywhere. A stock photograph is doing that job.
+Replacing it is one file, and it should be among the first photographs the
+Comité supplies rather than among the last.
 
 ## Text and data still owed
 
@@ -52,7 +56,7 @@ belongs to another PRD's file boundary.
 | Official contact details — postal box, telephone, e-mail | `contactEmail` in `src/i18n/ui.ts` is the prototype's `contact@ugab.ch`; the Contact page says the rest is pending | ⬜ awaited |
 | Social media accounts | The footer links to none rather than guessing | ⬜ awaited |
 | Sponsorship tiers — confirmed amounts and counterparts | The Don page shows them marked "montants indicatifs, à valider" | ⬜ awaited |
-| Armenian translations | The locale is not built at all yet (PRD 3, #3) | ⬜ awaited |
+| Armenian translations | The locale is built and every route exists; `armenian` in `src/i18n/ui.ts` is empty, so every page serves French and says so. Paste a page's keys in and that page becomes Armenian on its own (PRD 3, #3). The three legal pages take their words from `src/i18n/legal.ts`, which is FR/EN — see checklist A7 | ⬜ awaited |
 | Real events | `src/content/events/` is empty; the Événements page says so | ⬜ awaited |
 | Coordonnées bancaires — IBAN de l'association et banque | `bankAccount` in `src/i18n/ui.ts` is `null`; the QR-bill on the Don page renders « IBAN à fournir par le Comité » | ⬜ awaited |
 
@@ -63,4 +67,4 @@ Neither is on the site. Both were on it, and both were removed on purpose.
 | Claim | Why it was pulled |
 | --- | --- |
 | "Dons déductibles fiscalement en Suisse — un reçu vous est automatiquement envoyé" | Assumes cantonal recognition of public utility, and automatic receipting the free provider tier does not do. PRD 7 (#7). |
-| "Reconnue d'utilité publique" (still on `/mentions-legales`) | Same assumption, unverified. That page belongs to PRD 7. |
+| "Reconnue d'utilité publique" | Same assumption, unverified. It was on `/mentions-legales`; PRD 7 replaced it with a statement that the Comité makes no such claim until a cantonal decision is produced. |

@@ -361,29 +361,58 @@ test('no page shows a contact address the committee never confirmed', {
 });
 
 /**
- * Marked `todo`: expected to fail today, must pass before launch.
+ * The single highest-risk sentence the site could carry: a charity telling
+ * donors they can deduct a gift when nobody has produced the cantonal decision
+ * that would make it so. Section A1 of the pre-launch checklist.
  *
- * The claim lives in `src/i18n/ui.ts` (`donate.tax`) and renders on the donation
- * page, which belongs to another workstream. It is the single highest-risk
- * sentence on the site — a charity telling donors they can deduct a gift when
- * nobody has produced the cantonal decision that would make it so, and promising
- * a receipt the chosen payment tier does not issue. See the pre-launch checklist.
+ * It was carried, in `donate.tax`, and was removed under PRD 2. This is the
+ * assertion that keeps it removed, and it took two corrections before it was
+ * one:
+ *
+ * 1. **It was marked `todo`.** A `todo` in node:test runs and is allowed to
+ *    fail, which is right for a blocker nobody can clear yet. This one had
+ *    stopped failing — the claim was gone — and a passing `todo` is reported as
+ *    `ok … # TODO` and gates nothing. The marker was quietly holding the site's
+ *    most dangerous sentence open.
+ * 2. **It missed the noun.** `d[ée]ductib\w*\s+fiscal` cannot match
+ *    « déductibilité fiscale », because `\w` does not match `é` and the word
+ *    carries one in the middle. The same hole let "tax deductibility" through in
+ *    English. That was load-bearing by accident: it is also why the legal
+ *    notices' *denial* of any such status passed.
+ *
+ * So the question is asked a sentence at a time, and every form of the word is
+ * caught. A sentence may mention deductibility only if that sentence denies it,
+ * which is what the legal notices do and the only reason a page has to raise the
+ * subject at all today.
+ *
+ * The day the committee produces the decision, this fails — as it should.
+ * Publishing that claim is a deliberate act, and it changes this test with its
+ * real conditions in the same commit.
  */
-test('the site tells nobody their donation is tax-deductible until that is verified', {
-  todo: 'blocked on the committee',
-}, () => {
+
+/** Every way of saying tax deductibility, in either language, noun forms too. */
+const DEDUCTIBILITY =
+  /d[ée]ductib\p{L}*\s+fiscal\p{L}*|fiscal\p{L}*\s+d[ée]ductib\p{L}*|tax[-\s]deductib\p{L}*/iu;
+
+/** Saying the association makes no such claim — the only reason to raise it. */
+const A_DENIAL = /ne fait\b[^.]*aucune d[ée]claration|makes no public statement/i;
+
+test('the site tells nobody their donation is tax-deductible until that is verified', () => {
   const offending = site.visitorPages
-    .filter((page) =>
-      /d[ée]ductib\w*\s+fiscal|fiscalement\s+d[ée]ductib|tax[- ]deductible/i.test(
-        textOf(page.html),
-      ),
+    .flatMap((page) =>
+      textOf(page.html)
+        .split(/(?<=[.!?])\s+/)
+        .filter((sentence) => DEDUCTIBILITY.test(sentence) && !A_DENIAL.test(sentence))
+        .map((sentence) => `${page.route} — “${sentence.trim().slice(0, 120)}”`),
     )
-    .map((page) => page.route);
+    .sort();
 
   assert.deepEqual(
     offending,
     [],
-    'These pages assert donations are tax-deductible. Remove the claim, or publish it only against the cantonal ' +
-      'decision recognising the association as of public utility.',
+    'These sentences raise tax deductibility without denying it:\n  ' +
+      `${offending.join('\n  ')}\n` +
+      'Remove the claim, or publish it only against the cantonal decision recognising the ' +
+      'association as of public utility — and rewrite this test with its real conditions.',
   );
 });

@@ -50,6 +50,8 @@ Every dependency is a liability the next maintainer inherits.
 ## Things that have bitten people here
 
 - **A test that cannot fail is worse than no test.** The Armenian font suite first used `document.fonts.check`, which asks "can anything on this machine draw this" — it passed with the font deliberately deleted. Break your assertion on purpose and watch it go red before you trust it.
+- **A `todo` that has stopped failing is a gap, not good news.** node:test reports it as `ok … # TODO` and it gates nothing. The tax-deductibility check — the single most dangerous sentence this site could carry — sat passing behind its marker for a fortnight, so the claim could have walked back in unnoticed. When a blocker clears, take the marker off in the same commit.
+- **`\w` does not match `é`.** That one character is why the same check could not see « déductibilité fiscale », and why it tolerated the legal notices' denial by accident rather than by design. Any regex reading French copy wants `\p{L}` and the `u` flag.
 - **Vendored third-party applications are not our source.** `public/admin/sveltia-cms-*.js` is exempt from the request and storage audits and from typechecking, by exact filename, for reasons written in `tests/compliance/lib/vendored.mjs`.
 - **Disabling a workflow outlives rewriting it.** `deploy.yml` was disabled while it was the GitHub Pages workflow; the disable persisted through a full rewrite and the new pipeline silently never ran.
 - **Absent configuration should skip, not fail.** A permanently red `main` teaches people to stop reading it.
