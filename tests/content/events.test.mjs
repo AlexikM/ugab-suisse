@@ -10,6 +10,25 @@ test('an event marked as demo content cannot be published', () => {
   assert.match(build.output, /2099-demo-gala/, 'the failure should name the offending entry');
 });
 
+/**
+ * An event is past from its end date (#69), so the two dates in the wrong order
+ * do not merely read oddly: the entry is retired the moment it is published, and
+ * leaves the Événements page for the gallery of what has already happened. An
+ * editor who transposed two dates would see the fiche vanish and have nothing to
+ * tell them why. The build says so instead.
+ */
+test('an event cannot end before it begins', () => {
+  const build = buildWithContent('backwards-event');
+
+  assert.notEqual(build.status, 0, 'the build should have failed but it succeeded');
+  assert.match(build.output, /2099-a-rebours/, 'the failure should name the offending entry');
+  assert.match(
+    build.output,
+    /date de fin/,
+    'the failure should say which of the two fields is wrong',
+  );
+});
+
 /** One build, several questions asked of it. */
 let eventFields;
 function withEventFixtures() {
