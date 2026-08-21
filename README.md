@@ -102,10 +102,16 @@ Most of these read `dist/`, so they need a build first; `npm run check` does tha
 for you. Playwright builds nothing itself either — it serves `dist/` through
 `npm run preview`.
 
-`tests/build/base-path.test.ts` is worth knowing about: it fails the check if
-any URL in the built output does not carry the configured path prefix, or still
-carries the old `/ugab-suisse` one after the prefix is removed. It exists
-because five consecutive commits were spent fixing exactly that.
+Two in `tests/build/` are worth knowing about, and they ask the two halves of
+one question about every URL in the built site.
+
+`base-path.test.ts` asks whether a URL carries the configured path prefix, and
+fails if one does not — or if a literal `/ugab-suisse` survives the day that
+prefix is removed. It exists because five consecutive commits were spent fixing
+exactly that.
+
+`internal-links.test.ts` asks whether anything is there. A perfectly prefixed
+link can still lead nowhere, and 404 is what the visitor meets.
 
 ## Deployment
 
