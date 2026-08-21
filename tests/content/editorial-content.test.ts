@@ -249,8 +249,17 @@ describe('the Bureau', () => {
 
   it('offers initials to stand in for the portrait that is missing', async () => {
     expect(initialsOf('Jean Dupont')).toBe('JD');
+    // A hyphen separates words the way a space does: a compound forename is one
+    // person's first name, and `MA` would read as somebody called Marie Aznavour.
     expect(initialsOf('Marie-Claire Aznavour')).toBe('MC');
     expect(initialsOf('Ani')).toBe('A');
+    // The comment on `initialsOf` promises never punctuation. Checked, not assumed.
+    expect(initialsOf('- -')).toBe('');
+    // A name an editor typed with a leading space is still that person's name.
+    // This is the case that pins the empty-part filter: without it the leading
+    // gap counts as a word and one initial is lost. The line above does not —
+    // it holds either way.
+    expect(initialsOf(' Jean Dupont')).toBe('JD');
   });
 
   it('says the section is unfinished while an office is unfilled', async () => {

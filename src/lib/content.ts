@@ -207,7 +207,21 @@ export function paragraphs(text: string | undefined | null): string[] {
     .filter(Boolean);
 }
 
-/** `Marie-Claire Dupont` → `MD`. Two letters at most; never punctuation only. */
+/**
+ * The first letters of the first two words of a name, standing in for a
+ * portrait the Comité has not sent: `Jean Dupont` → `JD`. Two letters at most,
+ * and never punctuation — a name that is only punctuation yields nothing.
+ *
+ * A hyphen separates words the way a space does, so `Marie-Claire Aznavour`
+ * gives `MC` and not `MA`. A compound forename is one person's first name and
+ * reads as one; `MA` would look like the initials of somebody called Marie
+ * Aznavour, and two letters are all a reader gets to go on.
+ *
+ * This comment used to say `Marie-Claire Dupont` → `MD`, which the function has
+ * never returned. Every example above is an assertion in
+ * `tests/content/editorial-content.test.ts` now, word for word, so a reader who
+ * doubts this comment finds the same cases being run.
+ */
 export function initialsOf(name: string): string {
   return name
     .split(/[\s-]+/)
