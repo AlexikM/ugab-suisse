@@ -53,9 +53,35 @@ Every dependency is a liability the next maintainer inherits.
 - **Vendored third-party applications are not our source.** `public/admin/sveltia-cms-*.js` is exempt from the request and storage audits and from typechecking, by exact filename, for reasons written in `tests/compliance/lib/vendored.mjs`.
 - **Disabling a workflow outlives rewriting it.** `deploy.yml` was disabled while it was the GitHub Pages workflow; the disable persisted through a full rewrite and the new pipeline silently never ran.
 - **Absent configuration should skip, not fail.** A permanently red `main` teaches people to stop reading it.
+- **A comment promising a check is not a check.** `public/admin/index.html` said "a test checks that the file beside this page is still the file recorded here" and no such test existed. Four documents referenced from the CMS configuration and from `src/lib/content.ts` had never been written. Both classes are guarded now — `tests/compliance/vendored-application.test.mjs` and `tests/docs/references.test.mjs` — but the habit is the point: if you write that something is checked, check it in the same commit.
+- **A legal page can go stale in both directions.** The accessibility statement apologised for an interactive map that had been removed, and promised a screen-reader pass before every release that nothing performs. Understating the site is a smaller failure than overstating it, and both are the same defect: a page describing a system that no longer exists.
 
 ## Where things stand
 
-All eight PRDs are built as far as they can go without a domain, an account, or
-a committee decision. What remains is in `docs/infrastructure-setup.md` and
-issue #9, and none of it is code.
+All eight PRDs are built. What blocks launch is in
+`docs/pre-launch-checklist.md`, `docs/infrastructure-setup.md` and issue #9, and
+almost all of it is a committee answer or an account somebody has to open.
+
+An earlier version of this section said none of what remained was code. That was
+read as "there is nothing to build" and it was wrong twice over: the content
+boundary landed with nothing importing it, and section A7 of the checklist held
+two webmaster items that were code and unblocked. Both are done. So, precisely:
+
+**Done since the eighth PRD:** the pages read editorial content through the one
+boundary (#47); the publication flow exists as far as it can without staging,
+and the staging deploy shows drafts (#42); the legal pages are served in every
+language the site is read in, with the Armenian ones falling back and saying so;
+the contact page says what becomes of a message before it is sent; the vendored
+CMS carries its licence and an integrity test; and three guards were added —
+documents may not be referenced before they are written, links may not lead
+nowhere, and the back-office bundle may not drift from its record.
+
+**Still code, and small:**
+
+- [#38](https://github.com/AlexikM/ugab-suisse/issues/38) — two test runners, one more than anybody wants. Not urgent; both run in CI.
+- [#44](https://github.com/AlexikM/ugab-suisse/issues/44) — editor accounts, blocked on the committee's answer about logging in with an email address.
+- Checklist A3 — the components the CMS fetches from unpkg while an editor works. Vendor them, or accept them in writing. The two options are set out in [`editorial/back-office-maintenance.md`](editorial/back-office-maintenance.md).
+
+**Before concluding there is nothing left:** read
+`docs/pre-launch-checklist.md` and ask, of each unticked item, whether it is
+waiting on a person or on a commit. The ones waiting on a commit are the work.
