@@ -7,9 +7,10 @@ At the time of writing there is **no domain, no hosting account, no mailbox and
 no credential**, and nothing here can be created by an agent or by a script. The
 pipeline is written and waiting; this is the document that closes the distance.
 
-> English, because it is an engineering document. The questions that go to the
-> committee are reproduced in French so they can be sent as they are. What the
-> committee reads afterwards is in [`comite/`](comite/).
+> English, because it is an engineering document, following the same convention
+> as [`pre-launch-checklist.md`](pre-launch-checklist.md). The one question that
+> has to be sent to a third party is reproduced in French so it can be sent as it
+> is. Everything the committee reads for itself is in [`comite/`](comite/).
 
 The order is load-bearing. AGBU sign-off gates the domain; the domain gates
 hosting and mail; mail gates the payment providers' identity checks; and the
@@ -214,6 +215,9 @@ Run the sequence in
 [`deploy-pipeline.md`](deploy-pipeline.md#verifying-it-by-hand-before-the-first-real-deploy)
 in full. In summary:
 
+- [ ] Create the `staging` branch from `main`. It does not exist yet — it is not
+      created in advance on purpose, because the first push to it starts a deploy
+      and there is no point in a red cross sitting on the repository for weeks.
 - [ ] Push to `staging`. It publishes, and the smoke check passes.
 - [ ] Confirm staging asks for a password and disallows crawlers.
 - [ ] Push a deliberately failing commit to `staging`. The publish never starts

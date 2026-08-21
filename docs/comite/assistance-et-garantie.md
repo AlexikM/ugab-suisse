@@ -2,8 +2,8 @@
 
 *Pour le Comité. À lire et à valider ensemble avant la mise en ligne.*
 
-Ce document existe pour une raison simple : pour que vous sachiez ce que vous
-pouvez demander sans vous demander si vous abusez.
+Ce document a un seul objet : que vous sachiez ce que vous pouvez demander sans
+avoir à vous demander si vous abusez.
 
 Un Comité qui ignore où est la limite finit par faire l'une de deux choses.
 Soit il n'ose plus rien demander et vit avec un site abîmé ; soit il demande
@@ -32,7 +32,7 @@ est-ce que ce qui était prévu a changé ?
 | Un événement publié ne s'affiche pas sur le site | Ajouter un champ « traiteur » à la fiche événement |
 | La page de dons est illisible sur téléphone | Changer les couleurs de la page de dons |
 | Le menu renvoie vers une page qui n'existe pas | Ajouter une page au menu |
-| Les accents arméniens s'affichent en carrés | Traduire une page de plus en arménien |
+| Les caractères arméniens s'affichent en carrés | Traduire une page de plus en arménien |
 | Le site ne s'ouvre pas sur un navigateur courant | Le site ne s'ouvre pas sur Internet Explorer |
 | L'image mise en avant n'apparaît jamais | Recadrer une photographie fournie |
 | Le passage d'une langue à l'autre perd la page en cours | Ajouter une quatrième langue |
@@ -45,7 +45,7 @@ que ce soit à poser.
 ## Ce que la garantie couvre
 
 Pendant la période de garantie, la correction des anomalies définies ci-dessus
-est comprise dans le prix convenu. Cela inclut :
+ne donne lieu à aucune facturation. Cela inclut :
 
 - ce qui empêche un visiteur d'utiliser le site comme prévu ;
 - ce qui empêche le Comité de publier ou de modifier son contenu ;
@@ -148,8 +148,8 @@ coup.
 données personnelles dans les 30 jours, les demandes de retrait.
 
 **Relire cette page et la carte des comptes après chaque élection.** Un quart
-d'heure par an. C'est ce qui fait la différence entre un site qui reste vivant et
-un site exact à l'année de sa mise en ligne.
+d'heure par an, et la seule ligne de cette liste qui prenne moins de temps
+qu'elle n'en fait gagner.
 
 ## Validation
 

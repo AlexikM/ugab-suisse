@@ -22,7 +22,10 @@ faire, devant les autres.
 ## 1. Ce qui est livré
 
 - [ ] Le site est en ligne à l'adresse : ______
-- [ ] Les pages ont été parcourues ensemble, dans les trois langues
+- [ ] Les pages ont été parcourues ensemble, dans chaque langue — y compris
+      l'arménien s'il a été fourni. S'il ne l'a pas été, on constate ensemble
+      que les pages arméniennes affichent le français et le disent au visiteur
+- [ ] État des traductions arméniennes à la date de la remise : ______
 - [ ] Un don de test a été effectué et vérifié jusqu'au compte bancaire
 - [ ] Une réservation de test a été effectuée et vérifiée jusqu'à l'e-billet
 - [ ] Le formulaire de contact a été envoyé et le message reçu
@@ -71,6 +74,7 @@ Accès conservés par le webmaster après la remise : ______
 - [ ] [Carte des comptes](carte-des-comptes.md)
 - [ ] [Publier un événement](publier-un-evenement.md)
 - [ ] [Mettre à jour le Bureau](mettre-a-jour-le-bureau.md)
+- [ ] [Exporter les dons](exporter-les-dons.md), parcouru avec le trésorier
 - [ ] [En cas de problème](en-cas-de-probleme.md)
 - [ ] [Assistance et garantie](assistance-et-garantie.md), lue et validée
 - [ ] [Quitter un prestataire](quitter-un-prestataire.md)

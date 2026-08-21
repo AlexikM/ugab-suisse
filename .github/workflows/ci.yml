@@ -17,9 +17,11 @@ permissions:
 
 concurrency:
   # Keyed by the calling workflow as well as the ref, so that a pull-request run
-  # cannot cancel the check a deploy is waiting on.
+  # cannot cancel the check a deploy is waiting on — and cancellation is off
+  # entirely when this workflow is somebody's gate. A superseded pull-request run
+  # is waste; a superseded check under a deploy fails that deploy.
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:

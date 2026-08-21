@@ -38,6 +38,8 @@ permissions:
 concurrency:
   # Never cancelled: a run interrupted between the transfer and the swap leaves
   # a directory to clean up. Two pushes in quick succession queue instead.
+  # ci.yml turns its own cancellation off when it is called, so the whole chain
+  # queues rather than cancelling half of itself.
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 

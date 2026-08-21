@@ -99,24 +99,31 @@ the failure worth preventing. Truly atomic would mean serving from a symlink and
 swapping the symlink, which needs a document-root layout Infomaniak's manager
 does not give us from a script.
 
-If the run fails anywhere, the incoming directory is removed and the live site is
-exactly as it was.
+**Where a failure leaves you** depends on which side of step 4 it happens.
+
+- **Before or during the transfer** — the incoming directory is removed and the
+  live site is exactly as it was. Nothing was published. This is the case worth
+  engineering for, and it is covered.
+- **After the swap** — in practice, a failing smoke check — the new release *is*
+  live. Nothing reverts on its own, deliberately: a smoke check can fail because
+  DNS is still propagating or the host had a moment, and automatically undoing a
+  good deploy on a flaky signal is worse than a red run. The run goes red, the
+  message names the rollback, and a person decides. The previous release is one
+  command away.
 
 ## Rollback
 
 **The fast way — the previous release is still on the server.** One command, no
-build, no CI:
+build, no CI. Substitute the deploy path and paste:
 
 ```sh
-ssh user@host
-LIVE=/path/to/site
-mv "$LIVE" "$LIVE.rolling"
-mv "$LIVE.previous" "$LIVE"
-mv "$LIVE.rolling" "$LIVE.previous"
+ssh user@host 'L=/path/to/site; mv "$L" "$L.rolling" && mv "$L.previous" "$L" && mv "$L.rolling" "$L.previous"'
 ```
 
-Reversible: run it again and you are back. Only one release is kept, so this
-undoes exactly one deploy.
+It swaps the two directories, so running it again puts you back where you
+started. Only one previous release is kept, so it undoes exactly one deploy —
+and the run that follows will overwrite `.previous` again, which is why the
+second half of a rollback is republishing the good commit.
 
 **The clean way — republish an earlier commit.** Actions → Deploy → Run workflow,
 pick the branch or tag, pick the environment. It goes through the checks like
@@ -198,9 +205,14 @@ launch, because DNS changes made for a payment provider can silently break them.
 
 ## Verifying it by hand, before the first real deploy
 
-The pipeline's shell logic was exercised against fixtures during development.
-What cannot be proven that way is the pipeline running against a real server, so
-run these once, in this order, and keep the result with the
+Every shell fragment in `publish.yml` — the preflight, the subdirectory guard,
+the swap, the rollback recipe and the smoke check — was run against fixtures
+while it was written, with a throwaway harness that is **not committed**: the
+lane that wrote this pipeline could not add to `tests/`. Take that as authorship
+care, not as evidence. **The list below is the evidence**, and none of it can be
+produced without a real server.
+
+Run these once, in this order, and keep the result with the
 [pre-launch checklist](pre-launch-checklist.md).
 
 1. **Staging publishes.** Push to `staging`. The smoke check passes.

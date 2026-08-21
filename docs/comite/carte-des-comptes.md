@@ -42,8 +42,8 @@ personne ne les porte. Deux rôles doivent porter un nom.
 **Le référent du site.** Une seule personne, désignée par le Comité. Aucune
 compétence technique n'est requise. C'est la personne à qui l'on écrit quand
 quelque chose ne va pas, celle qui reçoit les avis de renouvellement, celle qui
-relit cette page une fois par an. C'est la différence entre un site qui reste à jour et un
-site exact à l'année de sa mise en ligne.
+relit cette page une fois par an. C'est la différence entre un site qui suit la vie de
+l'association et un site resté figé à l'année de sa mise en ligne.
 
 - Référent du site : *à fournir par le Comité*
 - Depuis le : *à fournir par le Comité*
@@ -81,10 +81,10 @@ l'association à la porte de ses propres comptes.
 ## Les fiches
 
 Chaque fiche a la même forme. Les mentions *à fournir par le Comité* sont des
-champs vides, pas des oublis : au 21 août 2026, aucun de ces comptes n'existe
-encore. Ils s'ouvrent au nom de l'association dès le premier jour — reprendre un
-compte ouvert à titre personnel est nettement plus difficile que de l'ouvrir
-correctement.
+champs vides, pas des oublis : au moment où cette page est écrite, aucun de ces
+comptes n'est encore ouvert au nom de l'association. Ils doivent l'être dès le
+premier jour — reprendre après coup un compte ouvert à titre personnel est
+nettement plus difficile que de l'ouvrir correctement.
 
 ### 1. Nom de domaine principal
 
@@ -188,7 +188,7 @@ correctement.
 - **Propriétaires de l'organisation** — *à fournir par le Comité* — **deux
   membres du Comité au minimum**, afin que l'accès ne dépende pas d'une seule
   personne joignable
-- **Le webmaster y est** — membre avec droit d'écriture, **pas** propriétaire
+- **Rôle du webmaster** — membre avec droit d'écriture, **pas** propriétaire
 - **Double authentification** — obligatoire pour chaque membre. Vérifiée le : ______
 - **Codes de secours** — détenus par : *à fournir par le Comité*
 - **Note** — un futur webmaster reçoit un accès du Comité. Rien ne se transfère,
@@ -222,8 +222,10 @@ correctement.
 - **Qui a accès** — *à fournir par le Comité* — le trésorier au minimum
 - **Double authentification** — activée le ______ / non activée
 - **Codes de secours** — détenus par : *à fournir par le Comité*
-- **Contrat de sous-traitance signé** — oui / non (voir le point B de la
-  [checklist de pré-lancement](../pre-launch-checklist.md))
+- **Contrat de sous-traitance signé** — oui / non. Le webmaster indique lequel
+  des prestataires en exige un.
+- **Export annuel** — voir [Exporter les dons](exporter-les-dons.md). Dernier
+  export effectué le : ______
 
 ### 9. Prestataire de billetterie
 

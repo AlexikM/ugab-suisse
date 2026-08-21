@@ -48,7 +48,8 @@ du fournisseur à la place du site.
 
 **Première action** — vérifiez d'abord que ce n'est pas votre connexion : ouvrez
 un autre site. Puis ouvrez le site depuis un téléphone en données mobiles, hors
-du Wi-Fi. S'il s'affiche là, le problème est local et disparaîtra tout seul.
+du Wi-Fi. S'il s'affiche là, le problème vient de votre connexion ou de votre
+réseau, et non du site.
 
 **Ensuite** — si le site est inaccessible partout, il y a deux causes probables,
 dans cet ordre :
@@ -118,10 +119,11 @@ versement groupé du prestataire, avec quelques jours de décalage.
 **Qui contacter** — le trésorier d'abord. Le webmaster seulement si le formulaire
 de don lui-même ne s'affiche pas, ce qui est un problème différent.
 
-**Ce qu'il ne faut pas faire** — ne promettez pas d'attestation fiscale avant que
-le Comité ait tranché la question de la déductibilité. Elle est ouverte et bloque
-la mise en ligne ; voir le point A1 de la
-[checklist de pré-lancement](../pre-launch-checklist.md).
+**Ce qu'il ne faut pas faire** — ne promettez pas d'attestation fiscale tant que
+le Comité n'a pas tranché la question de la déductibilité. Elle est ouverte, elle
+bloque la mise en ligne, et annoncer une déduction à un donateur qui ne pourra
+pas déduire est le seul risque à ne pas prendre. Voir
+[Exporter les dons](exporter-les-dons.md).
 
 ---
 
@@ -185,11 +187,17 @@ confidentialité du site promet une réponse sous 30 jours ; l'accusé de récep
 vous donne le temps de préparer la réponse sans laisser la personne sans
 nouvelle.
 
-**Ensuite** — la marche à suivre complète figure au point D de la
-[checklist de pré-lancement](../pre-launch-checklist.md). En résumé : cherchez
-dans la boîte de contact, dans le tableau de bord du prestataire de dons et dans
-celui du prestataire de billetterie, puis répondez en indiquant ce qui est
-détenu, pourquoi et pour combien de temps.
+**Ensuite**, dans cet ordre :
+
+1. Cherchez dans la boîte `contact@`, archives comprises.
+2. Cherchez dans le tableau de bord du prestataire de dons.
+3. Cherchez dans le tableau de bord du prestataire de billetterie.
+4. Répondez en indiquant ce qui est détenu, à quel titre, et combien de temps ce
+   sera conservé.
+5. Faites ce qui est demandé, ou expliquez pourquoi vous ne le pouvez pas.
+
+Il n'y a rien d'autre à fouiller : le site lui-même ne conserve rien. Il n'a ni
+base de données ni compte de visiteur.
 
 **La seule réponse qui est un refus** — les pièces comptables liées aux dons et
 aux ventes de billets ne peuvent pas être effacées avant la fin de leur durée de
@@ -215,7 +223,7 @@ manipulation est la même que pour en ajouter une : voir
 notamment dans une galerie d'événement passé.
 
 **Qui contacter** — le membre du Comité chargé des demandes de retrait, désigné
-au point A6 de la [checklist de pré-lancement](../pre-launch-checklist.md).
+dans la [carte des comptes](carte-des-comptes.md).
 
 **Pour éviter le cas suivant** — l'accord des personnes identifiables se
 recueille avant la publication, pas après la réclamation.

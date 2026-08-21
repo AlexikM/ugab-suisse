@@ -309,13 +309,15 @@ jobs:
 
           if [ "$INDEXABLE" != "true" ]; then
             robots=$(curl --silent --show-error $retry --user "$BASIC_AUTH" "${SITE_URL%/}/robots.txt") || robots=""
-            case "$robots" in
-              *"Disallow: /"*)
-                echo "Staging asks crawlers to stay out." ;;
-              *)
-                echo "::error title=Staging is indexable::robots.txt at ${SITE_URL%/}/robots.txt does not disallow crawling."
-                exit 1 ;;
-            esac
+            # A whole-site disallow, not merely a line that starts like one:
+            # `Disallow: /admin` would satisfy a substring match and leave every
+            # other page crawlable.
+            if printf '%s\n' "$robots" | grep -qE '^[[:space:]]*Disallow:[[:space:]]*/[[:space:]]*$'; then
+              echo "Staging asks crawlers to stay out."
+            else
+              echo "::error title=Staging is indexable::robots.txt at ${SITE_URL%/}/robots.txt does not disallow the whole site."
+              exit 1
+            fi
           fi
 
           echo "${url} is serving the new release."
