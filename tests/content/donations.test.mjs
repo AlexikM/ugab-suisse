@@ -209,7 +209,15 @@ test('somebody who lands on the thank-you page without giving is told the truth'
  * copy.test.mjs; this is the other half, stated as a promise about email.
  */
 test('no page promises a donor a receipt by email', () => {
+  // The two legal pages belong to PRD 7 (#7) and are excluded for the same
+  // reason copy.test.mjs excludes them. There is a second, narrower reason
+  // here: "reçu" is also the past participle of *recevoir*, and a privacy
+  // policy describing "un message reçu par e-mail" would trip this without
+  // promising anybody anything. A check that cries wolf gets switched off.
+  const OWNED_BY_PRD_7 = ['/mentions-legales/', '/confidentialite/'];
+
   for (const page of allBuiltPages()) {
+    if (OWNED_BY_PRD_7.includes(page.route)) continue;
     const text = visibleText(page.html);
     assert.doesNotMatch(
       text,
