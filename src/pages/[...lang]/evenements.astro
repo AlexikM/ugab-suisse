@@ -1,12 +1,12 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import concertImage from '../../assets/images/concert.jpg';
 import { pageContext } from '../../i18n/fallback';
 import { formatLocale, languagePaths, localeRoute, routes } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
+import { editorial } from '../../lib/content';
 
 export const getStaticPaths = languagePaths;
 
@@ -18,13 +18,10 @@ const { served, t } = pageContext(lang, 'events');
 const link = (path: string) => withBase(localeRoute(path, lang));
 
 // See src/pages/[...lang]/index.astro: events are not filtered by locale.
-const events = (await getCollection('events', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.date.valueOf() - b.data.date.valueOf(),
-);
-
-const now = Date.now();
-const upcoming = events.filter((event) => event.data.date.valueOf() >= now);
-const past = events.filter((event) => event.data.date.valueOf() < now).reverse();
+// Soonest first for what is coming, most recent first for the archive — the
+// order is src/lib/content.ts's decision, not this page's.
+const upcoming = await editorial.upcomingEvents();
+const past = await editorial.pastEvents();
 
 const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
   day: 'numeric',
@@ -66,22 +63,22 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {upcoming.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              {event.data.cover && (
+              {event.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
-                  <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                  <img src={withBase(event.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
-              <div class="eyebrow mb-2 text-navy">{dateFmt.format(event.data.date)}</div>
+              <div class="eyebrow mb-2 text-navy">{dateFmt.format(event.start)}</div>
               <h3 class="text-2xl mb-2 group-hover:text-red transition">
-                {event.data.title}
-                {event.data.soldOut && (
+                {event.title}
+                {event.soldOut && (
                   <span class="eyebrow ml-3 bg-ink px-2 py-1 align-middle text-white">
                     {t('event.sold_out')}
                   </span>
                 )}
               </h3>
-              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
-              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
+              <p class="text-sm text-ink-soft mb-3">{event.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.excerpt}</p>
               <span class="eyebrow mt-4 inline-flex items-center border-b border-navy pb-1 text-navy">
                 {t('events.more')} →
               </span>
@@ -100,15 +97,15 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {past.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              {event.data.cover && (
+              {event.cover && (
                 <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-deep">
-                  <img src={withBase(event.data.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                  <img src={withBase(event.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 </div>
               )}
-              <div class="eyebrow mb-2 text-ink-muted">{dateFmt.format(event.data.date)}</div>
-              <h3 class="text-2xl mb-2 group-hover:text-red transition">{event.data.title}</h3>
-              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
-              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
+              <div class="eyebrow mb-2 text-ink-muted">{dateFmt.format(event.start)}</div>
+              <h3 class="text-2xl mb-2 group-hover:text-red transition">{event.title}</h3>
+              <p class="text-sm text-ink-soft mb-3">{event.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.excerpt}</p>
             </a>
           ))}
         </div>

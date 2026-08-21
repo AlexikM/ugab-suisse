@@ -1,6 +1,5 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import genevaImage from '../../assets/images/geneva.jpg';
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
@@ -15,6 +14,7 @@ import {
 } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
+import { editorial } from '../../lib/content';
 
 export const getStaticPaths = languagePaths;
 
@@ -32,11 +32,7 @@ const link = (path: string) => withBase(localeRoute(path, lang));
 // language you read about them in. An entry is written in one language and says
 // so, but it is not filtered out of the other locales — the brief models one
 // event with a title per language, and building that model is PRD 4's work.
-const now = Date.now();
-const events = (await getCollection('events', ({ data }) => !data.draft))
-  .filter((event) => event.data.date.valueOf() >= now)
-  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
-  .slice(0, 3);
+const events = await editorial.upcomingEvents({ limit: 3 });
 
 const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
   day: 'numeric',
@@ -124,9 +120,9 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
           {events.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
               <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
-                {event.data.cover ? (
+                {event.cover ? (
                   <img
-                    src={withBase(event.data.cover)}
+                    src={withBase(event.cover)}
                     alt=""
                     loading="lazy"
                     class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
@@ -136,15 +132,15 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
                 )}
               </div>
               <div class="eyebrow mb-2 text-navy">
-                {dateFmt.format(event.data.date)}
+                {dateFmt.format(event.start)}
               </div>
               <h3 class="text-xl mb-2 text-ink group-hover:text-red transition">
-                {event.data.title}
+                {event.title}
               </h3>
-              <p class="text-sm text-ink-soft mb-3">{event.data.location}</p>
-              <p class="text-sm text-ink-soft leading-relaxed">{event.data.excerpt}</p>
+              <p class="text-sm text-ink-soft mb-3">{event.location}</p>
+              <p class="text-sm text-ink-soft leading-relaxed">{event.excerpt}</p>
               <span class="eyebrow mt-4 inline-flex items-center border-b border-navy pb-1 text-navy">
-                {event.data.soldOut ? t('event.sold_out') : t('event.book')} →
+                {event.soldOut ? t('event.sold_out') : t('event.book')} →
               </span>
             </a>
           ))}

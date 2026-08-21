@@ -15,9 +15,9 @@
  * worse than a missing one.
  */
 
-import type { CollectionEntry } from 'astro:content';
 import { formatLocale, type Lang, languages, localeRoute } from './i18n/ui';
 import { useTranslations, withBase } from './i18n/utils';
+import type { EditorialEvent } from './lib/content';
 
 /** Astro serves `/a-propos/index.html`; the canonical URL says so. */
 const withTrailingSlash = (path: string): string => (path.endsWith('/') ? path : `${path}/`);
@@ -97,30 +97,31 @@ export function organizationSchema(lang: Lang, site: URL | undefined): Record<st
 }
 
 /**
- * One event, as a search engine reads it. Built from the content entry, so a
- * date changed in the CMS changes the structured data with it.
+ * One event, as a search engine reads it. Built from the same object the page
+ * renders — an `EditorialEvent` out of src/lib/content.ts — so a date changed in
+ * the CMS changes the structured data with it, and the two can never describe
+ * different evenings. Nothing in this module knows where content is stored.
  */
 export function eventSchema(
-  event: CollectionEntry<'events'>,
+  event: EditorialEvent,
   lang: Lang,
   site: URL | undefined,
 ): Record<string, unknown> {
-  const { data } = event;
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Event',
-    name: data.title,
-    description: data.excerpt,
+    name: event.title,
+    description: event.excerpt,
     inLanguage: formatLocale[lang],
-    startDate: data.date.toISOString(),
+    startDate: event.start.toISOString(),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     url: canonicalUrl(`/evenements/${event.id}`, lang, site),
     location: {
       '@type': 'Place',
-      name: data.location,
-      ...(data.address
-        ? { address: { '@type': 'PostalAddress', streetAddress: data.address } }
+      name: event.location,
+      ...(event.address
+        ? { address: { '@type': 'PostalAddress', streetAddress: event.address } }
         : {}),
     },
     organizer: {
@@ -130,18 +131,18 @@ export function eventSchema(
     },
   };
 
-  if (data.endDate) schema.endDate = data.endDate.toISOString();
-  if (data.cover) {
-    schema.image = new URL(withBase(data.cover), site ?? 'http://localhost:4321/').href;
+  if (event.end) schema.endDate = event.end.toISOString();
+  if (event.cover) {
+    schema.image = new URL(withBase(event.cover), site ?? 'http://localhost:4321/').href;
   }
   // Only what the entry actually says. `pricing` is free text — "CHF 150 /
   // pers." — so no price is asserted, only where to buy and whether any are
   // left. A wrong price in structured data is a promise to a stranger.
-  if (data.ticketUrl) {
+  if (event.ticketUrl) {
     schema.offers = {
       '@type': 'Offer',
-      url: data.ticketUrl,
-      availability: data.soldOut ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      url: event.ticketUrl,
+      availability: event.soldOut ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
     };
   }
 
