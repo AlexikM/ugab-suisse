@@ -210,7 +210,15 @@ export function paragraphs(text: string | undefined | null): string[] {
 /**
  * The first letters of the first two words of a name, standing in for a
  * portrait the Comité has not sent: `Jean Dupont` → `JD`. Two letters at most,
- * and never punctuation — a name that is only punctuation yields nothing.
+ * and never punctuation — `(Jean) Dupont` gives `JD`, and a name that is only
+ * punctuation yields nothing.
+ *
+ * A letter, not a first character. Saying « never punctuation » while taking
+ * whatever code point came first made that clause true only of spaces and
+ * hyphens, which the split had already eaten: `(Jean) Dupont` gave `(D` and
+ * `...` gave `.`. It is `\p{L}` rather than `[A-Za-z]` because the Bureau is
+ * read in Armenian too, and `\w` would not match `Ա` any more than it matches
+ * `é`.
  *
  * A hyphen separates words the way a space does, so `Marie-Claire Aznavour`
  * gives `MC` and not `MA`. A compound forename is one person's first name and
@@ -225,9 +233,9 @@ export function paragraphs(text: string | undefined | null): string[] {
 export function initialsOf(name: string): string {
   return name
     .split(/[\s-]+/)
+    .map((word) => [...word].find((character) => /\p{L}/u.test(character)) ?? '')
     .filter(Boolean)
     .slice(0, 2)
-    .map((word) => [...word][0] ?? '')
     .join('')
     .toUpperCase();
 }
