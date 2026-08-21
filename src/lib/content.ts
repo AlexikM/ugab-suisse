@@ -230,7 +230,14 @@ export function biographyOf(bio: Localised<string> | undefined, lang: Lang): str
 
 function toEvent(record: EventRecord, now: Date): EditorialEvent {
   const { data } = record;
-  const isPast = data.date.valueOf() < now.valueOf();
+  // Measured against the end of the event, not its beginning. A weekend
+  // festival is one entry with two dates; measuring from the opening night
+  // retires it on its own first evening, so it leaves the Événements page and
+  // joins the gallery of what has already happened while the doors are open.
+  // An entry with no `endDate` is a single occasion, and its start is the only
+  // moment there is.
+  const endsAt = data.endDate ?? data.date;
+  const isPast = endsAt.valueOf() < now.valueOf();
   const ticketUrl = trimmed(data.ticketUrl);
 
   return {
