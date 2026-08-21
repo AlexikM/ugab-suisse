@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { buildOutput } from './lib/build-output.mjs';
 import { footerOf, mainOf, textOf } from './lib/page-text.mjs';
+import { unkeepablePromisesIn } from './lib/sharing-promise.mjs';
 import { deductibilityClaimsIn } from './lib/tax-claim.mjs';
 
 /**
@@ -82,15 +83,37 @@ test('the accessibility statement is reachable from the footer too', () => {
   );
 });
 
-test('the promise the architecture cannot keep is gone', () => {
-  for (const { route, text } of legalPagesText()) {
-    assert.doesNotMatch(
-      text,
-      /jamais partagées avec des tiers|never shared with third parties/i,
-      `${route} still promises data is never shared with third parties. A Swiss host, a payment provider and an ` +
-        'anti-spam service all receive some of it, so the promise cannot be kept.',
-    );
-  }
+/**
+ * Swept over every page a visitor receives, not the nine legal ones.
+ *
+ * This read `<main>` of the legal pages and matched the single wording the
+ * prototype happened to use. The donation page is where a visitor is asked for
+ * a card number and the likeliest place in the site for somebody to add a
+ * comforting sentence; it was never looked at. What counts as making the
+ * promise is `lib/sharing-promise.mjs`, with the wordings — and the sentences
+ * the committee is entitled to keep — in `sharing-promise.test.mjs`.
+ */
+test('the promise the architecture cannot keep is gone, from every page', () => {
+  // Deduplicated: one sentence reaches the prose, the meta description and the
+  // Open Graph description, and three identical lines say nothing the first
+  // does not.
+  const offending = [
+    ...new Set(
+      site.visitorPages.flatMap((page) =>
+        unkeepablePromisesIn(page.html).map((promise) => `${page.route} — “${promise}”`),
+      ),
+    ),
+  ].sort();
+
+  assert.deepEqual(
+    offending,
+    [],
+    'These pages promise data is never shared with third parties:\n  ' +
+      `${offending.join('\n  ')}\n` +
+      'A Swiss host, a payment provider and an anti-spam service all receive some ' +
+      'of it, so the promise cannot be kept. Say what is true instead: nothing is ' +
+      'sold, nothing is traded, and the processors are named.',
+  );
 });
 
 test('the true intent behind that promise is stated instead of dropped', () => {
