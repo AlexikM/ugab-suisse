@@ -1,34 +1,82 @@
-name: Deploy to GitHub Pages
+# Publishing, keyed by branch.
+#
+#   main     -> production
+#   staging  -> staging, which is protected and not indexed
+#
+# Both routes go through `check` first. That job is ci.yml — the same steps as
+# `npm run check`, not a copy of them — and every publish job `needs` it, so a
+# commit that fails the checks cannot reach the published site. That is the fix
+# for issue #33: until now these were two workflows racing each other, and the
+# red cross appeared next to a change that was already live.
+#
+# This replaces the GitHub Pages workflow. Pages does not serve a private
+# repository on a free plan, and the repository was made private on 2026-08-20
+# because the brief is confidential. There is nothing to re-enable.
+#
+# Manual dispatch publishes a chosen branch or tag to a chosen environment,
+# which is also how a bad release is rolled back by republishing an earlier
+# commit. The faster rollback — swapping the previous release back on the
+# server — is in docs/deploy-pipeline.md.
+name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Where to publish the branch or tag selected above
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  # Never cancelled: a run interrupted between the transfer and the swap leaves
+  # a directory to clean up. Two pushes in quick succession queue instead.
+  group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: withastro/action@v3
-        with:
-          node-version: 22
+  check:
+    name: Checks
+    uses: ./.github/workflows/ci.yml
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+  production:
+    name: Production
+    if: "${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production') }}"
+    needs: check
+    uses: ./.github/workflows/publish.yml
+    with:
+      environment: production
+      indexable: true
+      site_url: ${{ vars.PROD_SITE_URL }}
+    secrets:
+      ssh_host: ${{ secrets.PROD_SSH_HOST }}
+      ssh_port: ${{ secrets.PROD_SSH_PORT }}
+      ssh_user: ${{ secrets.PROD_SSH_USER }}
+      ssh_key: ${{ secrets.PROD_SSH_KEY }}
+      ssh_known_hosts: ${{ secrets.PROD_SSH_KNOWN_HOSTS }}
+      deploy_path: ${{ secrets.PROD_DEPLOY_PATH }}
+
+  staging:
+    name: Staging
+    if: "${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging') }}"
+    needs: check
+    uses: ./.github/workflows/publish.yml
+    with:
+      environment: staging
+      indexable: false
+      site_url: ${{ vars.STAGING_SITE_URL }}
+    secrets:
+      ssh_host: ${{ secrets.STAGING_SSH_HOST }}
+      ssh_port: ${{ secrets.STAGING_SSH_PORT }}
+      ssh_user: ${{ secrets.STAGING_SSH_USER }}
+      ssh_key: ${{ secrets.STAGING_SSH_KEY }}
+      ssh_known_hosts: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+      deploy_path: ${{ secrets.STAGING_DEPLOY_PATH }}
+      basic_auth: ${{ secrets.STAGING_BASIC_AUTH }}

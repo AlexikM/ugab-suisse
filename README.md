@@ -103,24 +103,32 @@ because five consecutive commits were spent fixing exactly that.
 
 ## Deployment
 
-Today, pushing to `main` publishes to **GitHub Pages** through
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The site is
-served from a subdirectory, which is why `astro.config.mjs` sets
-`base: '/ugab-suisse'` and why every internal URL has to go through it.
+Pushing to `main` publishes to production and pushing to `staging` publishes to
+staging, in both cases by building here and transferring the result to
+**Infomaniak** over SSH —
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The transfer
+lands beside the live site and is swapped in with a rename only once it has
+succeeded, so a failed deploy never leaves half a site published. The GitHub
+Pages workflow it replaced is gone; Pages does not serve a private repository
+on a free plan.
 
-This is temporary. Hosting moves to Infomaniak — Swiss hosting, Swiss data
-residency, the association's own domain — at which point the base prefix is
-removed. That work is [PRD 1](docs/prd/01-foundations-and-ownership.md), and it
-is blocked on the committee registering the domain.
+**The deploy waits for the checks.** `deploy.yml` calls
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) — the same `npm run
+check`, called rather than copied — and every publish job depends on it, so a
+commit that fails the checks cannot reach the published site. That was not true
+until recently; see [issue #33](https://github.com/AlexikM/ugab-suisse/issues/33).
 
-Pull requests and pushes to `main` run
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml), which is `npm run
-check`. It is a separate workflow from the deploy, and — worth knowing before
-you push straight to `main` — **it does not currently gate publication**: the
-two start at the same time, so a commit that fails the checks is published
-anyway. A commit that does not build cannot publish, since the deploy builds
-too. Closing that gap belongs with the move to Infomaniak and is tracked in
-[issue #33](https://github.com/AlexikM/ugab-suisse/issues/33).
+**It cannot run yet.** No domain, hosting account or credential exists. The
+pipeline fails in a named preflight job that says which repository secret is
+missing, and it also refuses to publish while `astro.config.mjs` still builds
+the site for the `/ugab-suisse` subdirectory GitHub Pages served it from.
+Removing that prefix is the last item of
+[PRD 1](docs/prd/01-foundations-and-ownership.md) and is blocked on the domain.
+
+- [`docs/deploy-pipeline.md`](docs/deploy-pipeline.md) — how it works, and how to
+  roll back
+- [`docs/infrastructure-setup.md`](docs/infrastructure-setup.md) — the ordered
+  list of what a human has to do first, with the exact secret names
 
 ## Where the decisions live
 
