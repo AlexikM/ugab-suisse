@@ -29,6 +29,24 @@ test('an event the Comité has only half filled in still renders', () => {
   assert.doesNotMatch(text, /undefined|NaN/, 'a missing optional field leaked into the page');
 });
 
+test('the text an editor typed into the entry is on the page', () => {
+  const build = withEventFixtures();
+  const text = visibleText(readPage(build.outDir, '/evenements/2099-complet'));
+
+  // The Markdown body, as opposed to the fields around it. It reaches the page
+  // through the content boundary's `body()` (#47), and a page that quietly
+  // stopped rendering it would still pass every other assertion here.
+  //
+  // Either apostrophe: Markdown is rendered with smart quotes and the
+  // frontmatter fields are not, which is a difference in the Markdown pipeline
+  // and not something this test has an opinion about.
+  assert.match(
+    text,
+    /Description de l[’']événement/,
+    "the event page is not showing the entry's own text",
+  );
+});
+
 test('a visitor sees the programme and the prices before deciding to book', () => {
   const build = withEventFixtures();
   const text = visibleText(readPage(build.outDir, '/evenements/2099-complet'));

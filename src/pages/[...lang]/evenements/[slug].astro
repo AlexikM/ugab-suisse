@@ -1,53 +1,59 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import { getCollection, render } from 'astro:content';
 import BookingPanel from '../../../components/BookingPanel.astro';
 import TicketTypes from '../../../components/TicketTypes.astro';
 import { pageContext } from '../../../i18n/fallback';
 import { formatLocale, languagePaths, localeRoute, routes } from '../../../i18n/ui';
 import { type Lang, withBase } from '../../../i18n/utils';
 import Layout from '../../../layouts/Layout.astro';
+import { editorial } from '../../../lib/content';
 import { eventSchema } from '../../../seo';
 
-// An event has an address in every language, and the French one never moves —
-// ticket links get printed on invitations. The chrome follows the language of
-// the page; the event's own text is in whatever language it was written in,
-// until PRD 4 models one entry with a title per language.
+// One route per entry the site may show, in every language: an event has an
+// address in every language and the French one never moves, because ticket
+// links get printed on invitations. The chrome follows the language of the page;
+// the event's own text is in whatever language it was written in, until PRD 4
+// models one entry with a title per language.
+//
+// The id travels in the props rather than the entry itself, and the page asks
+// for it again below. Props are the routing table; an event is content, and
+// content is read through the one boundary, here as everywhere else.
 export async function getStaticPaths() {
-  const events = await getCollection('events', ({ data }) => !data.draft);
+  const events = await editorial.events();
   return languagePaths().flatMap((locale) =>
     events.map((event) => ({
       params: { ...locale.params, slug: event.id },
-      props: { ...locale.props, event },
+      props: { ...locale.props, eventId: event.id },
     })),
   );
 }
 
 interface Props {
   lang: Lang;
-  event: CollectionEntry<'events'>;
+  eventId: string;
 }
-const { lang, event } = Astro.props;
+const { lang, eventId } = Astro.props;
 const { served, t } = pageContext(lang, 'event');
 const link = (path: string) => withBase(localeRoute(path, lang));
 
-const { Content } = await render(event);
+const event = await editorial.event(eventId);
+if (!event) {
+  // Unreachable while the two calls agree, which is the point of saying so: the
+  // route above was built from this id moments ago, so an event that cannot be
+  // read back means the two disagree about what a visitor may see. Failing the
+  // build is the only safe answer — the alternative is publishing a page the
+  // site had decided to withhold.
+  throw new Error(
+    `The route /evenements/${eventId} was built, but no such event can be read back. ` +
+      'src/lib/content.ts decides both; see getStaticPaths above.',
+  );
+}
+
+const rendered = await event.body();
+const Body = rendered?.Content;
 
 const locale = formatLocale[served];
 const dateFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 const timeFmt = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
-
-const isPast = event.data.date.valueOf() < Date.now();
-
-// Whether the event is still taking bookings is decided in one place, by
-// <BookingPanel>, and asked twice here — once in the facts strip and once in
-// the section a ticketing widget will mount into. See that component for why.
-const ticketUrl = event.data.ticketUrl ?? null;
-
-const programme = (event.data.programme ?? '')
-  .split(/\n{2,}/)
-  .map((paragraph) => paragraph.trim())
-  .filter(Boolean);
 
 /**
  * A past event is an archive entry, and the brief asks for photographs rather
@@ -55,9 +61,8 @@ const programme = (event.data.programme ?? '')
  * gallery; when it has only ever supplied the cover, the cover is the archive.
  * One photograph is worth more than an empty section.
  */
-const gallery = event.data.gallery ?? [];
 const photographs =
-  gallery.length > 0 ? gallery : isPast && event.data.cover ? [event.data.cover] : [];
+  event.gallery.length > 0 ? event.gallery : event.isPast && event.cover ? [event.cover] : [];
 
 /**
  * A link, not a map.
@@ -70,22 +75,22 @@ const photographs =
  * visitor chose to go there.
  */
 const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(
-  event.data.address ?? event.data.location,
+  event.address ?? event.location,
 )}`;
 ---
 
 <Layout
   lang={lang}
   section="event"
-  title={event.data.title}
-  description={event.data.excerpt}
+  title={event.title}
+  description={event.excerpt}
   schema={[eventSchema(event, served, Astro.site)]}
 >
   <!-- HERO -->
   <section class="relative isolate bg-ink text-white overflow-hidden">
-    {event.data.cover && (
+    {event.cover && (
       <div class="absolute inset-0 -z-10">
-        <img src={withBase(event.data.cover)} alt="" class="h-full w-full object-cover opacity-50" />
+        <img src={withBase(event.cover)} alt="" class="h-full w-full object-cover opacity-50" />
       </div>
     )}
     <div class="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/70 to-navy-deep/40"></div>
@@ -93,17 +98,17 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     <div class="relative mx-auto max-w-page px-6 py-section-lg min-h-[55vh] flex flex-col justify-end">
       <div class="max-w-4xl">
         <div class="eyebrow mb-6 flex flex-wrap items-center gap-3 text-gold-light">
-          <span>{isPast ? t('event.past') : t('event.upcoming')}</span>
+          <span>{event.isPast ? t('event.past') : t('event.upcoming')}</span>
           <span class="h-px w-8 bg-gold-light" aria-hidden="true"></span>
-          <span>{dateFmt.format(event.data.date)}</span>
-          {event.data.soldOut && !isPast && (
+          <span>{dateFmt.format(event.start)}</span>
+          {event.soldOut && !event.isPast && (
             <span class="bg-white text-ink px-2 py-1 tracking-[0.18em]">{t('event.sold_out')}</span>
           )}
         </div>
         <h1 class="font-display text-display-xl mb-8">
-          {event.data.title}
+          {event.title}
         </h1>
-        <p class="text-lead max-w-3xl text-white">{event.data.excerpt}</p>
+        <p class="text-lead max-w-3xl text-white">{event.excerpt}</p>
       </div>
     </div>
   </section>
@@ -120,30 +125,30 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     <div class="mx-auto max-w-page px-6 py-8 md:py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
       <div>
         <div class="eyebrow mb-2 text-navy">{t('event.date')}</div>
-        <div class="text-lg font-medium leading-snug">{dateFmt.format(event.data.date)}</div>
+        <div class="text-lg font-medium leading-snug">{dateFmt.format(event.start)}</div>
         <div class="text-sm text-ink-muted mt-1">
-          {timeFmt.format(event.data.date)}{event.data.endDate ? ` — ${timeFmt.format(event.data.endDate)}` : ''}
+          {timeFmt.format(event.start)}{event.end ? ` — ${timeFmt.format(event.end)}` : ''}
         </div>
       </div>
 
       <div>
         <div class="eyebrow mb-2 text-navy">{t('event.venue')}</div>
-        <div class="text-lg font-medium leading-snug">{event.data.location}</div>
-        {event.data.address && <div class="text-sm text-ink-muted mt-1">{event.data.address}</div>}
+        <div class="text-lg font-medium leading-snug">{event.location}</div>
+        {event.address && <div class="text-sm text-ink-muted mt-1">{event.address}</div>}
       </div>
 
-      {event.data.pricing && (
+      {event.pricing && (
         <div>
           <div class="eyebrow mb-2 text-navy">{t('event.pricing')}</div>
-          <TicketTypes pricing={event.data.pricing} />
+          <TicketTypes pricing={event.pricing} />
         </div>
       )}
 
-      {event.data.capacity && (
+      {event.capacity && (
         <div>
           <div class="eyebrow mb-2 text-navy">{t('event.capacity')}</div>
           <div class="text-lg font-medium leading-snug">
-            {event.data.capacity} {t('event.places')}
+            {event.capacity} {t('event.places')}
           </div>
           <div class="text-sm text-ink-muted mt-1">{t('event.capacity_note')}</div>
         </div>
@@ -160,9 +165,9 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
           served={served}
           requested={lang}
           variant="summary"
-          isPast={isPast}
-          soldOut={event.data.soldOut}
-          ticketUrl={ticketUrl}
+          isPast={event.isPast}
+          soldOut={event.soldOut}
+          ticketUrl={event.ticketUrl}
         />
       </div>
     </div>
@@ -173,21 +178,21 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
       <div class="lg:col-span-8 lg:col-start-5">
         <div class="text-lg leading-[1.75] text-ink-soft max-w-none space-y-6 [&_strong]:text-ink [&_strong]:font-semibold">
-          <Content />
+          {Body && <Body />}
         </div>
       </div>
     </div>
   </section>
 
   <!-- PROGRAMME -->
-  {programme.length > 0 && (
+  {event.programme.length > 0 && (
     <section class="bg-paper-soft py-section">
       <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
         <div class="lg:col-span-4">
           <h2 class="text-display-sm">{t('event.programme')}</h2>
         </div>
         <div class="lg:col-span-8 space-y-5 text-lg leading-[1.75] text-ink-soft">
-          {programme.map((paragraph) => <p>{paragraph}</p>)}
+          {event.programme.map((paragraph) => <p>{paragraph}</p>)}
         </div>
       </div>
     </section>
@@ -197,17 +202,17 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     BILLETTERIE — the price list and the slot a provider's booking widget mounts
     into. Absent entirely on a past event: an archive page has nothing to book.
   -->
-  {!isPast && (
+  {!event.isPast && (
     <section class="py-section">
       <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
         <div class="lg:col-span-4">
           <h2 class="text-display-sm">{t('event.tickets_title')}</h2>
         </div>
         <div class="lg:col-span-8 space-y-8">
-          {event.data.pricing && (
+          {event.pricing && (
             <div>
               <div class="eyebrow mb-3 text-navy">{t('event.ticket_types')}</div>
-              <TicketTypes pricing={event.data.pricing} class="space-y-2" />
+              <TicketTypes pricing={event.pricing} class="space-y-2" />
               {/*
                 PRD 6: large amounts go by invoice and transfer, not by card —
                 a four-figure table costs the committee real money in card fees,
@@ -228,9 +233,9 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             </div>
           )}
 
-          {event.data.capacity && (
+          {event.capacity && (
             <p class="text-sm leading-relaxed text-ink-muted">
-              {event.data.capacity} {t('event.places')} — {t('event.capacity_note')}
+              {event.capacity} {t('event.places')} — {t('event.capacity_note')}
             </p>
           )}
 
@@ -238,9 +243,9 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             served={served}
             requested={lang}
             variant="full"
-            isPast={isPast}
-            soldOut={event.data.soldOut}
-            ticketUrl={ticketUrl}
+            isPast={event.isPast}
+            soldOut={event.soldOut}
+            ticketUrl={event.ticketUrl}
           />
         </div>
       </div>
@@ -255,7 +260,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           {photographs.map((src, index) => (
             <figure class="aspect-[4/3] overflow-hidden bg-paper-deep">
-              <img src={withBase(src)} alt={`${event.data.title} — ${index + 1}`} loading="lazy" class="h-full w-full object-cover" />
+              <img src={withBase(src)} alt={`${event.title} — ${index + 1}`} loading="lazy" class="h-full w-full object-cover" />
             </figure>
           ))}
         </div>
@@ -272,8 +277,8 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
       <div class="lg:col-span-8 space-y-8">
         <div>
           <div class="eyebrow mb-2 text-navy">{t('event.venue')}</div>
-          <div class="text-lg font-medium leading-snug">{event.data.location}</div>
-          {event.data.address && <div class="text-sm text-ink-muted mt-1">{event.data.address}</div>}
+          <div class="text-lg font-medium leading-snug">{event.location}</div>
+          {event.address && <div class="text-sm text-ink-muted mt-1">{event.address}</div>}
           <a
             href={directionsUrl}
             target="_blank"

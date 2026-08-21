@@ -25,6 +25,7 @@ import {
   initialsOf,
   type OfficerFields,
   paragraphs,
+  type RenderedBody,
 } from '../../src/lib/content';
 
 const AN_EVENING = new Date('2026-11-14T19:00:00+01:00');
@@ -285,5 +286,88 @@ describe('a biography in the language of the page', () => {
   it('is empty, not undefined, when there is none at all', () => {
     expect(biographyOf(undefined, 'fr')).toBe('');
     expect(biographyOf({ fr: '   ' }, 'fr')).toBe('');
+  });
+});
+
+/**
+ * The questions the four pages ask, now that they ask them here rather than
+ * calling the content API themselves (#47). Everything above is about the rules;
+ * this is about the shape of the conversation between a page and this module.
+ */
+describe('what the event page depends on', () => {
+  const evenings = [
+    { id: '2027-mars', data: minimal({ date: new Date('2027-03-01T19:00:00+01:00') }) },
+    { id: '2026-passe', data: minimal({ date: new Date('2026-02-02T19:00:00+01:00') }) },
+    { id: '2027-brouillon', data: minimal({ draft: true }) },
+  ];
+
+  it('resolves every event the routes were built from', async () => {
+    // `getStaticPaths` builds one route per entry `events()` returns, and the
+    // page then asks for that entry by name. The two answers have to agree:
+    // a route whose event resolves to null is a page that throws mid-build.
+    const content = contentWith(...evenings);
+
+    for (const { id } of await content.events({ now: BEFORE_IT })) {
+      expect(await content.event(id, { now: BEFORE_IT }), `no event resolved for ${id}`).not.toBe(
+        null,
+      );
+    }
+  });
+
+  it('refuses a draft by name too, so a route built from one cannot quietly render it', async () => {
+    const content = contentWith(...evenings);
+
+    expect(await content.event('2027-brouillon', { now: BEFORE_IT })).toBe(null);
+    expect(
+      (await content.event('2027-brouillon', { now: BEFORE_IT, includeDrafts: true }))?.isDraft,
+    ).toBe(true);
+  });
+
+  it('hands the page whatever the storage rendered, without inspecting it', async () => {
+    const rendered = { Content: () => null } as unknown as RenderedBody;
+    const content = createEditorialContent({
+      events: async () => [{ id: 'gala', data: minimal(), renderBody: async () => rendered }],
+      bureau: async () => [],
+    });
+
+    const event = await content.event('gala', { now: BEFORE_IT });
+    await expect(event?.body()).resolves.toBe(rendered);
+  });
+});
+
+describe('what the About page depends on', () => {
+  const officers = [
+    {
+      id: 'president',
+      data: {
+        role: 'president',
+        name: 'Jean Dupont',
+        bio: { fr: 'Président depuis 2019.', en: 'President since 2019.' },
+      } as OfficerFields,
+    },
+    {
+      id: 'tresorier',
+      data: {
+        role: 'tresorier',
+        name: 'Anna Sarkissian',
+        bio: { fr: 'Trésorière.' },
+      } as OfficerFields,
+    },
+  ];
+
+  it('reads each biography in the language the page is being served in', async () => {
+    const { officers: listed } = await createEditorialContent(sourceOf([], officers)).bureau('en');
+
+    expect(listed.map((officer) => officer.biography)).toEqual([
+      'President since 2019.',
+      // Not yet translated: the page shows the French rather than an empty card.
+      'Trésorière.',
+    ]);
+  });
+
+  it('is read in French when the page does not say which language it is in', async () => {
+    const { officers: listed } = await createEditorialContent(sourceOf([], officers)).bureau();
+
+    expect(listed[0].biography).toBe('Président depuis 2019.');
   });
 });

@@ -1,19 +1,12 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import archiveImage from '../../assets/images/archive.jpg';
 import { pageContext } from '../../i18n/fallback';
-import {
-  actionAreas,
-  bureauRoles,
-  defaultLang,
-  inLang,
-  languagePaths,
-  values,
-} from '../../i18n/ui';
+import { actionAreas, inLang, languagePaths, values } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
+import { editorial } from '../../lib/content';
 
 export const getStaticPaths = languagePaths;
 
@@ -23,28 +16,12 @@ interface Props {
 const { lang } = Astro.props;
 const { served, t } = pageContext(lang, 'about');
 
-// Hierarchical order, as the brief presents it — never alphabetical.
-const officers = (await getCollection('bureau')).sort(
-  (a, b) => bureauRoles.indexOf(a.data.role) - bureauRoles.indexOf(b.data.role),
-);
-
-/** The biography in this language, or the one the Comité has written so far. */
-const biography = (bio?: Partial<Record<Lang, string>>) =>
-  bio?.[served] ?? bio?.[defaultLang] ?? '';
-
-// The note about what is still missing disappears once nothing is.
-const bureauIncomplete =
-  officers.length < bureauRoles.length ||
-  officers.some((officer) => !officer.data.portrait || !biography(officer.data.bio));
-
-/** Stands in for a portrait the Comité has not supplied yet. */
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0] ?? '')
-    .join('')
-    .toUpperCase();
+// Hierarchical order, biographies in the language this page is served in, and
+// initials for the portraits the Comité has not sent: all decided in
+// src/lib/content.ts, so this page renders the answer rather than computing it.
+// `isComplete` is false while an office is unfilled or anything is missing, and
+// the note about what is still owed disappears on its own once nothing is.
+const { officers, isComplete } = await editorial.bureau(served);
 ---
 
 <Layout lang={lang} section="about" title={t('about.title')} description={t('about.intro')}>
@@ -140,32 +117,32 @@ const initials = (name: string) =>
           {officers.map((officer) => (
             <article>
               <div class="aspect-[3/4] mb-5 overflow-hidden bg-paper-soft">
-                {officer.data.portrait ? (
+                {officer.portrait ? (
                   <img
-                    src={withBase(officer.data.portrait)}
-                    alt={officer.data.name}
+                    src={withBase(officer.portrait)}
+                    alt={officer.name}
                     loading="lazy"
                     class="h-full w-full object-cover"
                   />
                 ) : (
                   <div class="h-full grid place-items-center font-display text-5xl text-navy/40" aria-hidden="true">
-                    {initials(officer.data.name)}
+                    {officer.initials}
                   </div>
                 )}
               </div>
               <div class="eyebrow mb-2 text-navy">
-                {t(`bureau.${officer.data.role}`)}
+                {t(`bureau.${officer.role}`)}
               </div>
-              <h3 class="text-xl mb-3 text-ink">{officer.data.name}</h3>
-              {biography(officer.data.bio) && (
-                <p class="text-sm text-ink-soft leading-relaxed">{biography(officer.data.bio)}</p>
+              <h3 class="text-xl mb-3 text-ink">{officer.name}</h3>
+              {officer.hasBiography && (
+                <p class="text-sm text-ink-soft leading-relaxed">{officer.biography}</p>
               )}
             </article>
           ))}
         </div>
       )}
 
-      {bureauIncomplete && (
+      {!isComplete && (
         <p class="mt-10 text-sm text-ink-muted leading-relaxed max-w-2xl">
           {t('about.bureau_pending')}
         </p>
