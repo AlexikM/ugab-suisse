@@ -48,9 +48,37 @@ jobs:
     name: Checks
     uses: ./.github/workflows/ci.yml
 
+  # Not configured yet is a known state, not a failure. Until a human opens the
+  # accounts and adds the secrets (docs/infrastructure-setup.md), publishing is
+  # skipped and this job says so in the run summary.
+  #
+  # Gated on the site URL *variable* rather than a secret because the `secrets`
+  # context is not available in a job-level `if`. A configured deployment always
+  # has one; a half-configured one still reaches preflight, which names exactly
+  # what is missing. So: absent configuration skips quietly and visibly,
+  # incomplete configuration fails loudly. A permanently red main teaches people
+  # to stop reading it, which is how the guard that stops an invented event
+  # reaching production gets ignored.
+  not-configured:
+    name: Deployment not configured
+    if: "${{ github.event_name == 'push' && ((github.ref == 'refs/heads/main' && vars.PROD_SITE_URL == '') || (github.ref == 'refs/heads/staging' && vars.STAGING_SITE_URL == '')) }}"
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say so in the summary
+        run: |
+          {
+            echo "### Checks passed. Nothing was published."
+            echo
+            echo "No hosting is configured for \`${{ github.ref_name }}\` yet, so the deploy step was skipped."
+            echo "The site builds and every check is green — it simply has nowhere to go."
+            echo
+            echo "See \`docs/infrastructure-setup.md\` for the ordered list of what a human must do first."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   production:
     name: Production
-    if: "${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production') }}"
+    if: "${{ vars.PROD_SITE_URL != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')) }}"
     needs: check
     uses: ./.github/workflows/publish.yml
     with:
@@ -67,7 +95,7 @@ jobs:
 
   staging:
     name: Staging
-    if: "${{ (github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging') }}"
+    if: "${{ vars.STAGING_SITE_URL != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/staging') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')) }}"
     needs: check
     uses: ./.github/workflows/publish.yml
     with:

@@ -177,7 +177,7 @@ names it; nothing is transferred and the published site is untouched.
 
 | Name | What goes in it |
 | --- | --- |
-| `PROD_SITE_URL` | The public address, e.g. `https://ugab-suisse.org` |
+| `PROD_SITE_URL` | The public address, e.g. `https://ugab-suisse.org`. **This variable is the on-switch.** While it is empty, production deploys are skipped and the run says so in its summary instead of failing; the moment it has a value, every push to `main` publishes. Set it last. |
 | `STAGING_SITE_URL` | The staging address |
 
 Variables rather than secrets on purpose: a masked URL turns every failure
