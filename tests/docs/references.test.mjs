@@ -14,8 +14,8 @@
  *   Relative markdown links between documents are resolved against the file
  *   they are written in.
  * - `.agents/`, the vendored CMS bundle and binary files are not ours to police.
- * - A path inside a code span still counts. `see docs/x.md` and `` `docs/x.md` ``
- *   are the same promise to a reader.
+ * - A path inside a code span still counts: written plainly or in backticks, it
+ *   is the same promise to a reader.
  *
  * It does not check anchors, external URLs or images — those fail visibly, and a
  * link checker that needs the network is a link checker that gets disabled.
@@ -93,6 +93,16 @@ test('every document this repository points at exists', () => {
   );
 });
 
+/**
+ * The extractor, on strings rather than on the repository — a regex that quietly
+ * stops matching is the failure mode of a check like this one.
+ *
+ * Every path written below points at a document that exists, and has to: this
+ * file is part of the corpus the check above reads, so an invented path here
+ * would be reported as a dangling reference by the very test that wrote it.
+ * That is the correct behaviour and not worth an exemption; it just means the
+ * fixtures are real.
+ */
 test('the check reads what it claims to read', () => {
   assert.deepEqual(
     referencesIn('src/lib/content.ts', ' * announcement. See docs/editorial/publication.md.'),
@@ -101,13 +111,16 @@ test('the check reads what it claims to read', () => {
   );
 
   assert.deepEqual(
-    referencesIn('docs/editorial/README.md', 'the guides are in [ici](../comite/x.md).'),
-    ['docs/comite/x.md'],
+    referencesIn(
+      'docs/editorial/README.md',
+      'the guides are in [ici](../comite/publier-un-evenement.md).',
+    ),
+    ['docs/comite/publier-un-evenement.md'],
     'a relative link between documents is not being resolved',
   );
 
   assert.deepEqual(
-    referencesIn('docs/a.md', 'see [the spec](https://example.invalid/x.md)'),
+    referencesIn('docs/README.md', 'see [the spec](https://example.invalid/elsewhere.md)'),
     [],
     'an external URL is being treated as a file in this repository',
   );
