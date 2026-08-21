@@ -1,6 +1,6 @@
 ---
 import { pageContext } from '../../i18n/fallback';
-import { contactEmail, languagePaths, legalRoutes } from '../../i18n/ui';
+import { contactEmail, languagePaths, legalRoutes, localeRoute } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
 
@@ -11,6 +11,7 @@ interface Props {
 }
 const { lang } = Astro.props;
 const { t } = pageContext(lang, 'contact');
+const link = (path: string) => withBase(localeRoute(path, lang));
 ---
 
 <Layout lang={lang} section="contact" title={t('nav.contact')} description={t('contact.lead')}>
@@ -90,9 +91,26 @@ const { t } = pageContext(lang, 'contact');
         >
           {contactEmail}
         </a>
-        <p class="mt-6 text-sm leading-relaxed text-ink-muted">
+        <!--
+          What happens to the message, beside the thing that sends it.
+
+          The privacy policy has said this since PRD 7 and nothing on this page
+          pointed at it except a bare link with no sentence in front of it.
+          Telling somebody afterwards what became of what they wrote is not
+          telling them; this is the moment they can still decide.
+
+          It moves with the send button. When PRD 1 replaces the mailto with the
+          Infomaniak form, this block goes under the submit control and the
+          wording stands — the mailbox, the host and the retention are the same
+          either way.
+        -->
+        <p class="mt-6 max-w-xl text-sm leading-relaxed text-ink-muted">
+          {t('contact.before_sending')}
+          {' '}
+          {t('contact.before_sending_more')}
+          {' '}
           <a
-            href={withBase(legalRoutes.privacy)}
+            href={link(legalRoutes.privacy)}
             class="text-navy underline underline-offset-4 hover:text-red"
           >
             {t('footer.privacy')}
