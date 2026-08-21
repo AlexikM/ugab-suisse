@@ -1,0 +1,121 @@
+---
+/**
+ * The two choices the brief asks a donor to make: how much, and how often.
+ *
+ * The amounts and their stated impact are the committee's own approved table —
+ * CHF 50, 100, 250, 500 and a free amount — and they are shown here as
+ * something you can actually pick rather than as a row in a price list. That is
+ * the point of the brief's "montants suggérés": each one is an argument, and an
+ * argument you can act on reads differently from an argument you can only read.
+ *
+ * **Nothing here processes a donation, and the page says so out loud.** There is
+ * no `<form>`, no action, no submit control and nowhere for a value to go: the
+ * payment account does not exist yet (ADR-0001, PRD 5) and inventing a control
+ * that appeared to take money would be far worse than showing none. What the
+ * choice does do today is real, if small — it fills in the amount on the
+ * QR-bill further down the page, which is a route that works right now.
+ *
+ * When the provider is connected, this is the configuration its hosted form is
+ * set up with, and `data-donation-amount` / `data-donation-frequency` are the
+ * hooks that pre-select it. The values are numbers rather than the display
+ * strings for exactly that reason.
+ */
+
+import { donationFrequencies, inLang, suggestedAmounts } from '../i18n/ui';
+import { type Lang, useTranslations } from '../i18n/utils';
+
+interface Props {
+  /** The language the page is written in. */
+  served: Lang;
+}
+
+const { served } = Astro.props;
+const t = useTranslations(served);
+
+const amounts = inLang(suggestedAmounts, served);
+
+/** A stable id per option: two fieldsets on one page must not collide. */
+const amountId = (index: number) => `donation-amount-${index}`;
+const frequencyId = (id: string) => `donation-frequency-${id}`;
+
+const card =
+  'block h-full cursor-pointer border border-line-strong bg-paper p-5 transition ' +
+  'hover:border-navy peer-checked:border-navy peer-checked:bg-white ' +
+  'peer-focus-visible:outline peer-focus-visible:outline-[3px] ' +
+  'peer-focus-visible:outline-red peer-focus-visible:outline-offset-2';
+---
+
+<div data-donation-choice class="space-y-10">
+  <!-- FRÉQUENCE — don unique ou mensuel -->
+  <fieldset>
+    <legend class="eyebrow mb-4 text-navy">{t('donate.frequency_title')}</legend>
+    <div class="flex flex-wrap gap-4">
+      {donationFrequencies.map((frequency) => (
+        <div class="relative">
+          <input
+            type="radio"
+            id={frequencyId(frequency.id)}
+            name="donation-frequency"
+            value={frequency.id}
+            data-donation-frequency={frequency.id}
+            checked={frequency.id === 'once'}
+            class="peer sr-only"
+          />
+          <label
+            for={frequencyId(frequency.id)}
+            class:list={[card, 'font-display text-lg font-medium']}
+          >
+            {t(frequency.label)}
+          </label>
+        </div>
+      ))}
+    </div>
+  </fieldset>
+
+  <!-- MONTANTS SUGGÉRÉS — each with the impact the committee wrote for it -->
+  <fieldset>
+    <legend class="eyebrow mb-4 text-navy">{t('donate.amounts_title')}</legend>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {amounts.map((row, index) => (
+        <div class="relative">
+          <input
+            type="radio"
+            id={amountId(index)}
+            name="donation-amount"
+            value={row.value === null ? 'free' : String(row.value)}
+            data-donation-amount={row.value === null ? 'free' : String(row.value)}
+            class="peer sr-only"
+          />
+          <label for={amountId(index)} class={card}>
+            <span class="block font-display text-2xl font-semibold text-ink">{row.amount}</span>
+            <span class="mt-2 block text-sm leading-relaxed text-ink-soft">{row.impact}</span>
+          </label>
+        </div>
+      ))}
+
+      <!--
+        The free amount, as a field rather than a card: story 3 in the PRD is a
+        donor who does not want to be boxed in by the suggestions.
+      -->
+      <div class="border border-line-strong bg-paper p-5">
+        <label for="donation-amount-free" class="block font-display text-lg font-medium text-ink">
+          {t('donate.amount_free')}
+        </label>
+        <div class="mt-3 flex items-center gap-2">
+          <span aria-hidden="true" class="font-display text-lg text-ink-muted">CHF</span>
+          <input
+            type="number"
+            id="donation-amount-free"
+            name="donation-amount-free"
+            data-donation-amount-free
+            min="1"
+            step="1"
+            inputmode="numeric"
+            class="w-full border border-line-strong bg-white px-3 py-2 text-lg text-ink"
+          />
+        </div>
+        <p class="mt-2 text-sm text-ink-muted">{t('donate.amount_free_hint')}</p>
+      </div>
+    </div>
+  </fieldset>
+</div>

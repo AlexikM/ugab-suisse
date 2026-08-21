@@ -1,0 +1,207 @@
+---
+/**
+ * The Swiss QR-bill, as a real element on the donation page.
+ *
+ * Why it is here at all: a meaningful share of Swiss giving — and almost all of
+ * the large gifts — happens by bank transfer rather than by card. A transfer
+ * costs the committee nothing in fees, and it reaches the donor least willing to
+ * type card details into a website. PRD 5 puts it *alongside* the provider's
+ * form, never instead of it.
+ *
+ * Why the field names are what they are: they are not chosen. "Compte / Payable
+ * à", "Payable par (nom/adresse)", "Point de dépôt" and the rest are fixed by
+ * the Swiss Payment Standards, and a donor who prints this and hands it to their
+ * bank expects to read exactly those words. They are translated in `ui.ts`
+ * because the standard itself is published in four languages, not because
+ * anybody was free to reword them.
+ *
+ * **What is deliberately missing: the IBAN.** The committee has not supplied the
+ * association's account (#9), so `iban` is `null` and the account line renders a
+ * visible "à fournir par le Comité" placeholder. Inventing one is the single
+ * worst thing this page could do — a plausible-looking wrong IBAN sends a
+ * stranger's money to a stranger, and nobody re-checks a field that looks
+ * filled in. Same reasoning as `committee.postalAddress` in `src/i18n/legal.ts`.
+ *
+ * **And the code itself.** A QR-bill's code encodes a payload whose first
+ * mandatory field is the creditor IBAN, so there is nothing to encode yet and
+ * nothing here generates one. `qrImage` is the seam: supply a generated image
+ * and the panel switches from `pending` to `ready`. See the pull request for
+ * what that step involves.
+ */
+
+import { type Lang, useTranslations } from '../i18n/utils';
+
+interface Props {
+  /** The language the surrounding page is written in. */
+  served: Lang;
+  /** Who is paid — the association, in its approved legal wording. */
+  creditor: string;
+  /** The account. `null` until the committee supplies it (#9). */
+  iban: string | null;
+  /** The institution holding it, printed under the account. `null` likewise. */
+  bank?: string | null;
+  currency: string;
+  /** What the donor writes as the payment reference. */
+  reference: string;
+  /**
+   * The amount, already formatted. `null` leaves the field open, which is the
+   * normal and correct state for a donation slip: the donor decides.
+   */
+  amount?: string | null;
+  /**
+   * The generated QR code, once there is an account to encode. `null` renders
+   * the pending state rather than an empty square.
+   */
+  qrImage?: string | null;
+}
+
+const {
+  served,
+  creditor,
+  iban,
+  bank = null,
+  currency,
+  reference,
+  amount = null,
+  qrImage = null,
+} = Astro.props;
+
+const t = useTranslations(served);
+
+/** `ready` only when there is a code to show. Nothing here fakes one. */
+const state = qrImage ? 'ready' : 'pending';
+
+const pendingAccount = t('donate.iban_pending');
+---
+
+<figure data-qr-bill data-qr-bill-state={state} class="border border-line-strong bg-white">
+  <figcaption class="border-b border-line-strong px-5 py-3">
+    <span class="eyebrow text-navy">{t('donate.qr_title')}</span>
+  </figcaption>
+
+  <div class="grid grid-cols-1 md:grid-cols-[2fr_3fr]">
+    <!--
+      RÉCÉPISSÉ — the stub the donor keeps. Narrower than the payment part, and
+      separated from it by the perforation the standard puts between the two.
+    -->
+    <section class="border-b border-dashed border-line-strong p-5 md:border-r md:border-b-0">
+      <h3 class="mb-4 font-display text-base font-semibold text-ink">{t('donate.qr_receipt')}</h3>
+
+      <div class="mb-4">
+        <div class="text-xs font-semibold text-ink">{t('donate.qr_account')}</div>
+        {iban ? (
+          <div data-qr-field="account" class="mt-1 font-mono text-sm break-all text-ink">{iban}</div>
+        ) : (
+          <div data-qr-field="account" data-qr-pending class="mt-1 text-sm text-ink-muted italic">
+            {pendingAccount}
+          </div>
+        )}
+        <div class="mt-1 text-sm text-ink">{creditor}</div>
+        {bank && <div class="text-sm text-ink-muted">{bank}</div>}
+      </div>
+
+      <div class="mb-4">
+        <div class="text-xs font-semibold text-ink">{t('donate.qr_payable_by')}</div>
+        <!-- Left blank on purpose: the donor fills this in, on paper or in their app. -->
+        <div class="mt-1 h-12 border border-line" aria-hidden="true"></div>
+      </div>
+
+      <div class="flex gap-8">
+        <div>
+          <div class="text-xs font-semibold text-ink">{t('donate.qr_currency')}</div>
+          <div class="mt-1 text-sm text-ink">{currency}</div>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-ink">{t('donate.qr_amount')}</div>
+          <div data-qr-field="amount" class="mt-1 text-sm text-ink">{amount ?? '—'}</div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-right text-xs font-semibold text-ink">
+        {t('donate.qr_acceptance')}
+      </div>
+    </section>
+
+    <!-- SECTION PAIEMENT — the half that goes to the bank. -->
+    <section class="p-5">
+      <h3 class="mb-4 font-display text-base font-semibold text-ink">
+        {t('donate.qr_payment_part')}
+      </h3>
+
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-[auto_1fr]">
+        <div>
+          {qrImage ? (
+            <img src={qrImage} alt="" width="176" height="176" class="block h-44 w-44" />
+          ) : (
+            <div
+              data-qr-code-pending
+              class="flex h-44 w-44 flex-col items-center justify-center border-2 border-dashed border-line-strong p-3 text-center"
+            >
+              <!--
+                The Swiss cross that sits at the centre of every QR-bill code,
+                drawn here rather than fetched. It is the one part of the code
+                that is fixed and not derived from the account, so it can stand
+                in for the code without asserting anything false about it.
+              -->
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                aria-hidden="true"
+                focusable="false"
+                class="mb-3 shrink-0"
+              >
+                <rect width="28" height="28" class="fill-ink" />
+                <rect x="11.5" y="6" width="5" height="16" class="fill-white" />
+                <rect x="6" y="11.5" width="16" height="5" class="fill-white" />
+              </svg>
+              <span class="text-xs leading-snug text-ink-muted">{t('donate.qr_pending')}</span>
+            </div>
+          )}
+
+          <div class="mt-4 flex gap-8">
+            <div>
+              <div class="text-xs font-semibold text-ink">{t('donate.qr_currency')}</div>
+              <div class="mt-1 text-sm text-ink">{currency}</div>
+            </div>
+            <div>
+              <div class="text-xs font-semibold text-ink">{t('donate.qr_amount')}</div>
+              <div data-qr-field="amount" class="mt-1 text-sm text-ink">{amount ?? '—'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-ink">{t('donate.qr_account')}</div>
+            {iban ? (
+              <div data-qr-field="account" class="mt-1 font-mono text-sm break-all text-ink">
+                {iban}
+              </div>
+            ) : (
+              <div
+                data-qr-field="account"
+                data-qr-pending
+                class="mt-1 text-sm text-ink-muted italic"
+              >
+                {pendingAccount}
+              </div>
+            )}
+            <div class="mt-1 text-sm text-ink">{creditor}</div>
+            {bank && <div class="text-sm text-ink-muted">{bank}</div>}
+          </div>
+
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-ink">{t('donate.qr_reference')}</div>
+            <div data-qr-field="reference" class="mt-1 text-sm text-ink">{reference}</div>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-ink">{t('donate.qr_payable_by')}</div>
+            <div class="mt-1 h-12 border border-line" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</figure>

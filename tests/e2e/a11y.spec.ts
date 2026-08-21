@@ -16,6 +16,11 @@ const PAGES = [
   { route: './a-propos/', name: 'about' },
   { route: './evenements/', name: 'events' },
   { route: './don/', name: 'donate and sponsorship' },
+  // The two addresses a payment or ticketing provider returns a visitor to.
+  // Someone arrives here having just parted with money, or having just been
+  // told they have a place: it is the wrong moment to meet a broken page.
+  { route: './don/merci/', name: 'donation thank-you' },
+  { route: './evenements/merci/', name: 'booking confirmation' },
   { route: './contact/', name: 'contact' },
   { route: './confidentialite/', name: 'privacy policy' },
   { route: './accessibilite/', name: 'accessibility statement' },
