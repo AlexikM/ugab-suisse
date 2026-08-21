@@ -39,10 +39,10 @@ de passe.
 Une association répartit naturellement les responsabilités jusqu'à ce que plus
 personne ne les porte. Deux rôles doivent porter un nom.
 
-**Le référent du site.** Une seule personne, désignée par le Comité. Elle n'a
-rien à savoir de technique. Elle est celle à qui l'on écrit quand quelque chose
-ne va pas, celle qui reçoit les avis de renouvellement, celle qui relit cette
-page une fois par an. C'est la différence entre un site qui reste à jour et un
+**Le référent du site.** Une seule personne, désignée par le Comité. Aucune
+compétence technique n'est requise. C'est la personne à qui l'on écrit quand
+quelque chose ne va pas, celle qui reçoit les avis de renouvellement, celle qui
+relit cette page une fois par an. C'est la différence entre un site qui reste à jour et un
 site exact à l'année de sa mise en ligne.
 
 - Référent du site : *à fournir par le Comité*
@@ -51,8 +51,8 @@ site exact à l'année de sa mise en ligne.
 **Le détenteur des accès de secours**, en principe le trésorier ou la
 trésorière. Il ou elle détient les codes de récupération de la double
 authentification de chaque compte, dans le gestionnaire de mots de passe. Être
-deux à pouvoir entrer est ce qui fait qu'une perte de téléphone n'enferme pas
-l'association dehors.
+deux à pouvoir entrer est ce qui fait qu'une perte de téléphone ne laisse pas
+l'association à la porte de ses propres comptes.
 
 - Détenteur des accès de secours : *à fournir par le Comité*
 

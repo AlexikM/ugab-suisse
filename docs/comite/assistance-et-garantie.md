@@ -23,8 +23,8 @@ ensuite, pour que ce ne soit ni une surprise ni une gêne.
 
 Ce n'est pas une question de taille ni de difficulté. Une anomalie peut demander
 deux jours de travail ; une nouvelle demande peut prendre dix minutes. C'est une
-question de nature : est-ce que le site s'écarte de ce qui était prévu, ou est-ce
-que ce qui était prévu a changé d'avis ?
+question de nature : est-ce que le site s'écarte de ce qui était prévu, ou
+est-ce que ce qui était prévu a changé ?
 
 | Anomalie — couverte pendant la garantie | Nouvelle demande — hors garantie |
 | --- | --- |
@@ -96,7 +96,7 @@ le Comité relit encore ses textes.
 C'est la partie que le cahier des charges laisse en blanc, et le silence a
 toujours la même conséquence : le webmaster corrige encore des pages
 d'événements gratuitement trois ans plus tard, avec une lassitude croissante,
-et le Comité n'a aucune idée qu'il pèse. Autant décider maintenant, à froid.
+et le Comité n'a aucune idée que cela pèse. Autant décider maintenant, à froid.
 
 Trois possibilités. Aucune n'est meilleure que les autres ; elles répondent à des
 situations différentes.
@@ -127,8 +127,8 @@ n'est construit sur mesure ; chaque prestataire s'exporte. Voir
 ## Ce qui incombe au Comité, en permanence
 
 Ces obligations ne sont couvertes par aucune garantie, à aucun moment, parce
-qu'elles n'appartiennent qu'au Comité. Les négliger est un choix ; l'ignorer est
-un accident.
+qu'elles n'appartiennent qu'au Comité. Elles sont écrites ici pour que les
+négliger soit un choix, et non un accident.
 
 **Les renouvellements.** Le nom de domaine, l'hébergement et les comptes payants
 se renouvellent. Un domaine expiré fait disparaître le site *et* les adresses
