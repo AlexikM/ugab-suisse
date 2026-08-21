@@ -82,10 +82,10 @@ As each is fixed, delete it from **both** `preLaunchExceptions` and
 When the lists empty, the pre-launch section disappears from the page on its own
 and the `todo` marker comes off the audit's last test.
 
-- [ ] **Webmaster** — `fonts.googleapis.com` and `fonts.gstatic.com`: every page sends the visitor's IP address to Google in the United States before rendering. Self-host the three typefaces and remove the stylesheet link and both preconnect hints.
-- [ ] **Webmaster** — `www.openstreetmap.org`: the venue map iframe loads with the event page, sending the visitor's IP address to the OpenStreetMap Foundation before they showed any interest in the map. Use a static image plus a link, or load on click. The address is already written out beside it.
-- [ ] **Webmaster** — `api.web3forms.com`: the contact form posts the sender's name, email and message to a third-party form service, which ADR-0001 rules out precisely so message content stays in Switzerland. Its access key is also still the literal placeholder, so the form does not work. Replace with the Infomaniak mail handler and Turnstile.
-- [ ] **Webmaster** — `unpkg.com`: the `/admin` CMS shell loads its whole application from a public CDN at an open version range. No visitor data, but the back-office depends on a third party staying up and serving unreviewed code. Pin it and serve it from the site's own origin.
+- [x] **Webmaster** — `fonts.googleapis.com` / `fonts.gstatic.com`: **done.** The typefaces are self-hosted as woff2 subsets in `public/fonts/`; the stylesheet link and both preconnect hints are gone from the layout.
+- [x] **Webmaster** — `www.openstreetmap.org`: **done.** The venue map no longer loads with the page; the address is written out with an explicit link the visitor chooses to follow.
+- [x] **Webmaster** — `api.web3forms.com`: **done.** The third-party form post is removed. The contact route now gives the committee's address and a mailto, with a stated pending state, until PRD 1 provides the Infomaniak handler and Turnstile.
+- [ ] **Webmaster** — `unpkg.com`: the `/admin` CMS shell loads its whole application from a public CDN at an open version range. No visitor data, but the back-office depends on a third party staying up and serving unreviewed code. Pin it and serve it from the site's own origin. **Owned by PRD 4 (#4); the last one left.**
 
 *Automated check: `no third party remains that the committee never agreed to` — `third-party-requests.test.mjs`, marked `todo`.*
 

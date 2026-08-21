@@ -1,6 +1,7 @@
 ---
-import { contactEmail, languagePaths } from '../../i18n/ui';
-import { type Lang, useTranslations } from '../../i18n/utils';
+import { pageContext } from '../../i18n/fallback';
+import { contactEmail, languagePaths, legalRoutes } from '../../i18n/ui';
+import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
 
 export const getStaticPaths = languagePaths;
@@ -9,91 +10,95 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const { t } = pageContext(lang, 'contact');
 ---
 
-<Layout lang={lang} title={t('nav.contact')} description={t('contact.lead')}>
-  <section class="bg-[var(--color-ink)] text-white">
-    <div class="mx-auto max-w-7xl px-6 py-28 md:py-36">
+<Layout lang={lang} section="contact" title={t('nav.contact')} description={t('contact.lead')}>
+  <section class="bg-ink text-white">
+    <div class="mx-auto max-w-page px-6 py-section-lg">
       <div class="max-w-3xl">
-        <h1 class="font-display uppercase tracking-tight text-4xl md:text-6xl lg:text-7xl leading-[1.05] mb-8">{t('contact.title')}</h1>
-        <p class="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl">{t('contact.lead')}</p>
+        <h1 class="font-display text-display-xl mb-8">{t('contact.title')}</h1>
+        <p class="text-lead max-w-2xl text-white">{t('contact.lead')}</p>
       </div>
     </div>
   </section>
 
-  <section class="py-20 md:py-24">
+  <section class="py-section">
     <div class="mx-auto max-w-3xl px-6">
       <!--
-        The confirmation wording the Comité approved. It is revealed when the
-        form handler sends the visitor back with ?message=envoye. The handler
-        itself — endpoint, anti-spam, where the message goes — is PRD 7's work,
-        and PRD 7 may pick a different parameter; this is only the receiving
-        half. Until then the form is not wired to anything, and the page says so.
+        The confirmation wording the Comité approved. It is revealed when a form
+        handler sends the visitor back with ?message=envoye. The handler itself
+        — endpoint, anti-spam, where the message goes — is PRD 1's work on
+        Infomaniak; this is only the receiving half.
       -->
       <p
         id="contact-confirmation"
         role="status"
         hidden
-        class="mb-10 border-l-4 border-[var(--color-brand)] bg-[var(--color-paper-soft)] px-6 py-5 text-lg text-[var(--color-ink)]"
+        class="mb-10 border-l-4 border-navy bg-paper-soft px-6 py-5 text-lg text-ink"
       >
         {t('contact.confirmation')}
       </p>
 
-      <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('contact.form_title')}</h2>
+      <h2 class="text-display-sm mb-10">{t('contact.details_title')}</h2>
 
-      <form method="POST" class="space-y-8">
-        <div class="grid md:grid-cols-2 gap-8">
-          <label class="block">
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_name')}</span>
-            <input type="text" name="name" required autocomplete="name" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
-          </label>
-          <label class="block">
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_email')}</span>
-            <input type="email" name="email" required autocomplete="email" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
-          </label>
-        </div>
-
-        <label class="block">
-          <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_topic')}</span>
-          <input type="text" name="topic" class="w-full border-b border-[var(--color-ink)]/20 bg-transparent py-3 text-base focus:outline-none focus:border-[var(--color-brand)] transition" />
-        </label>
-
-        <label class="block">
-          <span class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 block font-display">{t('contact.form_message')}</span>
-          <textarea name="message" rows="6" required class="w-full border border-[var(--color-line)] bg-[var(--color-paper-soft)] p-4 text-base focus:outline-none focus:border-[var(--color-brand)] transition"></textarea>
-        </label>
-
-        <button type="submit" class="inline-flex items-center bg-[var(--color-brand)] hover:bg-[var(--color-brand-deep)] px-8 py-4 text-sm font-display uppercase tracking-[0.18em] text-white transition">
-          {t('contact.form_submit')} →
-        </button>
-
-        <p class="text-sm text-[var(--color-ink-muted)] leading-relaxed">
-          {t('contact.form_pending')}{' '}
-          <a href={`mailto:${contactEmail}`} class="text-[var(--color-brand)] border-b border-[var(--color-brand)] pb-0.5">{contactEmail}</a>
-        </p>
-      </form>
-    </div>
-  </section>
-
-  <section class="bg-[var(--color-paper-soft)] py-20 md:py-24">
-    <div class="mx-auto max-w-3xl px-6">
-      <h2 class="text-3xl md:text-4xl leading-tight mb-10">{t('contact.details_title')}</h2>
       <dl class="space-y-6">
         <div>
-          <dt class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('site.title')}</dt>
+          <dt class="eyebrow mb-2 text-navy">{t('site.title')}</dt>
           <dd class="text-lg">{t('contact.organisation')}</dd>
         </div>
         <div>
-          <dt class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-brand)] mb-2 font-display">{t('contact.form_email')}</dt>
+          <dt class="eyebrow mb-2 text-navy">{t('contact.form_email')}</dt>
           <dd class="text-lg">
-            <a href={`mailto:${contactEmail}`} class="text-[var(--color-ink)] hover:text-[var(--color-brand)] border-b border-[var(--color-line)] hover:border-[var(--color-brand)] pb-0.5 transition">
+            <a
+              href={`mailto:${contactEmail}`}
+              class="border-b border-line-strong pb-0.5 text-ink transition hover:border-red hover:text-red"
+            >
               {contactEmail}
             </a>
           </dd>
         </div>
       </dl>
-      <p class="mt-8 text-sm text-[var(--color-ink-muted)] leading-relaxed">{t('contact.pending')}</p>
+
+      <p class="mt-8 max-w-2xl text-sm leading-relaxed text-ink-muted">{t('contact.pending')}</p>
+    </div>
+  </section>
+
+  <!--
+    There is no form on this page, on purpose.
+
+    The prototype's form posted the sender's name, address and message to
+    api.web3forms.com — a third-party form service that ADR-0001 rules out so
+    that message content stays in Switzerland — with `access_key` still set to
+    the literal string YOUR_ACCESS_KEY, so nothing was ever delivered. A form
+    that quietly discards what someone took the trouble to write is worse than
+    no form: the visitor believes they have been in touch, and waits.
+
+    The honest interim is an address that reaches a person and a plain statement
+    that the form comes later. PRD 1 replaces this block with the Infomaniak
+    mail handler and Cloudflare Turnstile; when it does, the note about what
+    happens to a message belongs beside the send button rather than here.
+  -->
+  <section class="bg-paper-soft py-section">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-display-sm mb-6">{t('contact.form_title')}</h2>
+      <div class="border-l-4 border-gold bg-paper p-8">
+        <p class="text-lg leading-relaxed text-ink-soft">{t('contact.form_pending')}</p>
+        <a
+          href={`mailto:${contactEmail}`}
+          class="eyebrow mt-6 inline-flex items-center bg-red px-8 py-4 text-white transition hover:bg-red-deep"
+        >
+          {contactEmail}
+        </a>
+        <p class="mt-6 text-sm leading-relaxed text-ink-muted">
+          <a
+            href={withBase(legalRoutes.privacy)}
+            class="text-navy underline underline-offset-4 hover:text-red"
+          >
+            {t('footer.privacy')}
+          </a>
+        </p>
+      </div>
     </div>
   </section>
 </Layout>

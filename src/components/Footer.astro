@@ -11,29 +11,39 @@ import {
 import { type Lang, useTranslations, withBase } from '../i18n/utils';
 
 interface Props {
-  lang: Lang;
+  /** The language the chrome is written in. */
+  served: Lang;
+  /** The language the visitor asked for — what the switcher marks as current. */
+  requested: Lang;
 }
-const { lang } = Astro.props;
-const t = useTranslations(lang);
+const { served, requested } = Astro.props;
+const t = useTranslations(served);
 const year = new Date().getFullYear();
 
-const link = (path: string, target: Lang = lang) => withBase(localeRoute(path, target));
+const link = (path: string, target: Lang = requested) => withBase(localeRoute(path, target));
 
 // The same page in another language — see the header. The legal pages exist in
-// French only until PRD 7 translates them.
+// French only until the Comité supplies translations.
 const here = routeFromPath(Astro.url.pathname, withBase('/'));
 const currentRoute = (Object.values(legalRoutes) as string[]).includes(here) ? routes.home : here;
 
 const nav = primaryNav
   .filter((item) => item.path !== routes.home)
   .map((item) => ({ href: link(item.path), label: t(item.key) }));
+
+const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
+  code,
+  label: languages[code],
+  href: link(currentRoute, code),
+  current: code === requested,
+}));
 ---
 
-<footer class="bg-[var(--color-ink)] text-[var(--color-paper)]">
-  <div class="mx-auto max-w-7xl px-6 py-16 grid gap-12 md:grid-cols-4">
+<footer class="on-dark bg-ink text-paper">
+  <div class="mx-auto grid max-w-page gap-12 px-6 py-16 md:grid-cols-4">
     <div class="md:col-span-2">
-      <div class="font-display text-2xl mb-3">{t('site.title')}</div>
-      <p class="text-sm text-[var(--color-paper)]/70 max-w-md leading-relaxed mb-6">
+      <p class="mb-3 font-display text-2xl">{t('site.title')}</p>
+      <p class="mb-6 max-w-md text-sm leading-relaxed text-paper-deep">
         {t('footer.description')}
       </p>
       <!--
@@ -42,46 +52,58 @@ const nav = primaryNav
       -->
     </div>
 
-    <div>
-      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">{t('nav.label')}</div>
+    <nav aria-label={t('nav.label')}>
+      <h2 class="eyebrow mb-4 text-gold-light">{t('nav.label')}</h2>
       <ul class="space-y-2 text-sm">
         {nav.map((item) => (
-          <li><a href={item.href} class="hover:text-[var(--color-gold)] transition">{item.label}</a></li>
+          <li><a href={item.href} class="transition hover:text-gold-light">{item.label}</a></li>
         ))}
       </ul>
-    </div>
+    </nav>
 
     <div>
-      <div class="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-4">{t('nav.contact')}</div>
-      <ul class="space-y-2 text-sm text-[var(--color-paper)]/70">
+      <h2 class="eyebrow mb-4 text-gold-light">{t('nav.contact')}</h2>
+      <ul class="space-y-2 text-sm text-paper-deep">
         <li>{t('contact.organisation')}</li>
-        <li><a href={`mailto:${contactEmail}`} class="hover:text-[var(--color-gold)] transition">{contactEmail}</a></li>
+        <li>
+          <a href={`mailto:${contactEmail}`} class="transition hover:text-gold-light">
+            {contactEmail}
+          </a>
+        </li>
       </ul>
     </div>
   </div>
 
-  <div class="border-t border-white/10">
-    <div class="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--color-paper)]/50">
-      <div>© {year} {t('footer.copyright')}</div>
+  <div class="border-t border-white/20">
+    <div class="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-paper-deep md:flex-row">
+      <p>© {year} {t('footer.copyright')}</p>
       <!--
         The legal pages exist in French only for now, so they are linked without
-        a language prefix rather than at an address that does not exist. Their
-        translation belongs to PRD 7.
+        a language prefix rather than at an address that does not exist.
       -->
       <div class="flex flex-wrap items-center gap-6">
-        <a href={withBase(legalRoutes.legal)} class="hover:text-[var(--color-paper)]">{t('footer.legal')}</a>
-        <a href={withBase(legalRoutes.privacy)} class="hover:text-[var(--color-paper)]">{t('footer.privacy')}</a>
-        <a href={withBase(legalRoutes.accessibility)} class="hover:text-[var(--color-paper)]">{t('footer.accessibility')}</a>
-        <div class="flex items-center gap-3">
-          {Object.entries(languages).map(([code, label]) => (
+        <a href={withBase(legalRoutes.legal)} class="hover:text-white">{t('footer.legal')}</a>
+        <a href={withBase(legalRoutes.privacy)} class="hover:text-white">{t('footer.privacy')}</a>
+        <a href={withBase(legalRoutes.accessibility)} class="hover:text-white">
+          {t('footer.accessibility')}
+        </a>
+        <nav class="flex items-center gap-3" aria-label={t('fallback.label')}>
+          {languageLinks.map((item) => (
             <a
-              href={link(currentRoute, code as Lang)}
-              hreflang={code}
-              class:list={['uppercase tracking-wider', lang === code ? 'text-[var(--color-paper)]' : 'hover:text-[var(--color-paper)]']}
-              aria-label={label}
-            >{code}</a>
+              href={item.href}
+              hreflang={item.code}
+              lang={item.code}
+              aria-current={item.current ? 'true' : undefined}
+              class:list={[
+                'tracking-caps uppercase',
+                item.current ? 'font-semibold text-white underline underline-offset-4' : 'hover:text-white',
+              ]}
+            >
+              <span aria-hidden="true">{item.code}</span>
+              <span class="sr-only">{item.label}</span>
+            </a>
           ))}
-        </div>
+        </nav>
       </div>
     </div>
   </div>

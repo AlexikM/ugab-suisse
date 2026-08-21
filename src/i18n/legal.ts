@@ -202,34 +202,6 @@ export const preLaunchExceptions: Array<{
   what: Record<LegalLang, string>;
 }> = [
   {
-    host: 'fonts.googleapis.com',
-    what: {
-      fr: "Les polices de caractères du site sont encore chargées depuis Google, ce qui transmet votre adresse IP aux États-Unis à chaque page. Elles seront installées sur nos propres serveurs avant l'ouverture.",
-      en: 'The site’s typefaces are still loaded from Google, which sends your IP address to the United States on every page. They will be moved onto our own servers before opening.',
-    },
-  },
-  {
-    host: 'fonts.gstatic.com',
-    what: {
-      fr: 'Les fichiers de police eux-mêmes, servis par Google. Même correction.',
-      en: 'The font files themselves, served by Google. Same fix.',
-    },
-  },
-  {
-    host: 'www.openstreetmap.org',
-    what: {
-      fr: "Le plan du lieu, sur les pages d'événement, est une carte interactive chargée dès l'ouverture de la page. Elle sera remplacée par une image et un lien, pour que rien ne parte tant que vous ne le demandez pas.",
-      en: 'The venue map on event pages is an interactive map loaded as soon as the page opens. It will be replaced by an image and a link, so nothing leaves until you ask for it.',
-    },
-  },
-  {
-    host: 'api.web3forms.com',
-    what: {
-      fr: "Le formulaire de contact est encore branché sur un service de formulaires externe. Il sera remplacé par notre propre messagerie, en Suisse, avant l'ouverture. Ce formulaire n'est pas fonctionnel en l'état.",
-      en: 'The contact form is still wired to an external form service. It will be replaced by our own mail handling, in Switzerland, before opening. The form does not work as it stands.',
-    },
-  },
-  {
     host: 'unpkg.com',
     what: {
       fr: "L'outil d'édition réservé au Comité charge son code depuis un dépôt public. Cette page n'est pas accessible aux visiteurs et ne traite aucune de vos données.",

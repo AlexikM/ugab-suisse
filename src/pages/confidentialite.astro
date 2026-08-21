@@ -47,31 +47,31 @@ const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
 ---
 
 <Layout lang="fr" title={page.title} description={page.lead}>
-  <section class="bg-[var(--color-ink)] text-white">
-    <div class="mx-auto max-w-7xl px-6 py-24 md:py-28">
+  <section class="bg-ink text-white">
+    <div class="mx-auto max-w-page px-6 py-section-lg">
       <div class="max-w-3xl">
-        <div class="font-display text-xs uppercase tracking-[0.25em] text-[var(--color-gold-light)] mb-6">{page.eyebrow}</div>
-        <h1 class="font-display uppercase tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">{page.title}</h1>
-        <p class="text-lg text-white/80 leading-relaxed">{page.lead}</p>
+        <div class="eyebrow mb-6 text-gold-light">{page.eyebrow}</div>
+        <h1 class="font-display text-display-lg mb-6">{page.title}</h1>
+        <p class="text-lead text-white">{page.lead}</p>
       </div>
     </div>
   </section>
 
-  <div class="mx-auto max-w-7xl px-6">
+  <div class="mx-auto max-w-page px-6">
     <div class="max-w-3xl">
       {showPreLaunch && (
-        <aside class="mt-12 border-l-4 border-[var(--color-gold)] bg-[var(--color-paper-soft)] p-6">
+        <aside class="mt-12 border-l-4 border-gold bg-paper-soft p-6">
           <h2 class="font-display uppercase tracking-wide text-sm mb-2">{notice.heading}</h2>
-          <p class="text-sm leading-relaxed text-[var(--color-ink-soft)]">{notice.body}</p>
+          <p class="text-sm leading-relaxed text-ink-soft">{notice.body}</p>
 
           {preLaunchExceptions.length > 0 && (
             <div class="mt-5">
               <h3 class="font-display uppercase tracking-wide text-sm mb-2">{notice.exceptionsHeading}</h3>
-              <p class="text-sm leading-relaxed text-[var(--color-ink-soft)] mb-3">{notice.exceptionsIntro}</p>
+              <p class="text-sm leading-relaxed text-ink-soft mb-3">{notice.exceptionsIntro}</p>
               <ul class="space-y-2">
                 {preLaunchExceptions.map((exception) => (
-                  <li class="text-sm leading-relaxed text-[var(--color-ink-soft)]">
-                    <code class="font-mono text-[var(--color-ink)]">{exception.host}</code>
+                  <li class="text-sm leading-relaxed text-ink-soft">
+                    <code class="font-mono text-ink">{exception.host}</code>
                     <span class="block">{exception.what[lang]}</span>
                   </li>
                 ))}
@@ -83,17 +83,17 @@ const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
     </div>
   </div>
 
-  <section class="py-16 md:py-20">
-    <div class="mx-auto max-w-7xl px-6">
+  <section class="py-section">
+    <div class="mx-auto max-w-page px-6">
       <div class="max-w-3xl space-y-12">
         {page.sections.map((section) => (
           <div>
-            <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{section.heading}</h2>
+            <h2 class="font-display text-display-sm mb-4">{section.heading}</h2>
             {section.paragraphs?.map((paragraph) => (
-              <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-4">{paragraph}</p>
+              <p class="text-base leading-relaxed text-ink-soft mb-4">{paragraph}</p>
             ))}
             {section.bullets && (
-              <ul class="list-disc pl-6 space-y-2 text-base leading-relaxed text-[var(--color-ink-soft)]">
+              <ul class="list-disc pl-6 space-y-2 text-base leading-relaxed text-ink-soft">
                 {section.bullets.map((bullet) => <li>{bullet}</li>)}
               </ul>
             )}
@@ -101,24 +101,24 @@ const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
         ))}
 
         <div>
-          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.processorsHeading}</h2>
-          <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-6">{chrome.processorsIntro}</p>
+          <h2 class="font-display text-display-sm mb-4">{chrome.processorsHeading}</h2>
+          <p class="text-base leading-relaxed text-ink-soft mb-6">{chrome.processorsIntro}</p>
 
           <div class="space-y-6">
             {processors.map((processor) => (
-              <article class="border border-[var(--color-line)] p-5">
+              <article class="border border-line p-5">
                 <h3 class="font-display text-base mb-1">
                   {processor.name[lang]}
                   {processor.status === 'planned' && (
-                    <span class="ml-2 align-middle text-[10px] uppercase tracking-[0.18em] bg-[var(--color-paper-deep)] text-[var(--color-ink-muted)] px-2 py-1">
+                    <span class="eyebrow ml-2 bg-paper-deep px-2 py-1 align-middle text-ink-muted">
                       {chrome.notYetConnected}
                     </span>
                   )}
                 </h3>
-                <p class="text-xs uppercase tracking-[0.15em] text-[var(--color-ink-muted)] mb-3">
+                <p class="eyebrow mb-3 text-ink-muted">
                   {chrome.columnWhere} — {processor.country[lang]}
                 </p>
-                <dl class="space-y-2 text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                <dl class="space-y-2 text-sm leading-relaxed text-ink-soft">
                   <div>
                     <dt class="inline font-semibold">{chrome.columnRole} : </dt>
                     <dd class="inline">{processor.purpose[lang]}</dd>
@@ -138,25 +138,25 @@ const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
         </div>
 
         <div>
-          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.hostsHeading}</h2>
-          <p class="text-base leading-relaxed text-[var(--color-ink-soft)] mb-6">{chrome.hostsIntro}</p>
+          <h2 class="font-display text-display-sm mb-4">{chrome.hostsHeading}</h2>
+          <p class="text-base leading-relaxed text-ink-soft mb-6">{chrome.hostsIntro}</p>
           {hostRows.length === 0 ? (
-            <p data-hosts-none class="text-base leading-relaxed text-[var(--color-ink-soft)]">{chrome.hostsNone}</p>
+            <p data-hosts-none class="text-base leading-relaxed text-ink-soft">{chrome.hostsNone}</p>
           ) : (
             <ul class="space-y-3">
               {hostRows.map((row) => (
                 <li
                   data-host={row.host}
                   data-host-status={row.status}
-                  class="border-l-2 border-[var(--color-line)] pl-4 text-sm leading-relaxed text-[var(--color-ink-soft)]"
+                  class="border-l-2 border-line pl-4 text-sm leading-relaxed text-ink-soft"
                 >
-                  <code class="font-mono text-[var(--color-ink)]">{row.host}</code>
+                  <code class="font-mono text-ink">{row.host}</code>
                   {row.status !== 'active' && (
-                    <span class="ml-2 text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
+                    <span class="eyebrow ml-2 text-ink-muted">
                       {row.status === 'planned' ? chrome.notYetConnected : chrome.toBeRemoved}
                     </span>
                   )}
-                  <span class="block text-[var(--color-ink-muted)]">{row.provider} — {row.purpose}</span>
+                  <span class="block text-ink-muted">{row.provider} — {row.purpose}</span>
                 </li>
               ))}
             </ul>
@@ -164,30 +164,30 @@ const showPreLaunch = hasPlannedProcessors() || preLaunchExceptions.length > 0;
         </div>
 
         <div>
-          <h2 class="font-display uppercase tracking-wide text-xl md:text-2xl mb-4">{chrome.contactHeading}</h2>
-          <address class="not-italic text-base leading-relaxed text-[var(--color-ink-soft)] space-y-1">
+          <h2 class="font-display text-display-sm mb-4">{chrome.contactHeading}</h2>
+          <address class="not-italic text-base leading-relaxed text-ink-soft space-y-1">
             <div>{committee.legalName}</div>
             <div>
               {committee.postalAddress ?? (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse postale — {pendingLabel[lang]}</span>
+                <span class="bg-paper-deep px-2 py-0.5 text-sm">Adresse postale — {pendingLabel[lang]}</span>
               )}
             </div>
             <div>{committee.city}</div>
             <div>
               {committee.email ? (
-                <a href={`mailto:${committee.email}`} class="text-[var(--color-brand)] underline">{committee.email}</a>
+                <a href={`mailto:${committee.email}`} class="text-navy underline">{committee.email}</a>
               ) : (
-                <span class="bg-[var(--color-paper-deep)] px-2 py-0.5 text-sm">Adresse e-mail — {pendingLabel[lang]}</span>
+                <span class="bg-paper-deep px-2 py-0.5 text-sm">Adresse e-mail — {pendingLabel[lang]}</span>
               )}
             </div>
           </address>
         </div>
 
-        <div class="border-t border-[var(--color-line)] pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-[var(--color-ink-muted)]">
+        <div class="border-t border-line pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-ink-muted">
           <div>{chrome.lastReviewed} : <time datetime={lastReviewed}>{lastReviewed}</time></div>
           <div class="flex gap-5">
-            <a href={withBase('/mentions-legales')} class="underline hover:text-[var(--color-ink)]">{chrome.legalLink}</a>
-            <a href={withBase('/accessibilite')} class="underline hover:text-[var(--color-ink)]">{chrome.accessibilityLink}</a>
+            <a href={withBase('/mentions-legales')} class="underline hover:text-ink">{chrome.legalLink}</a>
+            <a href={withBase('/accessibilite')} class="underline hover:text-ink">{chrome.accessibilityLink}</a>
           </div>
         </div>
       </div>

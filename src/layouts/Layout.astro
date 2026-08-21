@@ -3,41 +3,142 @@ import '../styles/global.css';
 import CookieBanner from '../components/CookieBanner.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { type Lang, useTranslations } from '../i18n/utils';
+import LanguageFallbackNotice from '../components/LanguageFallbackNotice.astro';
+import { resolveLanguage, type Section } from '../i18n/fallback';
+import { localeRoute, routeFromPath } from '../i18n/ui';
+import { type Lang, useTranslations, withBase } from '../i18n/utils';
+import { canonicalUrl, languageAlternates, organizationSchema, socialImage } from '../seo';
 
 interface Props {
   title?: string;
   description?: string;
+  /** The language the URL asked for. */
   lang?: Lang;
+  /**
+   * Which part of the site this page belongs to. Present on the pages that
+   * exist in every language; absent on the three French-only legal pages, which
+   * therefore declare no alternates and never fall back.
+   */
+  section?: Section;
+  /** Extra Schema.org blocks — an Event, for instance. See src/seo.ts. */
+  schema?: Record<string, unknown>[];
 }
 
-const { title, description, lang = 'fr' } = Astro.props;
-const t = useTranslations(lang);
+const { title, description, lang = 'fr', section, schema = [] } = Astro.props;
+
+/**
+ * A page asked for in Armenian is served in French until the Comité delivers
+ * the translations, and says so out loud. `served` is what the page is really
+ * written in, which is what `<html lang>` has to declare: a screen reader
+ * pronounces the page by this attribute, and telling it "Armenian" over French
+ * text makes the page unusable rather than merely untranslated.
+ */
+const page = section
+  ? resolveLanguage(lang, section)
+  : { requested: lang, served: lang, fellBack: false };
+const t = useTranslations(page.served);
+
 const fullTitle = title
   ? `${title} — ${t('site.title')}`
   : `${t('site.title')} — ${t('site.tagline')}`;
 const desc = description ?? t('site.description');
+
+// The route this page is, with the base and the language prefix stripped, so
+// that the alternates can be rebuilt in every language.
+const route = routeFromPath(Astro.url.pathname, withBase('/'));
+const canonical = canonicalUrl(route, page.requested, Astro.site);
+const alternates = section ? languageAlternates(route, Astro.site) : [];
+const frenchHere = withBase(localeRoute(route, 'fr'));
+
+/**
+ * The site is not open yet and has no domain (PRD 1). Until someone sets
+ * PUBLIC_SITE_INDEXABLE=true for the real deployment, every page asks not to be
+ * indexed and robots.txt disallows everything — a staging copy in the search
+ * results is a draft the committee never agreed to publish.
+ */
+const indexable = import.meta.env.PUBLIC_SITE_INDEXABLE === 'true';
+
+const jsonLd = [organizationSchema(page.served, Astro.site), ...schema];
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={page.served}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={desc} />
     <meta name="generator" content={Astro.generator} />
+    {!indexable && <meta name="robots" content="noindex, follow" />}
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Lato:wght@300;400;700;900&display=swap" />
+
+    <!--
+      Typography is served from this site. The Google Fonts stylesheet that used
+      to sit here sent every visitor's IP address to a third country before a
+      word rendered; see src/styles/fonts.css. Two faces are preloaded because
+      every page needs them immediately; the Armenian and italic files are
+      fetched only by the pages that use them.
+    -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={withBase('/fonts/inter-latin.woff2')}
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={withBase('/fonts/playfair-display-latin.woff2')}
+      crossorigin
+    />
+
+    <link rel="canonical" href={canonical} />
+    {alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+    ))}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t('site.title')} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage(Astro.site)} />
+    <meta property="og:locale" content={page.served} />
+    {alternates
+      .filter((alternate) => alternate.hreflang !== 'x-default' && alternate.hreflang !== page.served)
+      .map((alternate) => <meta property="og:locale:alternate" content={alternate.hreflang} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={socialImage(Astro.site)} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+
     <title>{fullTitle}</title>
   </head>
   <body class="min-h-screen flex flex-col">
-    <Header lang={lang} />
-    <main class="flex-1">
+    <!--
+      The first thing a keyboard reaches. Off-screen until focused, then visible
+      — a skip link nobody can see is a skip link nobody can use.
+    -->
+    <a
+      href="#contenu"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-navy focus:px-5 focus:py-3 focus:text-white"
+    >
+      {t('nav.skip')}
+    </a>
+
+    <Header served={page.served} requested={page.requested} />
+
+    <main id="contenu" class="flex-1">
+      {page.fellBack && (
+        <LanguageFallbackNotice served={page.served} requested={page.requested} href={frenchHere} />
+      )}
       <slot />
     </main>
-    <Footer lang={lang} />
-    <CookieBanner lang={lang} />
+
+    <Footer served={page.served} requested={page.requested} />
+    <CookieBanner lang={page.served} />
   </body>
 </html>
