@@ -1,48 +1,369 @@
+# The Comité's editing interface — what an editor can change, and nothing else.
+#
+# Read by Sveltia CMS (ADR-0001), which reads the Netlify/Decap configuration
+# format, so this file survives a swap back to Decap if the committee prefers.
+# Documentation is in English by convention; every label an editor reads is in
+# French, because they are the ones reading it.
+#
+# Two rules govern what belongs here:
+#
+#   1. **Every field must exist in `src/content.config.ts`, with the same name
+#      and the same optionality.** A field invented here is written into the
+#      entry and silently dropped by the build. A field required there but
+#      optional here fails the build after the editor has gone home. When the
+#      schema changes, this file changes in the same commit.
+#   2. **Page structure, navigation and layout are deliberately absent.** They
+#      are not an oversight and they are not a later feature: a page builder is
+#      how a well-meaning volunteer breaks the design the night before a gala.
+#      ADR-0001 records this as an accepted trade-off, and it has to be said to
+#      the committee out loud, because "WordPress" sets the opposite
+#      expectation. See docs/editorial/README.md.
+#
+# The site's own copy — headings, navigation, legal notices, contact details —
+# is not editable here either. It lives in `src/i18n/`, is the text the
+# committee formally approved, and two of the three legal pages are statements
+# the association is answerable for. Making those editable is a decision, not a
+# configuration change; the shape it should take is written up in
+# docs/editorial/editable-text-blocks.md.
+
 backend:
   name: github
+  # PLACEHOLDER — the repository is in the webmaster's personal account. The
+  # brief's "pleine propriété du Comité" is only literally true once it belongs
+  # to an account the association controls. See issue #44.
   repo: AlexikM/ugab-suisse
   branch: main
-  base_url: https://api.netlify.com
-  auth_endpoint: auth
+  # Sign in with a GitHub personal access token, and only that.
+  #
+  # The alternative, OAuth, needs an authentication broker running somewhere.
+  # The old configuration pointed at Netlify's, with no Netlify site behind it,
+  # so the login button led nowhere — the defect PRD 4 opens on. Offering a
+  # button that cannot work is worse than offering one route that does.
+  #
+  # When the site has its own domain and an authentication worker (PRD 1), add
+  # `base_url` and put `oauth` back in this list. Nothing else changes.
+  auth_methods:
+    - token
+  # The history is the committee's audit trail — story 29 — so it is written in
+  # the language they read it in.
+  commit_messages:
+    create: 'Ajout de « {{slug}} » dans {{collection}}'
+    update: 'Modification de « {{slug}} » dans {{collection}}'
+    delete: 'Suppression de « {{slug}} » dans {{collection}}'
+    uploadMedia: 'Ajout du fichier {{path}}'
+    deleteMedia: 'Suppression du fichier {{path}}'
 
-media_folder: "public/uploads"
-public_folder: "/uploads"
+app_title: UGAB Comité Suisse
 
-locale: fr
+# "Report an issue" should reach the people who maintain this site, not the
+# CMS's own upstream tracker, which is where it points by default.
+issue_reports:
+  url: https://github.com/AlexikM/ugab-suisse/issues/new
+
+# Preview links open the published page for an entry. The site is not published
+# anywhere yet (PRD 1), so every such link would 404. Once staging exists, set
+# `site_url`, add `preview_path` to the collections below, and turn this on:
+# that is the "review it before it goes live" step of the publishing flow.
+# See docs/editorial/publication.md.
+show_preview_links: false
+
+# Uploaded photographs. `public/uploads/` is served as-is by the site, so —
+# unlike the images in `src/assets/` — the build cannot resize them. They are
+# resized on the way in instead, which is also the answer to "must I prepare
+# the file first?": no.
+media_folder: public/uploads
+public_folder: /uploads
+
+media_libraries:
+  # No stock-photo search. The committee publishes its own photographs, and
+  # every provider behind that feature is a third party the back-office would
+  # start talking to for no benefit here.
+  stock_assets: false
+  default:
+    config:
+      # 10 MiB — enough for anything off a phone or a camera.
+      max_file_size: 10485760
+      # « Photo soirée été.JPG » becomes photo-soiree-ete.webp instead of an
+      # accented, space-riddled URL.
+      slugify_filename: true
+      transformations:
+        raster_image:
+          format: webp
+          quality: 82
+          # Wider than any place the site displays a photograph.
+          width: 2000
+
+# Accented, readable titles; clean ASCII addresses.
+slug:
+  encoding: ascii
+  clean_accents: true
+  timezone: local
+
+output:
+  # An optional field left blank is left out of the file entirely, rather than
+  # written as an empty string. This matters: the schema validates the ticket
+  # link as a URL, and `ticketUrl: ''` is not one — it would fail the build
+  # for every entry where an editor opened the field and thought better of it.
+  omit_empty_optional_fields: true
 
 collections:
+  # ---------------------------------------------------------------------------
+  # Événements
+  # ---------------------------------------------------------------------------
   - name: events
     label: Événements
     label_singular: Événement
+    description: >-
+      Les soirées, concerts et conférences du Comité. Une fiche par événement et
+      par langue. Après l'événement, ajoutez les photos dans la galerie : la
+      fiche rejoint automatiquement « Événements passés ».
+    icon: event
     folder: src/content/events
     create: true
-    slug: "{{year}}-{{slug}}"
+    delete: true
     extension: md
     format: frontmatter
+    slug: '{{year}}-{{slug}}'
+    summary: "{{title}} — {{date | date('DD.MM.YYYY')}}"
+    thumbnail: cover
+    sortable_fields:
+      fields: [date, title]
+      default:
+        field: date
+        direction: descending
+    view_filters:
+      - name: brouillons
+        label: Brouillons
+        field: draft
+        pattern: true
+      - name: publies
+        label: Publiés
+        field: draft
+        pattern: false
+      - name: complets
+        label: Complets
+        field: soldOut
+        pattern: true
+    # No preview pane. It would show an approximation of the page in a panel
+    # half the width of the real one, and the committee reviews announcements on
+    # the site itself. A preview that does not look like the site is a preview
+    # that misleads.
+    editor:
+      preview: false
     fields:
-      - { label: Titre, name: title, widget: string }
-      - { label: Langue, name: lang, widget: select, options: ["fr", "en"], default: "fr" }
-      - { label: Date de début, name: date, widget: datetime }
-      - { label: Date de fin, name: endDate, widget: datetime, required: false }
-      - { label: Lieu, name: location, widget: string }
-      - { label: Image (couverture), name: cover, widget: image, required: false }
-      - { label: Résumé, name: excerpt, widget: text }
-      - { label: Lien d'inscription, name: registrationUrl, widget: string, required: false }
-      - { label: Brouillon, name: draft, widget: boolean, default: false }
-      - { label: Contenu, name: body, widget: markdown }
+      # --- What an announcement cannot go out without -----------------------
+      - label: Titre
+        name: title
+        widget: string
+        hint: Le nom de l'événement, tel qu'il apparaîtra sur le site et sur l'invitation.
 
-  - name: antennes
-    label: Antennes
-    label_singular: Antenne
-    folder: src/content/antennes
+      - label: Langue de la fiche
+        name: lang
+        widget: select
+        default: fr
+        # LANGUES DU SITE — the only list of them in this file. Armenian is not
+        # here because the committee has not delivered it (#9). Adding it is
+        # one line here, one biography field in the Bureau section below, and
+        # `hy` in `src/content.config.ts`; nothing else in this file mentions a
+        # language, and no field, hint or collection has to be duplicated per
+        # locale.
+        options:
+          - { label: Français, value: fr }
+          - { label: English, value: en }
+        hint: >-
+          Une fiche est écrite dans une seule langue. Pour annoncer le même
+          événement en anglais, dupliquez la fiche (menu « … » dans la liste) et
+          traduisez-la.
+
+      - label: Date et heure de début
+        name: date
+        widget: datetime
+        format: YYYY-MM-DDTHH:mm:ssZ
+        input_timezone: Europe/Zurich
+        output_utc: false
+        hint: Heure de Genève, même si vous saisissez la fiche depuis l'étranger.
+
+      - label: Lieu
+        name: location
+        widget: string
+        hint: Le nom du lieu, court : « Salle communale de Plainpalais », « Genève ».
+
+      - label: Résumé
+        name: excerpt
+        widget: text
+        maxlength: 300
+        hint: >-
+          Deux phrases. C'est ce que lit un visiteur dans la liste des
+          événements et dans les résultats de recherche.
+
+      # --- Everything the Comité fills in when it knows -----------------------
+      - label: Date et heure de fin
+        name: endDate
+        widget: datetime
+        required: false
+        format: YYYY-MM-DDTHH:mm:ssZ
+        input_timezone: Europe/Zurich
+        output_utc: false
+        hint: Facultatif. À remplir seulement si l'événement dure plusieurs jours.
+
+      - label: Adresse complète
+        name: address
+        widget: string
+        required: false
+        hint: Rue, numéro, code postal, ville. Sert à l'itinéraire proposé au visiteur.
+
+      - label: Photo principale
+        name: cover
+        widget: image
+        required: false
+        choose_url: false
+        hint: >-
+          Facultatif, mais une fiche avec photo est nettement plus lue. Envoyez
+          l'image telle quelle : elle est redimensionnée automatiquement.
+
+      - label: Programme
+        name: programme
+        widget: text
+        required: false
+        hint: >-
+          Déroulé de la soirée, intervenants, tenue souhaitée, informations
+          pratiques. Laissez une ligne vide entre chaque paragraphe.
+
+      - label: Tarifs
+        name: pricing
+        widget: string
+        required: false
+        hint: 'Texte libre, par exemple : CHF 150 / pers. — CHF 250 / couple.'
+
+      - label: Nombre de places
+        name: capacity
+        widget: number
+        required: false
+        value_type: int
+        min: 1
+        hint: Facultatif. Affiché au visiteur comme capacité de la salle.
+
+      - label: Complet
+        name: soldOut
+        widget: boolean
+        default: false
+        hint: >-
+          À cocher quand la salle est pleine. Le bouton de réservation disparaît
+          et la mention « Complet » s'affiche. À faire à la main : le site ne
+          connaît pas le nombre de billets restants.
+
+      - label: Lien de billetterie
+        name: ticketUrl
+        widget: string
+        required: false
+        pattern:
+          - '^https://'
+          - Le lien doit commencer par https://
+        hint: >-
+          L'adresse fournie par la billetterie. Sans ce lien, aucun bouton de
+          réservation n'apparaît.
+
+      - label: Galerie photos
+        name: gallery
+        widget: list
+        required: false
+        field:
+          label: Photo
+          name: image
+          widget: image
+          choose_url: false
+        hint: >-
+          À remplir après l'événement. Ces photos illustrent la fiche dans
+          « Événements passés ».
+
+      # --- Publication ------------------------------------------------------
+      - label: Brouillon
+        name: draft
+        widget: boolean
+        default: false
+        hint: >-
+          Coché, l'événement n'apparaît pas sur le site : vous préparez
+          l'annonce tranquillement. Décochez pour publier.
+
+      - label: Texte de présentation
+        name: body
+        widget: markdown
+        required: false
+        # Deliberately short: the body renders inside the event page's own
+        # typography, under headings the page already provides. A volunteer
+        # cannot reach for a title style that fights the design, because it is
+        # not on the toolbar.
+        buttons: [bold, italic, link, quote, bulleted-list, numbered-list, heading-three]
+        editor_components: [image]
+        hint: >-
+          Le texte long de la page : présentation de l'événement, de l'artiste,
+          de la cause soutenue.
+
+  # ---------------------------------------------------------------------------
+  # Bureau du Comité
+  # ---------------------------------------------------------------------------
+  - name: bureau
+    label: Bureau du Comité
+    label_singular: Membre du Bureau
+    description: >-
+      Les quatre fonctions du Bureau, présentées sur la page « À propos ».
+      L'ordre d'affichage suit la hiérarchie des fonctions et ne dépend pas de
+      cette liste. Une fonction vacante : supprimez la fiche.
+    icon: groups
+    folder: src/content/bureau
     create: true
-    slug: "{{slug}}"
+    delete: true
+    # Four offices, four fiches.
+    limit: 4
     extension: md
     format: frontmatter
+    slug: '{{role}}'
+    summary: '{{name}}'
+    thumbnail: portrait
+    editor:
+      preview: false
     fields:
-      - { label: Ville, name: city, widget: string }
-      - { label: Canton, name: canton, widget: string }
-      - { label: Email, name: email, widget: string, required: false }
-      - { label: Téléphone, name: phone, widget: string, required: false }
-      - { label: Adresse, name: address, widget: string, required: false }
-      - { label: Description, name: description, widget: text }
+      - label: Fonction
+        name: role
+        widget: select
+        # These values are the four offices in src/content.config.ts. The labels
+        # are the same words the site itself prints — src/i18n/ui.ts.
+        options:
+          - { label: Président(e), value: president }
+          - { label: Vice-Président(e), value: 'vice-president' }
+          - { label: Secrétaire Général(e), value: 'secretaire-general' }
+          - { label: Trésorier(ère), value: tresorier }
+        hint: Une seule fiche par fonction.
+
+      - label: Nom et prénom
+        name: name
+        widget: string
+        hint: Tel que la personne souhaite être nommée publiquement.
+
+      - label: Portrait
+        name: portrait
+        widget: image
+        required: false
+        choose_url: false
+        hint: >-
+          Facultatif. Sans portrait, les initiales sont affichées — la fiche
+          reste correcte. Photo de face, cadrage serré.
+
+      - label: Biographie
+        name: bio
+        widget: object
+        required: false
+        # One field per language — see LANGUES DU SITE above.
+        fields:
+          - label: Français
+            name: fr
+            widget: text
+            required: false
+            hint: Trois ou quatre lignes. Facultatif.
+          - label: English
+            name: en
+            widget: text
+            required: false
+            hint: >-
+              Facultatif. Sans traduction, la version française est affichée
+              aux visiteurs anglophones.

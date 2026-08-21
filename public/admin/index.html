@@ -4,9 +4,33 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>UGAB Suisse — Admin</title>
+    <meta name="referrer" content="same-origin" />
+    <title>UGAB Comité Suisse — Espace d'édition</title>
+    <!--
+      The configuration is loaded from beside this page rather than from an
+      absolute /admin/config.yml, because the site is served under a base path
+      that has changed once already and will change again when hosting moves.
+    -->
+    <link href="./config.yml" type="text/yaml" rel="cms-config-url" />
   </head>
   <body>
-    <script src="https://unpkg.com/decap-cms@^3.5.0/dist/decap-cms.js"></script>
+    <!--
+      Sveltia CMS, served from this site and pinned to one exact version.
+
+      It used to be fetched from unpkg.com at `^3.5.0`, which meant: whatever a
+      public CDN chose to serve, on the day an editor logged in, for a tool that
+      can write to the repository the whole site is built from. The pre-launch
+      checklist records that as blocking launch (section A3).
+
+        package : @sveltia/cms@0.193.2  (dist/sveltia-cms.js)
+        source  : https://registry.npmjs.org/@sveltia/cms/-/cms-0.193.2.tgz
+        sha256  : 919bad02217fe7b41a33935e4bd5861ec055e48688d64b680e2dd054b39ad212
+        licence : MIT
+
+      Updating it is a deliberate act with a written procedure — see
+      docs/editorial/back-office-maintenance.md. A test checks that the file
+      beside this page is still the file recorded here.
+    -->
+    <script src="./sveltia-cms-0.193.2.js"></script>
   </body>
 </html>
