@@ -32,9 +32,12 @@ import { repoRoot } from './lib/build-output.mjs';
  * load is a failure like any other.
  *
  * The exit code is the whole point. `npm run check` would catch this anyway,
- * because the build imports `legal.ts` too — but the pre-launch checklist tells
- * a webmaster to run `node --test "tests/compliance/**​/*.test.mjs"` on its own,
- * and that is the moment a false green costs the most.
+ * because the build imports `legal.ts` too — but the pre-launch checklist has a
+ * webmaster run the compliance suite on its own, and that is the moment a false
+ * green costs the most. That command lives in `docs/pre-launch-checklist.md` and
+ * only there. Quoting its glob inside this comment cost it a zero-width space,
+ * added so the glob would not close the comment early; copied back out, it
+ * matched no files and `node --test` reported success over nothing.
  */
 
 /** Node reads TypeScript from 22.18. Below that, these cannot run at all. */
