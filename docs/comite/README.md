@@ -39,10 +39,12 @@ en ligne.
 
 ## Les enregistrements
 
-Chaque tâche courante est aussi enregistrée en vidéo, de quelques minutes.
-Regarder quelqu'un le faire une fois vaut mieux que lire cinq pages, surtout pour
-une manipulation faite deux fois par an. Les enregistrements sont remis lors de
-la séance de remise et se conservent au même endroit que la carte des comptes.
+Les enregistrements n'existent pas encore. Chaque tâche courante sera filmée
+pendant la séance de remise, en quelques minutes, pendant que le membre du Comité
+qui s'en chargera la réalise lui-même. Regarder quelqu'un faire une fois vaut
+mieux que lire cinq pages, surtout pour une manipulation effectuée deux fois par
+an — et l'enregistrement survit au départ de la personne formée. Ils se
+conserveront au même endroit que la carte des comptes.
 
 ## Une question à qui ?
 
