@@ -109,9 +109,16 @@ function withBuildLock(run) {
 
 /**
  * Build the site against a fixture content directory.
+ *
+ * `env` adds to the build's environment, which is how a test asks for the
+ * build a particular deploy would produce — `UGAB_SHOW_DRAFTS` for staging, for
+ * instance. Anything switched on for one environment and not another is decided
+ * by the environment and not by the page code, so this is the seam that
+ * question has to be asked at.
+ *
  * Returns the exit status, the combined output, and where it built to.
  */
-export function buildWithContent(fixtureName) {
+export function buildWithContent(fixtureName, env = {}) {
   const outDir = mkdtempSync(path.join(tmpdir(), 'ugab-build-'));
   const contentDir = path.join(fixturesDir, fixtureName);
   if (!existsSync(contentDir)) {
@@ -121,7 +128,7 @@ export function buildWithContent(fixtureName) {
     const build = spawnSync('npx', ['astro', 'build', '--force', '--outDir', outDir], {
       cwd: repoRoot,
       encoding: 'utf8',
-      env: { ...process.env, UGAB_CONTENT_DIR: contentDir },
+      env: { ...process.env, UGAB_CONTENT_DIR: contentDir, ...env },
     });
     // The content store is shared with normal builds. Drop it while the lock is
     // still held, so fixture entries can never turn up in someone's

@@ -8,6 +8,7 @@
 | `content/placeholder-inventory.md` | Every element on the site that is still a placeholder, and what replaces it |
 | `agent-handoff.md` | Context for an agent or developer picking up work — read first |
 | `comite/` | Everything the committee reads, in French — the account map, the task guides, the runbook, the support boundary |
+| `editorial/` | The back-office: what is editable, how an announcement is published, how the vendored CMS is kept |
 | `infrastructure-setup.md` | The ordered list of what a human must do before the pipeline can publish anything |
 | `deploy-pipeline.md` | How the site is published, what gates it, and how to roll back |
 | `pre-launch-checklist.md` | What must be true before the site goes public, compliance included |

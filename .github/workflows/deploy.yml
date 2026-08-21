@@ -1,7 +1,8 @@
 # Publishing, keyed by branch.
 #
 #   main     -> production
-#   staging  -> staging, which is protected and not indexed
+#   staging  -> staging, which is protected, not indexed, and shows the
+#               announcements the Comité is still preparing
 #
 # Both routes go through `check` first. That job is ci.yml — the same steps as
 # `npm run check`, not a copy of them — and every publish job `needs` it, so a
@@ -84,6 +85,7 @@ jobs:
     with:
       environment: production
       indexable: true
+      show_drafts: false
       site_url: ${{ vars.PROD_SITE_URL }}
     secrets:
       ssh_host: ${{ secrets.PROD_SSH_HOST }}
@@ -101,6 +103,7 @@ jobs:
     with:
       environment: staging
       indexable: false
+      show_drafts: true
       site_url: ${{ vars.STAGING_SITE_URL }}
     secrets:
       ssh_host: ${{ secrets.STAGING_SSH_HOST }}

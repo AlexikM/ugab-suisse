@@ -240,11 +240,18 @@ n'avez besoin de personne, et une correction faite dans l'heure ne laisse
 pratiquement aucune trace. Voir
 [Publier un événement](publier-un-evenement.md).
 
+**Revenir à une version antérieure** — l'interface d'édition conserve
+l'historique mais ne le restaure pas : il n'y a pas de bouton pour cela. Si la
+version précédente était juste et que la refaire à la main est risqué — un texte
+long, plusieurs champs modifiés —, écrivez au webmaster. Le rétablissement prend
+quelques minutes et rien n'a été perdu entre-temps.
+
 **Si l'information erronée a déjà circulé** — corrigez d'abord la page, puis
 dites-le. Une date d'événement fausse relayée par courriel se rattrape par
 courriel, pas par le site seul.
 
-**Qui contacter** — personne, sauf si vous ne parvenez pas à corriger.
+**Qui contacter** — personne, sauf si vous ne parvenez pas à corriger, ou pour
+rétablir une version antérieure.
 
 ---
 
