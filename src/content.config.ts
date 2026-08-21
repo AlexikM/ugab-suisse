@@ -15,6 +15,12 @@ const events = defineCollection({
       title: z.string(),
       lang: z.enum(['fr', 'en', 'hy']).default('fr'),
       date: z.coerce.date(),
+      /**
+       * The last moment of an event that runs for more than one day: a weekend
+       * festival is one entry with two dates. Whether an event is past is
+       * measured from here, so an entry without one is a single occasion whose
+       * start is the only moment there is.
+       */
       endDate: z.coerce.date().optional(),
       location: z.string(),
       address: z.string().optional(),
@@ -45,6 +51,18 @@ const events = defineCollection({
       demo: z.boolean().default(false),
     })
     .superRefine((event, ctx) => {
+      if (event.endDate && event.endDate.valueOf() < event.date.valueOf()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['endDate'],
+          message:
+            'La date de fin est antérieure à la date de début. Un événement est ' +
+            'considéré comme passé à partir de sa date de fin : celui-ci quitterait ' +
+            'la page Événements avant même d’avoir eu lieu, et personne ne le ' +
+            'verrait. Corrigez l’une des deux dates.',
+        });
+      }
+
       if (event.demo) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
