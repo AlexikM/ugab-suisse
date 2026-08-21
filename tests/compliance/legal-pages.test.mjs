@@ -404,12 +404,24 @@ test('no page shows a contact address the committee never confirmed', {
  * 3. **Clauses.** A denial governs its own clause and no further. « … ne fait
  *    aucune déclaration, mais vos dons restent déductibles » is two statements,
  *    and the second one is the whole risk.
+ *
+ *    The conjunction is not what does the work here — the comma is. Cutting on
+ *    « mais » and its synonyms alone let the identical sentence through with
+ *    « et » in place of « mais », with « car », and with nothing at all where
+ *    the conjunction had been. A writer adding the claim back while believing
+ *    they are being careful reaches for any of the four. So a comma ends a
+ *    statement, and the conjunction list only adds the ones a writer separates
+ *    with a space instead.
+ *
+ *    The three real denials survive this because each states the denial and
+ *    names the claim inside one comma-free clause. Should that stop being true,
+ *    this goes red rather than quiet, which is the direction it should fail in.
  */
 const BLOCK_END =
   /<\/(?:p|h[1-6]|li|dd|dt|td|th|figcaption|blockquote|div|section|article|aside)>/gi;
 
 const BREAK =
-  /(?<=[.!?])\s+|\s*;\s*|\s+(?=\b(?:mais|toutefois|cependant|néanmoins|pourtant|but|however|though|although)\b)/iu;
+  /(?<=[.!?])\s+|\s*[;,]\s*|\s+(?=\b(?:mais|et|car|donc|toutefois|cependant|néanmoins|pourtant|but|and|so|however|though|although)\b)/iu;
 
 const statementsOf = (html) => textOf(html.replace(BLOCK_END, '. ')).split(BREAK);
 
