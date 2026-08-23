@@ -1,16 +1,17 @@
 /**
- * The contact form the Comité approved the labels for, and cannot yet send.
+ * The message form the Comité approved the labels for, and cannot yet send.
  *
- * The prototype's form posted to `api.web3forms.com` with the access key still
- * set to `YOUR_ACCESS_KEY`: a form that took what somebody wrote and dropped it,
- * while telling them it had been sent. Removing it is recorded as done in
- * `../../docs/pre-launch-checklist.md`, and the mail handler that would replace
- * it waits on hosting.
+ * The prototype's contact form posted to `api.web3forms.com` with the access
+ * key still set to `YOUR_ACCESS_KEY`: a form that took what somebody wrote and
+ * dropped it, while telling them it had been sent. Removing it is recorded as
+ * done in `../../docs/pre-launch-checklist.md`, and the mail handler that would
+ * replace it waits on hosting.
  *
- * So the form can be looked at without being reachable. `UGAB_PREVIEW_FORMS=1`
- * draws it for a design review; every build that is not asked for it has no
- * form at all. Both halves are asserted, because only the pair is the promise:
- * a preview that leaks into a normal build is the defect this replaced.
+ * So the form can be looked at without being usable. `UGAB_PREVIEW_FORMS=1`
+ * draws it on both pages that need one; every build that is not asked for it
+ * has no form at all. Both halves are asserted, because only the pair is the
+ * promise: a preview that leaks into a normal build is the defect this
+ * replaced.
  */
 
 import assert from 'node:assert/strict';
@@ -18,9 +19,14 @@ import { test } from 'node:test';
 
 import { buildWithContent, readBuiltPage, readPage } from './helpers.mjs';
 
-/** The four fields, which is what a contact form is here. A bare `<button>` is
- *  not one: the header carries the mobile menu toggle on every page. */
-const FIELDS = ['contact-name', 'contact-email', 'contact-topic', 'contact-message'];
+/** The four fields, unprefixed. `MessageForm` prefixes them per page. */
+const FIELDS = ['name', 'email', 'topic', 'message'];
+
+/** The same form in both places it is needed. */
+const PAGES = [
+  { route: '/contact', prefix: 'contact' },
+  { route: '/don', prefix: 'sponsor' },
+];
 
 /** Source comments survive the build, and they discuss the form at length. */
 const withoutComments = (html) => html.replace(/<!--[\s\S]*?-->/g, '');
@@ -33,59 +39,84 @@ function previewBuild() {
   return preview;
 }
 
-test('a normal build offers no contact form at all', () => {
-  const html = readBuiltPage('/contact');
+test('a normal build offers no form at all', () => {
+  for (const { route, prefix } of PAGES) {
+    const html = readBuiltPage(route);
 
-  assert.doesNotMatch(html, /<form\b/i, 'the contact page ships a form that cannot send');
-  for (const field of FIELDS) {
-    assert.doesNotMatch(html, new RegExp(`id="${field}"`), `the contact page ships ${field}`);
+    assert.doesNotMatch(html, /data-preview-form/, `${route} ships a form that cannot send`);
+    for (const field of FIELDS) {
+      assert.doesNotMatch(html, new RegExp(`id="${prefix}-${field}"`), `${route} ships ${field}`);
+    }
   }
-  // The address is what a visitor is given instead, so its absence would leave
-  // them with no way to write at all.
-  assert.match(html, /mailto:/, 'the contact page offers neither a form nor an address');
+
+  // The address is what a visitor is given instead of the contact form, so its
+  // absence would leave them with no way to write at all.
+  assert.match(readBuiltPage('/contact'), /mailto:/, 'no form and no address either');
 });
 
-test('the preview build draws the form', () => {
-  const html = readPage(previewBuild().outDir, '/contact');
+test('the preview build draws the form on both pages', () => {
+  for (const { route, prefix } of PAGES) {
+    const html = readPage(previewBuild().outDir, route);
 
-  assert.match(html, /<form\b/i, 'the preview build drew no form');
-  for (const field of FIELDS) {
-    assert.match(html, new RegExp(`id="${field}"`), `the form is missing ${field}`);
+    assert.match(html, /data-preview-form/, `${route} drew no form`);
+    for (const field of FIELDS) {
+      assert.match(html, new RegExp(`id="${prefix}-${field}"`), `${route} is missing ${field}`);
+    }
   }
 });
 
 /**
- * Inert in the two ways that matter. A disabled fieldset cannot be typed into,
- * and no `action` means there is nowhere for a submission to go — neither a
- * third party, which is what ADR-0001 rules out, nor a handler that does not
- * exist yet.
+ * The fields work; only the send button does not. Disabled in the markup rather
+ * than by script, so it is inert before anything runs and stays inert with
+ * scripting off.
  */
-test('the preview form cannot be typed into or sent anywhere', () => {
-  const html = readPage(previewBuild().outDir, '/contact');
+test('the fields work and the send button does not', () => {
+  for (const { route } of PAGES) {
+    const html = readPage(previewBuild().outDir, route);
+    const submit = /<button[^>]*type="submit"[^>]*>/i.exec(html)?.[0];
 
-  assert.match(html, /<fieldset[^>]*\bdisabled\b/i, 'the preview form is not disabled');
-  assert.doesNotMatch(
-    html,
-    /<form[^>]*\baction=/i,
-    'the preview form declares somewhere to post to',
-  );
-  assert.doesNotMatch(html, /<form[^>]*\bmethod=/i, 'the preview form declares a method');
+    assert.ok(submit, `${route} has no send button`);
+    assert.match(submit, /\bdisabled\b/, `the send button on ${route} is not disabled`);
+    assert.doesNotMatch(html, /<input[^>]*\bdisabled\b/i, `a field on ${route} is disabled`);
+    assert.doesNotMatch(
+      html,
+      /<textarea[^>]*\bdisabled\b/i,
+      `the message box on ${route} is disabled`,
+    );
+  }
 });
 
 /**
- * `contact.astro` has carried a comment since PRD 7 saying that when a form
- * replaces the mailto, the note about what happens to a message moves under the
- * send button — the moment a visitor can still decide. This asserts the comment
- * came true rather than being repeated.
+ * Nowhere for a submission to go — not a third party, which ADR-0001 rules out,
+ * and not a handler that does not exist yet. An attribute invented now is one
+ * somebody would later trust.
  */
-test('the preview form says what happens to a message, under the send button', () => {
-  // Read without comments: the page explains this very move in one, and it
-  // sits above the button, so a naive search finds the explanation not the note.
-  const html = withoutComments(readPage(previewBuild().outDir, '/contact'));
-  const submit = html.search(/<button[^>]*type="submit"/i);
-  const notice = html.search(/Infomaniak/);
+test('the preview form has nowhere to post to', () => {
+  for (const { route } of PAGES) {
+    const html = readPage(previewBuild().outDir, route);
 
-  assert.ok(submit !== -1, 'the preview form has no send button');
-  assert.ok(notice !== -1, 'the preview form does not say where a message goes');
-  assert.ok(notice > submit, 'the note about the message sits above the button that sends it');
+    assert.doesNotMatch(html, /<form[^>]*\baction=/i, `${route} declares somewhere to post to`);
+    assert.doesNotMatch(html, /<form[^>]*\bmethod=/i, `${route} declares a method`);
+  }
+});
+
+/**
+ * Both notices go under the control, not above the form: that is where somebody
+ * reads them — at the moment they reach for the button, not before they have
+ * decided to write anything. `contact.astro` has carried a comment since PRD 7
+ * saying the privacy note belongs there once a form exists; this asserts the
+ * comment came true rather than being repeated.
+ */
+test('both notices sit under the send button, where they are read', () => {
+  for (const { route } of PAGES) {
+    // Read without comments: the pages explain this very move in one, above it.
+    const html = withoutComments(readPage(previewBuild().outDir, route));
+    const submit = html.search(/<button[^>]*type="submit"/i);
+    const sendsNothing = html.search(/data-preview-notice/);
+    const whereItGoes = html.search(/Infomaniak/);
+
+    assert.ok(submit !== -1, `${route} has no send button`);
+    assert.ok(sendsNothing > submit, `${route} warns it sends nothing above the button`);
+    assert.ok(whereItGoes > submit, `${route} says where a message goes above the button`);
+  }
 });
