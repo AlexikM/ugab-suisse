@@ -8,11 +8,23 @@
     header logo rather than the 4-unit-different one the raster happens to hold.
     A visitor sees both at once; they should be the same colour.
 
-    Deliberately one flat colour with no dark-mode rule. The file this replaced
-    was Astro's own logo, still there from the starter template, and it inverted
-    itself in dark mode — reasonable for a framework's mark, wrong for an
-    organisation's, which is one colour wherever it appears.
+    The white ground is not decoration. Without it the mark sat on whatever the
+    browser painted, and a dark tab strip left a navy U on near-black: legible
+    at 64px, gone at 16. It also fixes the home screen, where iOS composites a
+    transparent touch icon onto black.
+
+    The square has no rounded corners because nothing on this site does — there
+    is not one `rounded-*` class in the components, the pages or the layouts,
+    and the only `border-radius` in the stylesheet is the two pixels on a focus
+    ring. iOS rounds the touch icon itself; rounding it here as well would show
+    white through the gap.
+
+    One flat colour, no dark-mode rule. The file this replaced was Astro's own
+    logo, still there from the starter template, and it inverted itself —
+    reasonable for a framework's mark, wrong for an organisation's, which is one
+    colour wherever it appears.
   -->
+  <rect width="256" height="256" fill="#ffffff" />
   <path
     d="M69.5 18V167.5a58.5 58.5 0 0 0 117 0V18"
     fill="none"
