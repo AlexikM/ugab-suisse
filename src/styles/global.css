@@ -60,16 +60,19 @@
   --color-black: #000000;
 
   /* ---------------------------------------------------------------------
-   * Typography. Playfair Display for display and headings, Inter for body —
-   * the brief's own direction. Self-hosted; see fonts.css.
+   * Typography. Montserrat for display and headings, Lato for body — the pair
+   * the brief offers that the rest of the AGBU network actually runs on.
+   * Self-hosted; fonts.css says why this branch of the brief's menu and not the
+   * other one.
    *
    * An Armenian family is in EVERY stack, including the body and monospace
    * ones. Armenian has no system fallback on most machines: a stack that
    * forgets it renders empty boxes, and it is always the one nobody checked.
    * tests/e2e/fonts.spec.ts asserts this for the body and heading styles.
    * ------------------------------------------------------------------- */
-  --font-display: "Playfair Display", "Noto Serif Armenian", Georgia, "Times New Roman", serif;
-  --font-sans: "Inter", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display:
+    "Montserrat", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Lato", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, "Noto Sans Armenian", monospace;
 
   /* ---------------------------------------------------------------------

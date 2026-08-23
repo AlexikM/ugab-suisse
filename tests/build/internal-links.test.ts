@@ -49,7 +49,7 @@ describe('resolveLink', () => {
 });
 
 describe('isServed', () => {
-  const built = new Set(['index.html', 'don/index.html', 'fonts/inter-latin.woff2']);
+  const built = new Set(['index.html', 'don/index.html', 'fonts/lato-400-latin.woff2']);
 
   it('serves a directory link from its index', () => {
     expect(isServed('don/', built)).toBe(true);
@@ -61,7 +61,7 @@ describe('isServed', () => {
   });
 
   it('serves a file that is genuinely a file', () => {
-    expect(isServed('fonts/inter-latin.woff2', built)).toBe(true);
+    expect(isServed('fonts/lato-400-latin.woff2', built)).toBe(true);
   });
 
   it('does not invent a page for an address nothing was built at', () => {
