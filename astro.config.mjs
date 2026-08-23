@@ -5,12 +5,36 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
-// Where the site is served from. Astro prefixes routes with it automatically,
-// but not redirect destinations — those are written out below.
-const base = '/ugab-suisse';
+/**
+ * Where the site is served from — one variable, read from the deployment.
+ *
+ * It used to be two constants written here: an origin that said GitHub Pages
+ * and a `/ugab-suisse` prefix that is the path a project Pages site sits at.
+ * Moving hosting meant editing this file, and `publish.yml` refuses to publish
+ * a build that still carries the prefix — so the last step of PRD 1 was a
+ * commit, made under pressure, on the day of the first deploy.
+ *
+ * It is one value now, and the prefix follows it rather than being a second
+ * thing to remember:
+ *
+ *     https://alexikm.github.io/ugab-suisse   →  origin + base '/ugab-suisse'
+ *     https://ugab-suisse.org                 →  origin + base ''
+ *
+ * `publish.yml` already passes this URL to the step that checks the result;
+ * it now reaches the build that produces it. The default is exactly what this
+ * file said before, so an unconfigured build is unchanged.
+ *
+ * Nothing else reads it. `withBase()` and `tests/build/base-path.ts` both take
+ * the base from this config, so they follow it without being told.
+ */
+const deployedAt = new URL(process.env.SITE_URL || 'https://alexikm.github.io/ugab-suisse');
+
+// Astro prefixes routes with the base automatically, but not redirect
+// destinations — those are written out below.
+const base = deployedAt.pathname.replace(/\/+$/, '');
 
 export default defineConfig({
-  site: 'https://alexikm.github.io',
+  site: deployedAt.origin,
   base,
   i18n: {
     defaultLocale: 'fr',

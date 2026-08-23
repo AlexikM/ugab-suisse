@@ -75,3 +75,35 @@ test('the demonstration back-office writes nowhere and duplicates nothing', () =
   assert.doesNotMatch(shell, /name:\s*github|"github"/, 'the demo can reach the repository');
   assert.match(shell, /noindex/, 'the demo invites indexing');
 });
+
+/**
+ * The demonstration back-office is for a preview and must not survive a public
+ * release. It cannot write anywhere — the backend cannot reach the repository —
+ * but an official-looking editor for the association, found by guessing a path,
+ * is not something a visitor should meet, and "it does nothing" is not what it
+ * looks like.
+ *
+ * The build cannot decide this: `public/` is copied verbatim, so the file is in
+ * every build by construction. The publish removes it from an indexable
+ * release, driven by the same flag as everything else here. Asserted as the
+ * pairing it is — the shell exists to be published on a preview, and the
+ * publish is what takes it out of a launch.
+ */
+test('the demonstration back-office is published, and removed from a public release', () => {
+  const shell = path.join(repoRoot, 'public', 'admin', 'demo', 'index.html');
+  assert.ok(existsSync(shell), 'the demonstration back-office is gone');
+  assert.ok(
+    existsSync(path.join(repoRoot, 'dist', 'admin', 'demo', 'index.html')),
+    'a build does not carry the demonstration back-office',
+  );
+
+  // The only thing that takes it out again, so its absence is a real finding.
+  const publish = readFileSync(path.join(repoRoot, '.github', 'workflows', 'publish.yml'), 'utf8');
+  const step = /- name: Take the demonstration back-office[\s\S]*?(?=\n {6}- name: )/.exec(
+    publish,
+  )?.[0];
+
+  assert.ok(step, 'nothing removes the demonstration back-office from a release');
+  assert.match(step, /if:\s*\$\{\{\s*inputs\.indexable\s*\}\}/, 'it is not gated on indexable');
+  assert.match(step, /rm -rf dist\/admin\/demo/, 'the step does not remove it');
+});

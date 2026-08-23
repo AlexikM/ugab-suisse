@@ -270,6 +270,13 @@ rather than absorbed.
 The same table, in French and for the committee's own records, is in
 [`comite/carte-des-comptes.md`](comite/carte-des-comptes.md).
 
+## The short path — a protected site on Infomaniak
+
+The twelve steps below end in a public site on its own domain. To put a
+password-protected, fully working site in front of the committee you need a
+subset of them, and none of the ones that wait on a decision:
+[`infomaniak-in-fifteen-minutes.md`](infomaniak-in-fifteen-minutes.md).
+
 ## Before any of this — showing the committee the site
 
 None of the twelve steps above is needed to put the site in front of the
