@@ -149,6 +149,11 @@ jobs:
 
       - name: Build
         env:
+          # Where the site will be served from. astro.config.mjs takes both the
+          # origin and the base prefix from this one value, so a deploy to a
+          # real domain needs no edit to that file — which is what the step
+          # below used to demand, on the day of the first deploy.
+          SITE_URL: ${{ inputs.site_url }}
           # One flag decides indexing, and the layout already reads it. Staging
           # gets `false`, so every page it serves asks not to be indexed.
           PUBLIC_SITE_INDEXABLE: ${{ inputs.indexable }}
@@ -169,12 +174,12 @@ jobs:
             echo "Every URL in dist/ carries the /ugab-suisse/ prefix, which is the path" >&2
             echo "GitHub Pages served this site from. Published at the root of ${SITE_URL}" >&2
             echo "those links all 404 and the site looks catastrophically broken." >&2
-            echo "Before the first deploy, in astro.config.mjs: set site to the real domain," >&2
-            echo "and remove base along with the base prefixes in redirects." >&2
-            echo "tests/build/base-path.test.ts already asserts the other direction and fails" >&2
-            echo "the check if a literal /ugab-suisse survives that removal." >&2
-            echo "This is the last open item of PRD 1 (#1), blocked on the domain." >&2
-            echo "::error title=Built for a subdirectory::astro.config.mjs still sets base '/ugab-suisse' — see docs/infrastructure-setup.md"
+            echo "astro.config.mjs takes the origin and the base prefix from SITE_URL," >&2
+            echo "so this means SITE_URL itself carries a path: it is ${SITE_URL}." >&2
+            echo "Set the environment's site URL variable to the bare origin of the" >&2
+            echo "domain — no trailing path — and publish again. See" >&2
+            echo "docs/infrastructure-setup.md." >&2
+            echo "::error title=Built for a subdirectory::SITE_URL carries a path prefix — see docs/infrastructure-setup.md"
             exit 1
           fi
 
