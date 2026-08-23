@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="same-origin" />
+    <title>UGAB Comité Suisse — Démonstration de l'espace d'édition</title>
+    <!--
+      The back-office, for somebody who has no account and should not need one.
+
+      `../config.yml` is the same file the real editor reads — the same
+      collections, the same French labels, the same field order and hints. It is
+      loaded here rather than copied, because a second copy of that file is a
+      second thing to keep in step, and the one time it fell out of step the
+      whole back-office stopped starting.
+
+      Only the backend differs, and it is overridden in JavaScript below rather
+      than in a duplicated file. `test-repo` is Sveltia's own demonstration
+      backend: it asks for no credentials, contacts no repository, and keeps
+      everything in the browser tab.
+
+      **Nothing typed here is saved.** That is the point — it cannot write to
+      the repository, so it can be handed to anyone — and it is also the thing a
+      visitor must not discover after composing a fiche. It is said three times:
+      in the application title, on the page before the CMS starts, and in the
+      committee's own instructions.
+
+      Which backend the real editor uses, and whether an editor should need a
+      GitHub account at all, is ADR-0001's open question. This settles nothing
+      about it; it lets the committee see what they are being asked about.
+    -->
+  </head>
+  <body>
+    <noscript>
+      Cette page est une démonstration de l'espace d'édition et nécessite
+      JavaScript.
+    </noscript>
+
+    <link href="../config.yml" type="text/yaml" rel="cms-config-url" />
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
+    <script src="../sveltia-cms-0.193.2.js"></script>
+    <script>
+      window.CMS.init({
+        config: {
+          backend: { name: 'test-repo' },
+          app_title: 'UGAB Comité Suisse — DÉMONSTRATION · rien n’est enregistré',
+        },
+      });
+    </script>
+  </body>
+</html>

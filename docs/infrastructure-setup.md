@@ -270,6 +270,15 @@ rather than absorbed.
 The same table, in French and for the committee's own records, is in
 [`comite/carte-des-comptes.md`](comite/carte-des-comptes.md).
 
+## Before any of this — showing the committee the site
+
+None of the twelve steps above is needed to put the site in front of the
+committee. [`preview-on-github-pages.md`](preview-on-github-pages.md) publishes
+what the repository already builds, on a public but unindexed address, with a
+back-office that needs no account — fifteen minutes, no domain, no credentials,
+nothing to migrate afterwards. It is how the committee answers ADR-0001's open
+question, which is what step 1 of this list is really waiting on.
+
 ## What is still open
 
 Not blockers for the pipeline, but they sit on the same critical path:
