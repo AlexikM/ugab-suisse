@@ -39,7 +39,19 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
 }));
 ---
 
-<footer class="on-dark bg-ink text-paper">
+{/*
+  A top edge of its own.
+
+  The home page ends on the partner call, which is `bg-ink`, and so is this —
+  the same value, with nothing between them. Two full-width blocks of one colour
+  read as one block, so the call to action dissolved into the chrome underneath
+  it and « Devenir partenaire » ended up looking like a footer link.
+
+  The rule is on the footer rather than on the section above, so the footer
+  carries its own edge whatever precedes it, and it is the hairline this file
+  already uses to separate the copyright row.
+*/}
+<footer class="on-dark border-t border-white/20 bg-ink text-paper">
   <div class="mx-auto grid max-w-page gap-12 px-6 py-16 md:grid-cols-4">
     <div class="md:col-span-2">
       <p class="mb-3 font-display text-2xl">{t('site.title')}</p>

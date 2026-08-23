@@ -21,11 +21,40 @@ const link = (path: string, target: Lang = requested) => withBase(localeRoute(pa
  */
 const currentRoute = routeFromPath(Astro.url.pathname, withBase('/'));
 
-const nav = primaryNav.map((item) => ({
+/**
+ * The bar offers each destination once.
+ *
+ * `primaryNav` is the whole site, and the footer still lists all of it. Here,
+ * two of its entries are the actions the bar already carries as buttons —
+ * Événements and Faire un don — and listing them again put the same `/don`
+ * twice in the same 200 pixels: once as a link reading « Faire un don &
+ * Sponsoring », once as the red button reading « Faire un don ». A visitor
+ * choosing between two controls that go to the same page is being asked a
+ * question with one answer.
+ *
+ * The pair left as buttons is the brief's own: its hero offers « Faire un don ·
+ * Découvrir nos événements », so the bar mirrors what the page already says.
+ * Sponsoring keeps its full name in the footer nav and on the home page's
+ * partner block, which is where a company looks for it.
+ */
+const asButton: readonly string[] = [routes.events, routes.donate];
+
+const entry = (item: (typeof primaryNav)[number]) => ({
   href: link(item.path),
   label: t(item.key),
   current: item.path === currentRoute,
-}));
+});
+
+const nav = primaryNav.filter((item) => !asButton.includes(item.path)).map(entry);
+
+/**
+ * The drawer keeps every destination, buttons included.
+ *
+ * On a phone the bar carries the donation button and nothing else, so the
+ * drawer is the only way to Événements. Filtering it the way the wide bar is
+ * filtered would make two pages reachable from the logo and from nowhere else.
+ */
+const drawerNav = primaryNav.map(entry);
 
 const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
   code,
@@ -59,36 +88,43 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
       </span>
     </a>
 
-    <nav class="hidden h-full items-center gap-8 lg:flex" aria-label={t('nav.label')}>
-      {nav.map((item) => (
-        <a
-          href={item.href}
-          aria-current={item.current ? 'page' : undefined}
-          class:list={[
-            'font-display text-[0.9375rem] font-semibold transition-colors hover:text-red',
-            item.current ? 'text-red' : 'text-ink',
-          ]}
-        >
-          {item.label}
-        </a>
-      ))}
-    </nav>
-
-    <div class="flex h-full items-stretch">
-      <a
-        href={link(routes.donate)}
-        class="inline-flex items-center bg-red px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-red-deep md:px-7 md:text-sm"
-        data-donate-cta
-      >
-        {t('nav.donate')}
-      </a>
+    {/*
+      Nav, then the language selector, then the actions — with room between the
+      three. The last nav link used to end at the exact pixel the red button
+      began: « Contact » and « Faire un don » shared an edge, which read as one
+      control cut in half.
+    */}
+    <div class="flex h-full items-center gap-5 xl:gap-8">
+      <nav class="hidden items-center gap-8 lg:flex" aria-label={t('nav.label')}>
+        {nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={item.current ? 'page' : undefined}
+            class:list={[
+              'font-display text-[0.9375rem] font-semibold transition-colors hover:text-red',
+              item.current ? 'text-red' : 'text-ink',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
 
       {/*
         Three languages, always all three. `hreflang` tells a browser what it is
         pointing at; the visible label is each language's own name, abbreviated,
         with the full name available to a screen reader.
+
+        Set as quiet text rather than the filled slab it used to be. A solid
+        block beside the donation button read as a second call to action, which
+        is not what choosing a language is: it is a utility, and it should look
+        like one. The current language is underlined rather than coloured, so it
+        cannot be mistaken for the red that marks the current page.
       */}
-      <nav class="hidden items-center gap-2 bg-ink px-4 text-xs sm:flex" aria-label={t('fallback.label')}>
+      <nav
+        class="hidden items-center gap-3 sm:flex"
+        aria-label={t('fallback.label')}
+      >
         {languageLinks.map((item) => (
           <a
             href={item.href}
@@ -96,8 +132,10 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
             lang={item.code}
             aria-current={item.current ? 'true' : undefined}
             class:list={[
-              'min-w-[28px] text-center font-display tracking-caps uppercase transition-colors',
-              item.current ? 'font-semibold text-white underline underline-offset-4' : 'text-paper-deep hover:text-white',
+              'min-w-[26px] text-center font-display text-xs tracking-caps uppercase transition-colors',
+              item.current
+                ? 'font-semibold text-ink underline underline-offset-4'
+                : 'text-ink-muted hover:text-red',
             ]}
           >
             <span aria-hidden="true">{item.code}</span>
@@ -106,36 +144,69 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
         ))}
       </nav>
 
-      <button
-        id="mobile-menu-toggle"
-        type="button"
-        class="inline-flex h-full w-12 items-center justify-center bg-ink text-white lg:hidden"
-        aria-label={t('nav.menu')}
-        aria-expanded="false"
-        aria-controls="mobile-menu"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          aria-hidden="true"
-          focusable="false"
+      {/*
+        Seated in the bar, not laid on top of it.
+
+        These ran the full height of the header, top edge to bottom edge, which
+        put their bottom exactly on the rule that closes the bar. The rule is
+        painted underneath them — the full width, it was checked — but a warm
+        grey hairline reads against cream and disappears under a near-black
+        slab, so the eye took each slab's own hard edge for the boundary and the
+        buttons looked stuck onto the bar rather than held by it.
+
+        Giving them a height leaves the bar's own surface above and below, so
+        the rule passes under them where it can be seen. They keep the bleed to
+        the right edge, which is the part that made them feel anchored.
+      */}
+      <div class="flex items-center self-stretch">
+        <a
+          href={link(routes.events)}
+          aria-current={currentRoute === routes.events ? 'page' : undefined}
+          class="hidden h-12 items-center bg-ink px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-navy md:h-14 md:px-7 md:text-sm lg:inline-flex"
         >
-          <line x1="3" y1="6" x2="17" y2="6"></line>
-          <line x1="3" y1="10" x2="17" y2="10"></line>
-          <line x1="3" y1="14" x2="17" y2="14"></line>
-        </svg>
-      </button>
+          {t('nav.events')}
+        </a>
+
+        <a
+          href={link(routes.donate)}
+          aria-current={currentRoute === routes.donate ? 'page' : undefined}
+          class="inline-flex h-12 items-center bg-red px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-red-deep md:h-14 md:px-7 md:text-sm"
+          data-donate-cta
+        >
+          {t('nav.donate')}
+        </a>
+
+        <button
+          id="mobile-menu-toggle"
+          type="button"
+          class="inline-flex h-12 w-12 items-center justify-center bg-ink text-white md:h-14 lg:hidden"
+          aria-label={t('nav.menu')}
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <line x1="3" y1="6" x2="17" y2="6"></line>
+            <line x1="3" y1="10" x2="17" y2="10"></line>
+            <line x1="3" y1="14" x2="17" y2="14"></line>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Mobile drawer -->
   <div id="mobile-menu" class="hidden border-t border-line bg-paper lg:hidden">
     <nav class="space-y-1 px-6 py-6" aria-label={t('nav.label')}>
-      {nav.map((item) => (
+      {drawerNav.map((item) => (
         <a
           href={item.href}
           aria-current={item.current ? 'page' : undefined}
