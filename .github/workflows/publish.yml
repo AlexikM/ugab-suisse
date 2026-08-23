@@ -183,6 +183,25 @@ jobs:
             exit 1
           fi
 
+      - name: Take the demonstration back-office out of a public release
+        if: ${{ inputs.indexable }}
+        run: |
+          set -euo pipefail
+          # public/admin/demo/ is an editing interface that asks for nothing and
+          # saves nothing. It exists so the Comité can be shown the back-office
+          # without a GitHub account, on a preview nobody but them can reach.
+          #
+          # On a public site it is something else: an official-looking editor
+          # for the association, found by anyone who guesses the path. Nothing
+          # can be written through it — the backend cannot reach the repository
+          # — but "it does nothing" is not what it looks like, and what it looks
+          # like is the whole problem.
+          #
+          # Driven by the same flag as everything else here: indexable means a
+          # release for the public, and the demonstration is not for them.
+          rm -rf dist/admin/demo
+          echo 'Removed the demonstration back-office from a public release.'
+
       - name: Keep staging out of the search results
         if: ${{ !inputs.indexable }}
         run: |

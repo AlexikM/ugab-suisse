@@ -98,6 +98,27 @@ day this works. The two do not conflict: Pages keeps the `/ugab-suisse` prefix
 because that is where a project site is served from, and it gets it from the
 same variable, defaulted.
 
+## What this is not ready for, and it is production
+
+Staging is what this document sets up, and staging is ready. Production is the
+same pipeline and the same command — and two things stand between it and a live
+site, neither of them content:
+
+1. **The credentials are repository-wide.** `publish.yml` takes `environment` as
+   a string used for messages; the job has no `environment:` key, so the
+   production SSH secrets are repository secrets any workflow can read, with no
+   required reviewer and no deployment-branch restriction. `workflow_dispatch`
+   accepts any ref for production — deliberately, it is the rollback path — so
+   anyone with write access can publish an arbitrary branch to the live site.
+   Most of the fix is in the GitHub interface: a `production` environment with
+   required reviewers, and the `PROD_*` secrets moved into it.
+2. **Nothing here has ever run.** The transfer, the swap, the rollback and the
+   smoke check are written and unexercised. Staging is where they get exercised,
+   which is the other reason to do staging first.
+
+Neither is a reason to wait before showing the committee. Both are reasons not
+to point `main` at a public domain on the same afternoon.
+
 ## What is still not true on this site
 
 Say these to the committee rather than letting them be found:
