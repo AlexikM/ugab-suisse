@@ -83,6 +83,31 @@ function sleepSync(ms) {
 }
 
 /**
+ * How long the current build lock has been held, or `Infinity` if nobody holds
+ * it any more.
+ *
+ * Read in one attempt. This was `existsSync(lockDir) ? … statSync(lockDir) …`,
+ * which reads as one question asked twice and is in fact two questions with a
+ * gap. The holder releases in a `finally`, and it can land in that gap: the
+ * lock is there when it is asked about and gone when it is measured, `statSync`
+ * throws ENOENT out of `withBuildLock`, and the test that was politely waiting
+ * its turn is reported as a failure. Seen once in a full `npm run check` run,
+ * green on the rerun — which is the worst shape a failure can take, because an
+ * intermittently red suite teaches people to ignore red suites exactly as a
+ * permanently red one does.
+ *
+ * A lock that has vanished is not an error. It is the answer we were hoping
+ * for.
+ */
+function lockAgeMs() {
+  try {
+    return Date.now() - statSync(lockDir).mtimeMs;
+  } catch {
+    return Infinity;
+  }
+}
+
+/**
  * Two `astro build` runs in the same project stamp on each other's staging
  * directory, so builds are taken one at a time — whichever runner is executing
  * these files, and however many of them it starts at once.
@@ -94,7 +119,7 @@ function withBuildLock(run) {
       mkdirSync(lockDir);
       break;
     } catch {
-      const age = existsSync(lockDir) ? Date.now() - statSync(lockDir).mtimeMs : Infinity;
+      const age = lockAgeMs();
       if (age > STALE_LOCK_MS) rmSync(lockDir, { recursive: true, force: true });
       else if (Date.now() > deadline) throw new Error('Timed out waiting for another test build.');
       else sleepSync(200);
