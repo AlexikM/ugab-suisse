@@ -144,11 +144,25 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
         ))}
       </nav>
 
-      <div class="flex h-full items-stretch">
+      {/*
+        Seated in the bar, not laid on top of it.
+
+        These ran the full height of the header, top edge to bottom edge, which
+        put their bottom exactly on the rule that closes the bar. The rule is
+        painted underneath them — the full width, it was checked — but a warm
+        grey hairline reads against cream and disappears under a near-black
+        slab, so the eye took each slab's own hard edge for the boundary and the
+        buttons looked stuck onto the bar rather than held by it.
+
+        Giving them a height leaves the bar's own surface above and below, so
+        the rule passes under them where it can be seen. They keep the bleed to
+        the right edge, which is the part that made them feel anchored.
+      */}
+      <div class="flex items-center self-stretch">
         <a
           href={link(routes.events)}
           aria-current={currentRoute === routes.events ? 'page' : undefined}
-          class="hidden items-center bg-ink px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-navy md:px-7 md:text-sm lg:inline-flex"
+          class="hidden h-12 items-center bg-ink px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-navy md:h-14 md:px-7 md:text-sm lg:inline-flex"
         >
           {t('nav.events')}
         </a>
@@ -156,7 +170,7 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
         <a
           href={link(routes.donate)}
           aria-current={currentRoute === routes.donate ? 'page' : undefined}
-          class="inline-flex items-center bg-red px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-red-deep md:px-7 md:text-sm"
+          class="inline-flex h-12 items-center bg-red px-5 font-display text-xs tracking-eyebrow text-white uppercase transition-colors hover:bg-red-deep md:h-14 md:px-7 md:text-sm"
           data-donate-cta
         >
           {t('nav.donate')}
@@ -165,7 +179,7 @@ const languageLinks = (Object.keys(languages) as Lang[]).map((code) => ({
         <button
           id="mobile-menu-toggle"
           type="button"
-          class="inline-flex h-full w-12 items-center justify-center bg-ink text-white lg:hidden"
+          class="inline-flex h-12 w-12 items-center justify-center bg-ink text-white md:h-14 lg:hidden"
           aria-label={t('nav.menu')}
           aria-expanded="false"
           aria-controls="mobile-menu"
