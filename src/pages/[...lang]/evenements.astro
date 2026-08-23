@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import concertImage from '../../assets/images/concert.jpg';
+import EventCover from '../../components/EventCover.astro';
 import { pageContext } from '../../i18n/fallback';
 import { formatLocale, languagePaths, localeRoute, routes } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
@@ -63,11 +64,7 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {upcoming.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              {event.cover && (
-                <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
-                  <img src={withBase(event.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
-                </div>
-              )}
+              <EventCover cover={event.cover} class="mb-5" />
               <div class="eyebrow mb-2 text-navy">{dateFmt.format(event.start)}</div>
               <h3 class="text-2xl mb-2 group-hover:text-red transition">
                 {event.title}
@@ -97,11 +94,7 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {past.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              {event.cover && (
-                <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-deep">
-                  <img src={withBase(event.cover)} alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
-                </div>
-              )}
+              <EventCover cover={event.cover} ground="bg-paper-deep" class="mb-5" />
               <div class="eyebrow mb-2 text-ink-muted">{dateFmt.format(event.start)}</div>
               <h3 class="text-2xl mb-2 group-hover:text-red transition">{event.title}</h3>
               <p class="text-sm text-ink-soft mb-3">{event.location}</p>
