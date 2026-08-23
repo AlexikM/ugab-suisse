@@ -70,10 +70,9 @@
    * forgets it renders empty boxes, and it is always the one nobody checked.
    * tests/e2e/fonts.spec.ts asserts this for the body and heading styles.
    * ------------------------------------------------------------------- */
-  --font-display:
-    "Montserrat", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-sans: "Lato", "Noto Sans Armenian", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, "Noto Sans Armenian", monospace;
+  --font-display: "Montserrat", "Mardoto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Lato", "Mardoto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Mardoto", monospace;
 
   /* ---------------------------------------------------------------------
    * Type scale. The display sizes carry their own responsiveness with
