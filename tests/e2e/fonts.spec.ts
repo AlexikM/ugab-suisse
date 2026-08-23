@@ -29,25 +29,46 @@ const SAMPLES = [
   { route: './', selector: 'nav a', what: 'navigation' },
 ];
 
-test('an Armenian face is declared and actually loads', async ({ page }) => {
+/**
+ * Every Armenian family the stacks name has an `@font-face` behind it.
+ *
+ * This used to assert that one serif and one sans Armenian face existed,
+ * because the stacks were a serif display and a sans body. That is a fact about
+ * one arrangement, not about the rule, and it went red the day the display face
+ * stopped being a serif — with nothing wrong. The rule is that a stack must not
+ * name a family the site does not ship: that renders as boxes exactly as
+ * forgetting the family altogether does, and it is the harder one to spot
+ * because the stack looks right.
+ *
+ * Read from the custom properties rather than a list here, so a stack that gains
+ * a family, loses one or swaps one is checked without this file being touched.
+ */
+test('every Armenian family the stacks name is declared', async ({ page }) => {
   await page.goto('./');
   await page.evaluate(() => document.fonts.ready);
 
-  const faces = await page.evaluate(() =>
-    [...document.fonts]
-      .filter((f) => /Armenian/i.test(f.family))
-      .map((f) => `${f.family}:${f.status}`),
-  );
+  const { named, declared } = await page.evaluate(() => {
+    const unquote = (family: string) => family.trim().replace(/^["']|["']$/g, '');
+    const root = getComputedStyle(document.documentElement);
+    const named = ['--font-display', '--font-sans', '--font-mono']
+      .flatMap((token) => root.getPropertyValue(token).split(','))
+      .map(unquote)
+      .filter((family) => /Armenian/i.test(family));
+    const declared = [...document.fonts]
+      .filter((face) => /Armenian/i.test(face.family))
+      .map((face) => unquote(face.family));
+    return { named: [...new Set(named)], declared: [...new Set(declared)] };
+  });
 
   // Declared, not loaded. A face with a `unicode-range` only downloads when the
   // page actually contains glyphs in that range, and today the only Armenian on
   // the site is the switcher's endonym. Asserting `loaded` here would go red the
   // day that string moves — a failure with no defect behind it.
-  expect(faces.length, 'no Armenian @font-face is declared').toBeGreaterThan(0);
+  expect(named.length, 'no stack names an Armenian family at all').toBeGreaterThan(0);
   expect(
-    faces.some((f) => /Serif/i.test(f)) && faces.some((f) => /Sans/i.test(f)),
-    `both a serif and a sans Armenian face must exist for the two stacks: ${faces}`,
-  ).toBe(true);
+    named.filter((family) => !declared.includes(family)),
+    `these stacks name an Armenian family the site does not ship (declared: ${declared.join(', ')})`,
+  ).toEqual([]);
 });
 
 for (const { route, selector, what } of SAMPLES) {
