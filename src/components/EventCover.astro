@@ -1,0 +1,74 @@
+---
+/**
+ * An event's photograph, or what stands in for one.
+ *
+ * Most fiches have no cover: the Comité publishes an announcement as soon as
+ * the date and the venue are settled, and the photograph — like the Bureau's
+ * portraits — is still owed (#9). The listing used to render nothing at all in
+ * that case, so a card without a photograph rose to the top of its grid row
+ * while its neighbours started an image lower, and the row stopped reading as
+ * a row.
+ *
+ * **The stand-in is not a photograph, and must not become one.** The brief
+ * forbids « banque d'images génériques » and
+ * `docs/content/placeholder-inventory.md` tracks the four stock pictures still
+ * on the site as a debt to clear. Dropping a stock concert behind an
+ * announcement would add to that debt and, worse, read as a photograph *of that
+ * evening* — a fiction on a page whose whole point is that the evening is real.
+ *
+ * So it is the association's own mark on the paper ground, in the spirit of the
+ * Bureau's initials: unmistakably a placeholder, not a picture. It replaces a
+ * `☩` that stood here on the home page alone — the only occurrence in the
+ * repository, and a religious symbol standing in for a missing photograph is a
+ * decision worth taking on purpose rather than inheriting.
+ */
+import { withBase } from '../i18n/utils';
+
+interface Props {
+  /** The photograph the Comité supplied, or null. */
+  cover: string | null;
+  /** The ground behind the mark: the archive band sits on a deeper paper. */
+  ground?: string;
+  /** Utility classes for the block itself — margins belong to the caller. */
+  class?: string;
+}
+
+const { cover, ground = 'bg-paper-soft', class: className = '' } = Astro.props;
+---
+
+<div class:list={['aspect-[4/3] overflow-hidden', ground, className]}>
+  {cover ? (
+    <img
+      src={withBase(cover)}
+      alt=""
+      loading="lazy"
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+    />
+  ) : (
+    <div class="grid h-full place-items-center">
+      <!--
+        The same path as public/favicon.svg, which cannot be imported: it is a
+        static file served as-is, not a module. tests/build/mark.test.ts asserts
+        the two agree, so the copy cannot drift.
+
+        Decorative, and silent. The card states the event in text right
+        underneath, so a screen reader announcing "UGAB" — or "no photograph" —
+        before every one of them would be noise rather than information. There
+        is no alternative text because there is no alternative to give.
+      -->
+      <svg
+        viewBox="0 0 256 256"
+        class="h-[38%] w-[38%] text-navy/25"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          d="M69.5 18V167.5a58.5 58.5 0 0 0 117 0V18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="21.5"
+        />
+      </svg>
+    </div>
+  )}
+</div>

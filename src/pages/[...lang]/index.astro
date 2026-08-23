@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import genevaImage from '../../assets/images/geneva.jpg';
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
+import EventCover from '../../components/EventCover.astro';
 import { pageContext } from '../../i18n/fallback';
 import {
   formatLocale,
@@ -119,18 +120,7 @@ const dateFmt = new Intl.DateTimeFormat(formatLocale[served], {
         <div class="grid md:grid-cols-3 gap-8">
           {events.map((event) => (
             <a href={link(`${routes.events}/${event.id}`)} class="group block">
-              <div class="aspect-[4/3] mb-5 overflow-hidden bg-paper-soft">
-                {event.cover ? (
-                  <img
-                    src={withBase(event.cover)}
-                    alt=""
-                    loading="lazy"
-                    class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                  />
-                ) : (
-                  <div class="h-full grid place-items-center text-navy/40 font-display text-6xl" aria-hidden="true">☩</div>
-                )}
-              </div>
+              <EventCover cover={event.cover} class="mb-5" />
               <div class="eyebrow mb-2 text-navy">
                 {dateFmt.format(event.start)}
               </div>
