@@ -91,6 +91,30 @@ test('the fields work and the send button does not', () => {
  * and not a handler that does not exist yet. An attribute invented now is one
  * somebody would later trust.
  */
+/**
+ * `src/styles/global.css` puts a 3px ring on everything a keyboard can reach.
+ * A field that sets `outline-none` deletes it for itself, and the deletion is
+ * invisible in review: the page looks right, and only a keyboard finds out.
+ * These fields did exactly that, and stood beside the donation amount, which
+ * lights up correctly — the same form, two behaviours.
+ *
+ * Asserted as the absence of an opt-out rather than the presence of a ring,
+ * because the ring is not written here: inheriting it is the whole point.
+ */
+test('no field opts out of the focus ring the site puts on everything', () => {
+  for (const { route } of PAGES) {
+    const html = readPage(previewBuild().outDir, route);
+
+    for (const control of html.match(/<(?:input|textarea|button)\b[^>]*>/gi) ?? []) {
+      assert.doesNotMatch(
+        control,
+        /outline-none/,
+        `a control on ${route} removes its own focus ring:\n  ${control}`,
+      );
+    }
+  }
+});
+
 test('the preview form has nowhere to post to', () => {
   for (const { route } of PAGES) {
     const html = readPage(previewBuild().outDir, route);
