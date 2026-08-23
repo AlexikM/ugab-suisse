@@ -1,0 +1,105 @@
+# The preview the committee is shown, on GitHub Pages.
+#
+# Not the deploy pipeline. `deploy.yml` publishes to Infomaniak, keyed by
+# branch, with basic authentication and a smoke check that refuses to believe
+# the protection is on — and it is blocked on a hosting account, a domain, and
+# the removal of the base prefix, none of which exist. See
+# `docs/infrastructure-setup.md`; the first item on that list is AGBU
+# headquarters agreeing a domain name.
+#
+# This workflow exists because none of that has to happen before the committee
+# can look at the site. It publishes what the repository already builds — the
+# base prefix `/ugab-suisse` is exactly the path a project Pages site is served
+# from, so nothing is reconfigured — and it stays deliberately simple: one
+# environment, no secrets, no swap, no rollback. It is a preview, and when
+# Infomaniak opens it is deleted rather than migrated.
+#
+# **The URL is public.** Not indexed is not the same as not reachable: every
+# page asks not to be indexed and `robots.txt` disallows everything, but anyone
+# holding the address can read the site. Publish nothing here that the committee
+# has not agreed to show, and see `docs/preview-on-github-pages.md`.
+name: Preview
+
+on:
+  # Deliberately manual. A preview that republishes on every push is a preview
+  # somebody is reading while it changes under them.
+  workflow_dispatch:
+    inputs:
+      show_drafts:
+        description: Build announcements the Comité is still preparing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One preview at a time; let a running publish finish rather than leaving the
+# site half-swapped.
+concurrency:
+  group: preview
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Checks
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish the preview
+    needs: checks
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Pinned to match ci.yml and publish.yml, for the reasons written there.
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          # Unset on purpose. The layout emits `noindex` and src/pages/robots.txt.ts
+          # disallows everything unless this is exactly 'true'.
+          PUBLIC_SITE_INDEXABLE: ''
+          # The committee reads announcements before they are public — the same
+          # reason the staging build sets it. See docs/editorial/publication.md.
+          UGAB_SHOW_DRAFTS: ${{ inputs.show_drafts && '1' || '' }}
+        run: npm run build
+
+      - name: Refuse to publish a preview that invites indexing
+        run: |
+          set -euo pipefail
+          # The build decides this, and this step does not trust it. Two files,
+          # one flag; if either says the wrong thing the committee's drafts are
+          # one crawl away from a search result.
+          grep -q 'Disallow: /' dist/robots.txt \
+            || { echo '::error title=robots.txt does not disallow crawling::PUBLIC_SITE_INDEXABLE leaked into the preview build'; exit 1; }
+          grep -q 'name="robots" content="noindex' dist/index.html \
+            || { echo '::error title=No noindex meta tag::PUBLIC_SITE_INDEXABLE leaked into the preview build'; exit 1; }
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Say where it went
+        run: |
+          {
+            echo "### Preview published"
+            echo
+            echo "- Site — ${{ steps.deploy.outputs.page_url }}"
+            echo "- Back-office (demonstration, no account) — ${{ steps.deploy.outputs.page_url }}admin/demo/"
+            echo
+            echo "The address is public. Nothing typed into the demonstration back-office is saved."
+          } >> "$GITHUB_STEP_SUMMARY"
