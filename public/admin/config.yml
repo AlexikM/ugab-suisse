@@ -188,7 +188,7 @@ collections:
       - label: Lieu
         name: location
         widget: string
-        hint: Le nom du lieu, court : « Salle communale de Plainpalais », « Genève ».
+        hint: 'Le nom du lieu, court : « Salle communale de Plainpalais », « Genève ».'
 
       - label: Résumé
         name: excerpt

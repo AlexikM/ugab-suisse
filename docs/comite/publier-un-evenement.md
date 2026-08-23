@@ -60,6 +60,14 @@ places se libèrent.
 **« Langue de la fiche »** — un événement en français et sa version anglaise sont
 deux fiches distinctes. Créez d'abord le français ; l'anglais peut attendre.
 
+**Supprimer une photo de la médiathèque** — ne le faites pas tant qu'une fiche
+l'utilise encore. Retirez d'abord la photo de la fiche, enregistrez, puis
+supprimez le fichier. Dans l'autre ordre, la fiche désigne une photo qui n'existe
+plus : le site refuse alors de se reconstruire, et plus rien ne se met en ligne —
+ni cet événement, ni les autres pages — tant que ce n'est pas corrigé. C'est
+volontaire : l'alternative était de publier une image cassée sur l'annonce d'un
+gala. Si cela vous arrive, écrivez au webmaster, c'est l'affaire de deux minutes.
+
 **L'arménien** — le site est trilingue, mais les pages arméniennes affichent le
 français tant que la traduction n'est pas fournie, en le disant clairement au
 visiteur. Ce n'est pas un défaut. Dès que les textes arméniens nous parviennent,

@@ -234,7 +234,7 @@ test('a past event shows its photographs and no booking control', () => {
 
   const text = visibleText(html);
   assert.match(text, /En images/, 'the archive page shows no gallery');
-  assert.match(html, /exemple-soiree\.jpg/, 'the photograph the committee supplied is not shown');
+  assert.match(html, /hero\.jpg/, 'the photograph the committee supplied is not shown');
 });
 
 // ---------------------------------------------------------------------------
