@@ -153,11 +153,143 @@ collections:
     editor:
       preview: false
     fields:
-      # --- What an announcement cannot go out without -----------------------
+      # --- The page, in the order a visitor reads it -------------------------
+      #
+      # Not the order the fields are needed in, which is what this was before:
+      # everything an announcement cannot go out without, then everything filled
+      # in later. That grouping was true of the form and of nothing else, and an
+      # editor filling it in has no way to tell which half they are in.
+      #
+      # This order is the event page itself, top to bottom — the photograph
+      # behind the title, the title, the sentence under it, the dates, the venue,
+      # the prices, the booking, the text, the programme, the gallery. What the
+      # form asks for next is what the reader meets next, so the fiche can be
+      # checked against the page without holding both in your head.
+      #
+      # Sveltia marks a required field; the four that cannot be left empty are
+      # the title, the start date, the venue and the summary, wherever they sit.
+
+      - label: Photo principale
+        name: cover
+        widget: image
+        required: false
+        choose_url: false
+        hint: >-
+          Facultatif, mais une fiche avec photo est nettement plus lue. Envoyez
+          l'image telle quelle : elle est redimensionnée automatiquement.
+
       - label: Titre
         name: title
         widget: string
         hint: Le nom de l'événement, tel qu'il apparaîtra sur le site et sur l'invitation.
+
+      - label: Résumé
+        name: excerpt
+        widget: text
+        maxlength: 300
+        hint: >-
+          Deux phrases. C'est ce que lit un visiteur dans la liste des
+          événements et dans les résultats de recherche.
+
+      - label: Date et heure de début
+        name: date
+        widget: datetime
+        format: YYYY-MM-DDTHH:mm:ssZ
+        input_timezone: Europe/Zurich
+        output_utc: false
+        hint: Heure de Genève, même si vous saisissez la fiche depuis l'étranger.
+
+      - label: Date et heure de fin
+        name: endDate
+        widget: datetime
+        required: false
+        format: YYYY-MM-DDTHH:mm:ssZ
+        input_timezone: Europe/Zurich
+        output_utc: false
+        hint: Facultatif. À remplir seulement si l'événement dure plusieurs jours.
+
+      - label: Lieu
+        name: location
+        widget: string
+        hint: 'Le nom du lieu, court : « Salle communale de Plainpalais », « Genève ».'
+
+      - label: Adresse complète
+        name: address
+        widget: string
+        required: false
+        hint: Rue, numéro, code postal, ville. Sert à l'itinéraire proposé au visiteur.
+
+      - label: Tarifs
+        name: pricing
+        widget: string
+        required: false
+        hint: 'Texte libre, par exemple : CHF 150 / pers. — CHF 250 / couple.'
+
+      - label: Nombre de places
+        name: capacity
+        widget: number
+        required: false
+        value_type: int
+        min: 1
+        hint: Facultatif. Affiché au visiteur comme capacité de la salle.
+
+      - label: Lien de billetterie
+        name: ticketUrl
+        widget: string
+        required: false
+        pattern:
+          - '^https://'
+          - Le lien doit commencer par https://
+        hint: >-
+          L'adresse fournie par la billetterie. Sans ce lien, aucun bouton de
+          réservation n'apparaît.
+
+      - label: Complet
+        name: soldOut
+        widget: boolean
+        default: false
+        hint: >-
+          À cocher quand la salle est pleine. Le bouton de réservation disparaît
+          et la mention « Complet » s'affiche. À faire à la main : le site ne
+          connaît pas le nombre de billets restants.
+
+      - label: Texte de présentation
+        name: body
+        widget: markdown
+        required: false
+        # Deliberately short: the body renders inside the event page's own
+        # typography, under headings the page already provides. A volunteer
+        # cannot reach for a title style that fights the design, because it is
+        # not on the toolbar.
+        buttons: [bold, italic, link, quote, bulleted-list, numbered-list, heading-three]
+        editor_components: [image]
+        hint: >-
+          Le texte long de la page : présentation de l'événement, de l'artiste,
+          de la cause soutenue.
+
+      - label: Programme
+        name: programme
+        widget: text
+        required: false
+        hint: >-
+          Déroulé de la soirée, intervenants, tenue souhaitée, informations
+          pratiques. Laissez une ligne vide entre chaque paragraphe.
+
+      - label: Galerie photos
+        name: gallery
+        widget: list
+        required: false
+        field:
+          label: Photo
+          name: image
+          widget: image
+          required: false
+          choose_url: false
+        hint: >-
+          À remplir après l'événement. Ces photos illustrent la fiche dans
+          « Événements passés ».
+
+      # --- The fiche itself, which is not on the page ------------------------
 
       - label: Langue de la fiche
         name: lang
@@ -177,108 +309,6 @@ collections:
           événement en anglais, dupliquez la fiche (menu « … » dans la liste) et
           traduisez-la.
 
-      - label: Date et heure de début
-        name: date
-        widget: datetime
-        format: YYYY-MM-DDTHH:mm:ssZ
-        input_timezone: Europe/Zurich
-        output_utc: false
-        hint: Heure de Genève, même si vous saisissez la fiche depuis l'étranger.
-
-      - label: Lieu
-        name: location
-        widget: string
-        hint: 'Le nom du lieu, court : « Salle communale de Plainpalais », « Genève ».'
-
-      - label: Résumé
-        name: excerpt
-        widget: text
-        maxlength: 300
-        hint: >-
-          Deux phrases. C'est ce que lit un visiteur dans la liste des
-          événements et dans les résultats de recherche.
-
-      # --- Everything the Comité fills in when it knows -----------------------
-      - label: Date et heure de fin
-        name: endDate
-        widget: datetime
-        required: false
-        format: YYYY-MM-DDTHH:mm:ssZ
-        input_timezone: Europe/Zurich
-        output_utc: false
-        hint: Facultatif. À remplir seulement si l'événement dure plusieurs jours.
-
-      - label: Adresse complète
-        name: address
-        widget: string
-        required: false
-        hint: Rue, numéro, code postal, ville. Sert à l'itinéraire proposé au visiteur.
-
-      - label: Photo principale
-        name: cover
-        widget: image
-        required: false
-        choose_url: false
-        hint: >-
-          Facultatif, mais une fiche avec photo est nettement plus lue. Envoyez
-          l'image telle quelle : elle est redimensionnée automatiquement.
-
-      - label: Programme
-        name: programme
-        widget: text
-        required: false
-        hint: >-
-          Déroulé de la soirée, intervenants, tenue souhaitée, informations
-          pratiques. Laissez une ligne vide entre chaque paragraphe.
-
-      - label: Tarifs
-        name: pricing
-        widget: string
-        required: false
-        hint: 'Texte libre, par exemple : CHF 150 / pers. — CHF 250 / couple.'
-
-      - label: Nombre de places
-        name: capacity
-        widget: number
-        required: false
-        value_type: int
-        min: 1
-        hint: Facultatif. Affiché au visiteur comme capacité de la salle.
-
-      - label: Complet
-        name: soldOut
-        widget: boolean
-        default: false
-        hint: >-
-          À cocher quand la salle est pleine. Le bouton de réservation disparaît
-          et la mention « Complet » s'affiche. À faire à la main : le site ne
-          connaît pas le nombre de billets restants.
-
-      - label: Lien de billetterie
-        name: ticketUrl
-        widget: string
-        required: false
-        pattern:
-          - '^https://'
-          - Le lien doit commencer par https://
-        hint: >-
-          L'adresse fournie par la billetterie. Sans ce lien, aucun bouton de
-          réservation n'apparaît.
-
-      - label: Galerie photos
-        name: gallery
-        widget: list
-        required: false
-        field:
-          label: Photo
-          name: image
-          widget: image
-          choose_url: false
-        hint: >-
-          À remplir après l'événement. Ces photos illustrent la fiche dans
-          « Événements passés ».
-
-      # --- Publication ------------------------------------------------------
       #
       # One stored field, three states an editor lives in. The middle one is not
       # a third value: it is the same draft, seen on the préproduction site,
@@ -286,6 +316,7 @@ collections:
       # the staging deploy builds with UGAB_SHOW_DRAFTS — no page decides this.
       # The whole flow, and what is still missing from it, is in
       # docs/editorial/publication.md.
+
       - label: Brouillon
         name: draft
         widget: boolean
@@ -297,20 +328,6 @@ collections:
           où un autre membre du Comité le relit. « Publiée » — case décochée :
           l'annonce est en ligne pour tout le monde. Le site de préproduction
           n'existe pas encore ; d'ici là, faites relire l'annonce ici même.
-
-      - label: Texte de présentation
-        name: body
-        widget: markdown
-        required: false
-        # Deliberately short: the body renders inside the event page's own
-        # typography, under headings the page already provides. A volunteer
-        # cannot reach for a title style that fights the design, because it is
-        # not on the toolbar.
-        buttons: [bold, italic, link, quote, bulleted-list, numbered-list, heading-three]
-        editor_components: [image]
-        hint: >-
-          Le texte long de la page : présentation de l'événement, de l'artiste,
-          de la cause soutenue.
 
   # ---------------------------------------------------------------------------
   # Bureau du Comité
