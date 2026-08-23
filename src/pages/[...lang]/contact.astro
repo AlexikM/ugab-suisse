@@ -1,8 +1,10 @@
 ---
+import MessageForm from '../../components/MessageForm.astro';
 import { pageContext } from '../../i18n/fallback';
 import { contactEmail, languagePaths, legalRoutes, localeRoute } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
+import { formsPreviewed } from '../../lib/preview';
 
 export const getStaticPaths = languagePaths;
 
@@ -10,7 +12,7 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const { t } = pageContext(lang, 'contact');
+const { served, t } = pageContext(lang, 'contact');
 const link = (path: string) => withBase(localeRoute(path, lang));
 ---
 
@@ -83,6 +85,11 @@ const link = (path: string) => withBase(localeRoute(path, lang));
   <section class="bg-paper-soft py-section">
     <div class="mx-auto max-w-3xl px-6">
       <h2 class="text-display-sm mb-6">{t('contact.form_title')}</h2>
+      {formsPreviewed() ? (
+        <div class="bg-paper p-8">
+          <MessageForm served={served} requested={lang} idPrefix="contact" />
+        </div>
+      ) : (
       <div class="border-l-4 border-gold bg-paper p-8">
         <p class="text-lg leading-relaxed text-ink-soft">{t('contact.form_pending')}</p>
         <a
@@ -117,6 +124,7 @@ const link = (path: string) => withBase(localeRoute(path, lang));
           </a>
         </p>
       </div>
+      )}
     </div>
   </section>
 </Layout>

@@ -1,0 +1,129 @@
+---
+import { legalRoutes, localeRoute } from '../i18n/ui';
+/**
+ * The message form the Comité approved the labels for, and cannot yet send.
+ *
+ * One component, two places: the contact page, and the sponsorship half of the
+ * donation page. Both write to the same mailbox and both would post to the same
+ * handler, so a second copy of this markup would be a second thing to keep in
+ * step — the failure `BookingPanel` exists to prevent, one page over.
+ *
+ * **Nothing here is new copy.** Every label is a string the Comité approved in
+ * `docs/content/site-copy.md`, and the note about what happens to a message is
+ * the one PRD 7 wrote. A sponsorship enquiry is a message to the committee; it
+ * does not need its own vocabulary, and inventing one is not ours to do.
+ *
+ * ## Why it cannot send, and how it says so
+ *
+ * The fields work. Only the send button is disabled, and it is disabled in the
+ * markup rather than by script, so it is inert before anything runs and stays
+ * inert with scripting off.
+ *
+ * There is no `action` and no `method`: nowhere for a submission to go — not a
+ * third party, which ADR-0001 rules out, and not a handler that does not exist
+ * yet. An attribute invented now is one somebody would later trust.
+ *
+ * A line under the button says the form sends nothing. It sits *after* the
+ * control rather than above the form, because that is where somebody reads it —
+ * at the moment they reach for the button, not before they have decided to
+ * write anything.
+ *
+ * ## Why nothing here styles focus
+ *
+ * `src/styles/global.css` puts a 3px ring on everything a keyboard can reach,
+ * and inverts it on dark bands. A field that sets its own `focus:` classes
+ * either repeats that rule or, if it reaches for `outline-none`, quietly
+ * deletes it — which is what these fields did until somebody noticed they did
+ * not light up like the donation amount beside them. The boundary token is
+ * `line-strong` for the same reason: the palette says it bounds a control, and
+ * `ink-muted` is the lightest text allowed, not a border.
+ */
+import { type Lang, useTranslations, withBase } from '../i18n/utils';
+
+interface Props {
+  /** The language the page is written in. */
+  served: Lang;
+  /** The language the URL asked for — what internal links stay inside. */
+  requested: Lang;
+  /** Keeps the field ids distinct if two of these ever share a page. */
+  idPrefix: string;
+}
+
+const { served, requested, idPrefix } = Astro.props;
+const t = useTranslations(served);
+const privacy = withBase(localeRoute(legalRoutes.privacy, requested));
+
+const fields = [
+  { name: 'name', label: 'contact.form_name', type: 'text', autocomplete: 'name' },
+  { name: 'email', label: 'contact.form_email', type: 'email', autocomplete: 'email' },
+  { name: 'topic', label: 'contact.form_topic', type: 'text', autocomplete: 'off' },
+] as const;
+---
+
+<form data-preview-form>
+  <div class="space-y-6">
+    {fields.map((field) => (
+      <div>
+        <label for={`${idPrefix}-${field.name}`} class="eyebrow mb-2 block text-navy">
+          {t(field.label)}
+        </label>
+        <input
+          id={`${idPrefix}-${field.name}`}
+          name={field.name}
+          type={field.type}
+          autocomplete={field.autocomplete}
+          class="w-full border border-line-strong bg-white px-4 py-3 text-ink"
+        />
+      </div>
+    ))}
+
+    <div>
+      <label for={`${idPrefix}-message`} class="eyebrow mb-2 block text-navy">
+        {t('contact.form_message')}
+      </label>
+      <textarea
+        id={`${idPrefix}-message`}
+        name="message"
+        rows="6"
+        class="w-full border border-line-strong bg-white px-4 py-3 text-ink"
+      ></textarea>
+    </div>
+
+    <div>
+      <button
+        type="submit"
+        disabled
+        class="eyebrow inline-flex cursor-not-allowed items-center bg-ink-muted px-8 py-4 text-white"
+      >
+        {t('contact.form_submit')}
+      </button>
+
+      <!--
+        Never shown to a visitor: the whole component is off unless a build asks
+        for it, which is why this sentence is written here rather than in
+        src/i18n/ui.ts. The strings in there are the copy the Comité approved,
+        and this is not one of them.
+      -->
+      <p data-preview-notice class="mt-4 max-w-xl text-sm leading-relaxed text-red">
+        Aperçu — ce formulaire n’envoie encore rien. Le bouton est inactif tant que
+        l’hébergement n’est pas ouvert.
+      </p>
+
+      <!--
+        What happens to the message, beside the thing that sends it. The privacy
+        policy has said this since PRD 7; contact.astro has carried a comment
+        just as long saying it belongs under the submit control once a form
+        exists. It does now.
+      -->
+      <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-muted">
+        {t('contact.before_sending')}
+        {' '}
+        {t('contact.before_sending_more')}
+        {' '}
+        <a href={privacy} class="text-navy underline underline-offset-4 hover:text-red">
+          {t('footer.privacy')}
+        </a>
+      </p>
+    </div>
+  </div>
+</form>

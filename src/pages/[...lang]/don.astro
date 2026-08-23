@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 // PLACEHOLDER photography — see docs/content/placeholder-inventory.md (#9).
 import humanitarianImage from '../../assets/images/humanitarian.jpg';
 import DonationChoice from '../../components/DonationChoice.astro';
+import MessageForm from '../../components/MessageForm.astro';
 import ProviderSlot from '../../components/ProviderSlot.astro';
 import SwissQrBill from '../../components/SwissQrBill.astro';
 import { pageContext } from '../../i18n/fallback';
@@ -16,6 +17,7 @@ import {
 } from '../../i18n/ui';
 import { type Lang, withBase } from '../../i18n/utils';
 import Layout from '../../layouts/Layout.astro';
+import { formsPreviewed } from '../../lib/preview';
 
 export const getStaticPaths = languagePaths;
 
@@ -185,6 +187,29 @@ const link = (path: string) => withBase(localeRoute(path, lang));
       </a>
     </div>
   </section>
+
+  <!--
+    The sponsorship enquiry, in a preview build only.
+
+    The pre-launch checklist names two forms the Comité has to send before
+    launch — the contact one and this one — and this page has only ever offered
+    a link to the contact page. It is the same message to the same mailbox, so
+    it is the same component and the same approved labels; a sponsorship
+    enquiry does not need a vocabulary of its own, and there is none to use.
+    The heading is the page's own call to action.
+
+    The link above stays. It is what a normal build offers, and it works.
+  -->
+  {formsPreviewed() && (
+    <section class="bg-paper-soft py-section">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-display-sm mb-6">{t('sponsor.cta')}</h2>
+        <div class="bg-paper p-8">
+          <MessageForm served={served} requested={lang} idPrefix="sponsor" />
+        </div>
+      </div>
+    </section>
+  )}
 </Layout>
 
 <!--
