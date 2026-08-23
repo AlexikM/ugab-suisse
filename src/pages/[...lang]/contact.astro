@@ -12,6 +12,30 @@ interface Props {
 const { lang } = Astro.props;
 const { t } = pageContext(lang, 'contact');
 const link = (path: string) => withBase(localeRoute(path, lang));
+
+/**
+ * Whether to draw the contact form that cannot send yet.
+ *
+ * Off in every build that is not asked for it, so a visitor never meets it —
+ * the whole point of removing the prototype's form was that a form which
+ * discards what somebody wrote is worse than no form, and one that cannot be
+ * typed into at all is only a politer version of the same lie.
+ *
+ * On, it draws the form the Comité approved the labels for, inert: no action to
+ * post to, every control disabled, and a banner saying so. That is enough to
+ * judge the design, agree the fields and see where the notice about what
+ * happens to a message will sit — none of which needs a mail handler to exist.
+ *
+ * Read from the environment rather than passed down, because it is a property
+ * of the build and not of this page. `UGAB_SHOW_DRAFTS` is read the same way,
+ * for the same reason — see src/lib/content.ts.
+ *
+ *     UGAB_PREVIEW_FORMS=1 npm run dev
+ */
+const previewForms =
+  typeof process === 'undefined'
+    ? false
+    : process.env.UGAB_PREVIEW_FORMS === '1' || process.env.UGAB_PREVIEW_FORMS === 'true';
 ---
 
 <Layout lang={lang} section="contact" title={t('nav.contact')} description={t('contact.lead')}>
@@ -83,6 +107,103 @@ const link = (path: string) => withBase(localeRoute(path, lang));
   <section class="bg-paper-soft py-section">
     <div class="mx-auto max-w-3xl px-6">
       <h2 class="text-display-sm mb-6">{t('contact.form_title')}</h2>
+      {previewForms ? (
+        <div class="border-l-4 border-gold bg-paper p-8">
+          <!--
+            Never shown to a visitor: this whole branch is off unless a build
+            asks for it, which is why the banner is written here rather than in
+            src/i18n/ui.ts. The strings in there are the copy the Comité
+            approved, and this sentence is not one of them.
+          -->
+          <p class="eyebrow mb-8 border border-navy px-4 py-3 text-navy">
+            Aperçu — ce formulaire n’envoie encore rien
+          </p>
+
+          <!--
+            No `action` and no `method`: there is nowhere to post to yet, and an
+            attribute invented now is one somebody would later trust. The
+            fieldset is disabled, so nothing can be typed, submitted or
+            focus-trapped either.
+          -->
+          <form>
+            <fieldset disabled class="space-y-6 border-0 p-0">
+              <div>
+                <label for="contact-name" class="eyebrow mb-2 block text-navy">
+                  {t('contact.form_name')}
+                </label>
+                <input
+                  id="contact-name"
+                  name="name"
+                  type="text"
+                  autocomplete="name"
+                  class="w-full border border-ink-muted bg-paper-soft px-4 py-3 text-ink"
+                />
+              </div>
+
+              <div>
+                <label for="contact-email" class="eyebrow mb-2 block text-navy">
+                  {t('contact.form_email')}
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  class="w-full border border-ink-muted bg-paper-soft px-4 py-3 text-ink"
+                />
+              </div>
+
+              <div>
+                <label for="contact-topic" class="eyebrow mb-2 block text-navy">
+                  {t('contact.form_topic')}
+                </label>
+                <input
+                  id="contact-topic"
+                  name="topic"
+                  type="text"
+                  class="w-full border border-ink-muted bg-paper-soft px-4 py-3 text-ink"
+                />
+              </div>
+
+              <div>
+                <label for="contact-message" class="eyebrow mb-2 block text-navy">
+                  {t('contact.form_message')}
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows="6"
+                  class="w-full border border-ink-muted bg-paper-soft px-4 py-3 text-ink"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                class="eyebrow inline-flex items-center bg-red px-8 py-4 text-white"
+              >
+                {t('contact.form_submit')}
+              </button>
+            </fieldset>
+          </form>
+
+          <!--
+            Under the send button, which is where the comment below has always
+            said it belongs once a form exists. Same three facts, same wording.
+          -->
+          <p class="mt-6 max-w-xl text-sm leading-relaxed text-ink-muted">
+            {t('contact.before_sending')}
+            {' '}
+            {t('contact.before_sending_more')}
+            {' '}
+            <a
+              href={link(legalRoutes.privacy)}
+              class="text-navy underline underline-offset-4 hover:text-red"
+            >
+              {t('footer.privacy')}
+            </a>
+          </p>
+        </div>
+      ) : (
       <div class="border-l-4 border-gold bg-paper p-8">
         <p class="text-lg leading-relaxed text-ink-soft">{t('contact.form_pending')}</p>
         <a
@@ -117,6 +238,7 @@ const link = (path: string) => withBase(localeRoute(path, lang));
           </a>
         </p>
       </div>
+      )}
     </div>
   </section>
 </Layout>
