@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Armenian has to render in an Armenian face, everywhere, not just in headings.
+ * Armenian has to render in a face that covers Armenian, everywhere, not just
+ * in headings.
  *
  * The classic failure is a body style whose stack forgets the Armenian family:
  * headings look right, one paragraph renders as empty boxes, and nobody notices
@@ -13,9 +14,50 @@ import { expect, test } from '@playwright/test';
  * developer laptop with a system Armenian font installed even when the site's
  * own stack has dropped it. It passed with the family deliberately removed. The
  * stack is what we control and what ships; the test asserts that.
+ *
+ * **What counts as an Armenian family.** This used to be `/Armenian/i` against
+ * the family name, which worked only because the families were called "Noto
+ * Sans Armenian" and "Noto Serif Armenian". It is a coincidence of naming, not
+ * a property, and it broke the moment the site adopted Mardoto — a face drawn
+ * for Armenian, named the way Armenian typefaces are named rather than after
+ * the script. The suite went red reporting `Lato, Mardoto, … — no Armenian
+ * family in the stack`, which is the exact opposite of the truth.
+ *
+ * A family covers Armenian when its `@font-face` says so. That is what the
+ * browser itself uses to decide, it is what makes the glyph draw, and it cannot
+ * be broken by renaming anything.
  */
 
-const ARMENIAN_FAMILY = /Armenian/i;
+/** Ա — enough to tell whether a declared range reaches the Armenian block. */
+const ARMENIAN_SAMPLE = 0x531;
+
+/**
+ * The families whose `@font-face` declares coverage of Armenian, read from the
+ * page rather than listed here so that swapping the face needs no edit.
+ */
+const armenianFamilies = async (page: import('@playwright/test').Page) =>
+  page.evaluate((sample) => {
+    const covers = (range: string) =>
+      range.split(',').some((part) => {
+        const match = part.trim().match(/^U\+([0-9A-Fa-f]+)(?:-([0-9A-Fa-f]+))?$/);
+        if (!match) return false;
+        const low = Number.parseInt(match[1], 16);
+        const high = match[2] ? Number.parseInt(match[2], 16) : low;
+        return low <= sample && sample <= high;
+      });
+
+    return [
+      ...new Set(
+        [...document.fonts]
+          .filter((face) => covers(face.unicodeRange))
+          .map((face) => face.family.replace(/^["']|["']$/g, '')),
+      ),
+    ];
+  }, ARMENIAN_SAMPLE);
+
+/** The families a computed stack names, in order, unquoted. */
+const stackOf = (family: string) =>
+  family.split(',').map((one) => one.trim().replace(/^["']|["']$/g, ''));
 
 /** One element per text style that ships, sampled from real pages. */
 const SAMPLES = [
@@ -29,61 +71,51 @@ const SAMPLES = [
   { route: './', selector: 'nav a', what: 'navigation' },
 ];
 
-/**
- * Every Armenian family the stacks name has an `@font-face` behind it.
- *
- * This used to assert that one serif and one sans Armenian face existed,
- * because the stacks were a serif display and a sans body. That is a fact about
- * one arrangement, not about the rule, and it went red the day the display face
- * stopped being a serif — with nothing wrong. The rule is that a stack must not
- * name a family the site does not ship: that renders as boxes exactly as
- * forgetting the family altogether does, and it is the harder one to spot
- * because the stack looks right.
- *
- * Read from the custom properties rather than a list here, so a stack that gains
- * a family, loses one or swaps one is checked without this file being touched.
- */
-test('every Armenian family the stacks name is declared', async ({ page }) => {
+test('the site ships a face that covers Armenian, and every token names it', async ({ page }) => {
   await page.goto('./');
   await page.evaluate(() => document.fonts.ready);
 
-  const { named, declared } = await page.evaluate(() => {
-    const unquote = (family: string) => family.trim().replace(/^["']|["']$/g, '');
-    const root = getComputedStyle(document.documentElement);
-    const named = ['--font-display', '--font-sans', '--font-mono']
-      .flatMap((token) => root.getPropertyValue(token).split(','))
-      .map(unquote)
-      .filter((family) => /Armenian/i.test(family));
-    const declared = [...document.fonts]
-      .filter((face) => /Armenian/i.test(face.family))
-      .map((face) => unquote(face.family));
-    return { named: [...new Set(named)], declared: [...new Set(declared)] };
-  });
+  const covering = await armenianFamilies(page);
 
   // Declared, not loaded. A face with a `unicode-range` only downloads when the
   // page actually contains glyphs in that range, and today the only Armenian on
   // the site is the switcher's endonym. Asserting `loaded` here would go red the
   // day that string moves — a failure with no defect behind it.
-  expect(named.length, 'no stack names an Armenian family at all').toBeGreaterThan(0);
+  expect(covering, 'no @font-face on this site declares Armenian coverage').not.toEqual([]);
+
+  const tokens = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    return ['--font-display', '--font-sans', '--font-mono'].map((token) => ({
+      token,
+      value: root.getPropertyValue(token),
+    }));
+  });
+
+  const forgetful = tokens
+    .filter(({ value }) => !stackOf(value).some((family) => covering.includes(family)))
+    .map(({ token, value }) => `${token}: ${value.trim()}`);
+
   expect(
-    named.filter((family) => !declared.includes(family)),
-    `these stacks name an Armenian family the site does not ship (declared: ${declared.join(', ')})`,
+    forgetful,
+    `these stacks name no family that covers Armenian, so Armenian renders as boxes wherever they are used. Covering: ${covering.join(', ')}`,
   ).toEqual([]);
 });
 
 for (const { route, selector, what } of SAMPLES) {
   test(`${what} can render Armenian`, async ({ page }) => {
     await page.goto(route);
+    await page.evaluate(() => document.fonts.ready);
 
+    const covering = await armenianFamilies(page);
     const family = await page.evaluate((sel) => {
-      const el = document.querySelector(sel);
-      return el ? getComputedStyle(el).fontFamily : null;
+      const element = document.querySelector(sel);
+      return element ? getComputedStyle(element).fontFamily : null;
     }, selector);
 
     expect(family, `no element matched ${selector} on ${route}`).not.toBeNull();
     expect(
-      family,
-      `${what} resolves to ${family} — no Armenian family in the stack, so Armenian renders as boxes here`,
-    ).toMatch(ARMENIAN_FAMILY);
+      stackOf(family as string).some((one) => covering.includes(one)),
+      `${what} resolves to ${family} — nothing in that stack covers Armenian, so Armenian renders as boxes here. Covering: ${covering.join(', ')}`,
+    ).toBe(true);
   });
 }

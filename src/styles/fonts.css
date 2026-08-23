@@ -148,18 +148,44 @@
     U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* --- Noto Sans Armenian — the Armenian half of every stack --------------- */
+/* --- Mardoto — the Armenian half of every stack -------------------------- */
 /*
- * Only the Armenian block is shipped. The Latin ranges Google also builds for
- * this family are never reached: Montserrat and Lato come first in every stack
- * and already cover Latin.
+ * The face the rest of the federation sets Armenian in: `ugabfrance.org` ships
+ * Mardoto, and this committee is the same organisation. It is a Roboto for
+ * Armenian — Christian Robertson, who drew Roboto, with Vahan Hovhannisyan —
+ * which is why it sits quietly beside Montserrat and Lato rather than arguing
+ * with them.
+ *
+ * **Apache-2.0, and the licence travels with it.** `mardoto.LICENSE.txt` and
+ * `mardoto.AUTHORS.txt` sit beside the files and are served from `dist/`, which
+ * is what is actually distributed — the same arrangement the vendored CMS
+ * bundle uses, for the same reason. Note for whoever checks: the font download
+ * sites say OFL. They are wrong; the repository ships an Apache 2.0 LICENSE.
+ * Source: https://github.com/vahanhovh/mardoto
+ *
+ * Two static weights rather than one variable file, because Mardoto has no
+ * variable build. That costs 29 832 bytes against the Noto subset it replaces,
+ * and it is paid only by a page that actually contains Armenian — the
+ * `unicode-range` below is the whole reason that is true. Mardoto also draws a
+ * real italic; it is not shipped, because nothing on the site sets Armenian in
+ * italic that was not already synthesising it, and an unused face is weight the
+ * next maintainer inherits.
  */
 
 @font-face {
-  font-family: "Noto Sans Armenian";
+  font-family: "Mardoto";
   font-style: normal;
-  font-weight: 400 700;
+  font-weight: 400;
   font-display: swap;
-  src: url("/fonts/noto-sans-armenian-armenian.woff2") format("woff2");
+  src: url("/fonts/mardoto-400-armenian.woff2") format("woff2");
+  unicode-range: U+0308, U+0530-058F, U+2010, U+2024, U+25CC, U+FB13-FB17;
+}
+
+@font-face {
+  font-family: "Mardoto";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/mardoto-700-armenian.woff2") format("woff2");
   unicode-range: U+0308, U+0530-058F, U+2010, U+2024, U+25CC, U+FB13-FB17;
 }
