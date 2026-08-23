@@ -29,6 +29,29 @@ test('an event cannot end before it begins', () => {
   );
 });
 
+/**
+ * The image widget only offers photographs the médiathèque already holds, so a
+ * fiche cannot be *created* naming one that is absent. It becomes absent later:
+ * somebody tidies the médiathèque, and a fiche published months ago still names
+ * the file. Nothing in the entry is wrong at that point — every field validates,
+ * the page builds, the route exists — and a visitor gets a grey box where the
+ * photograph of the soirée should be.
+ *
+ * Asserted on the build rather than on a page, because the point is that the
+ * page is never produced.
+ */
+test('a fiche cannot name a photograph the médiathèque does not hold', () => {
+  const build = buildWithContent('missing-photograph');
+
+  assert.notEqual(build.status, 0, 'the build should have failed but it succeeded');
+  assert.match(build.output, /2099-photo-absente/, 'the failure should name the offending entry');
+  assert.match(
+    build.output,
+    /photo-supprimee\.jpg/,
+    'the failure should name the photograph that is missing, not merely the fiche',
+  );
+});
+
 /** One build, several questions asked of it. */
 let eventFields;
 function withEventFixtures() {
@@ -123,7 +146,7 @@ test('past events are listed with their photographs', () => {
     /Soirée déjà passée/,
     'the past event is missing from the listing',
   );
-  assert.match(page, /exemple-soiree\.jpg/, 'the past event is listed without its photograph');
+  assert.match(page, /hero\.jpg/, 'the past event is listed without its photograph');
 });
 
 test('the site still tells a visitor something when there are no events', () => {

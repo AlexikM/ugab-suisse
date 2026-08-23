@@ -1,4 +1,6 @@
 import { defineCollection, z } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { glob } from 'astro/loaders';
 
 import { bureauRoles } from './i18n/ui';
@@ -7,6 +9,48 @@ import { bureauRoles } from './i18n/ui';
 // they can build a site containing a deliberately broken or deliberately
 // incomplete entry without writing into src/content. Nothing else sets it.
 const contentDir = process.env.UGAB_CONTENT_DIR ?? './src/content';
+
+/**
+ * Where an uploaded photograph actually lives. `media_folder: public/uploads`
+ * and `public_folder: /uploads` in `public/admin/config.yml` are the two halves
+ * of one decision: the file is written to `public/uploads/`, and the fiche
+ * carries `/uploads/…`. `withBase()` prefixes the base path at render time, and
+ * nothing else touches either value.
+ *
+ * This is deliberately not read from the content directory. A fixture supplies
+ * entries, never photographs; the médiathèque is the same folder in every build.
+ */
+const publicDir = new URL('../public/', import.meta.url);
+
+/**
+ * Whether a fiche points at a photograph that is not there.
+ *
+ * This cannot be reached by choosing an image: the widget only offers files the
+ * médiathèque already holds. It is reached by deleting one afterwards while a
+ * fiche still names it — and what a visitor then gets is a broken image on a
+ * real announcement, which nothing else in the build would notice. The entry is
+ * valid, the page renders, the picture is a grey box.
+ *
+ * The cost of catching it here is that the whole site stops building over a
+ * missing photograph, which is heavier than the defect. It is the trade this
+ * repository already makes for `demo` and for reversed dates: an entry that
+ * would embarrass the Comité in public fails before it reaches the public, and
+ * the message says what to do about it.
+ *
+ * Only paths the médiathèque produces are checked. Anything else is somebody
+ * else's file, and this build cannot say whether it exists.
+ */
+function photographIsMissing(reference: string): boolean {
+  if (!reference.startsWith('/')) return false;
+  return !existsSync(fileURLToPath(new URL(reference.slice(1), publicDir)));
+}
+
+/** Addressed to whoever has to fix it, which is an editor and not a developer. */
+const missingPhotograph = (reference: string): string =>
+  `La photo « ${reference} » ne se trouve pas dans public${reference}. Elle a ` +
+  'probablement été supprimée de la médiathèque après avoir été choisie. ' +
+  'Renvoyez-la, ou retirez-la de la fiche : une fiche qui désigne une photo ' +
+  'absente publie une image cassée.';
 
 const events = defineCollection({
   loader: glob({ pattern: '**/*.md', base: `${contentDir}/events` }),
@@ -63,6 +107,24 @@ const events = defineCollection({
         });
       }
 
+      if (event.cover && photographIsMissing(event.cover)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['cover'],
+          message: missingPhotograph(event.cover),
+        });
+      }
+
+      event.gallery?.forEach((image, index) => {
+        if (photographIsMissing(image)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['gallery', index],
+            message: missingPhotograph(image),
+          });
+        }
+      });
+
       if (event.demo) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -86,20 +148,34 @@ const events = defineCollection({
  */
 const bureau = defineCollection({
   loader: glob({ pattern: '**/*.md', base: `${contentDir}/bureau` }),
-  schema: z.object({
-    role: z.enum(bureauRoles),
-    name: z.string(),
-    portrait: z.string().optional(),
-    bio: z
-      .object({
-        fr: z.string().optional(),
-        en: z.string().optional(),
-        // Optional like the others: the Comité owes the Armenian translations
-        // (#9) and the bureau section publishes without them.
-        hy: z.string().optional(),
-      })
-      .optional(),
-  }),
+  schema: z
+    .object({
+      role: z.enum(bureauRoles),
+      name: z.string(),
+      portrait: z.string().optional(),
+      bio: z
+        .object({
+          fr: z.string().optional(),
+          en: z.string().optional(),
+          // Optional like the others: the Comité owes the Armenian translations
+          // (#9) and the bureau section publishes without them.
+          hy: z.string().optional(),
+        })
+        .optional(),
+    })
+    .superRefine((officer, ctx) => {
+      // Same failure as an event's cover, same answer. An officer without a
+      // portrait is expected — the Comité still owes them (#9) — and renders as
+      // initials. An officer *with* a portrait that is not there renders as a
+      // broken image on the page that introduces the Bureau by name.
+      if (officer.portrait && photographIsMissing(officer.portrait)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['portrait'],
+          message: missingPhotograph(officer.portrait),
+        });
+      }
+    }),
 });
 
 export const collections = { events, bureau };

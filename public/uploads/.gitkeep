@@ -1,0 +1,10 @@
+Photographs the Comité uploads through the back-office land here.
+
+`media_folder: public/uploads` in ../admin/config.yml writes them; the fiche
+carries `/uploads/…` (`public_folder`), and the site prefixes the base path at
+render time. The folder is kept in git so that a fresh clone has it: the CMS
+creates it otherwise, but only on the first upload, and its absence reads as a
+mistake rather than as an empty médiathèque.
+
+Files here are served verbatim — the build cannot resize them, which is why they
+are resized on the way in instead. Nothing else in the repository writes here.
