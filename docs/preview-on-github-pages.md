@@ -22,10 +22,15 @@ holding the address can read the site — and the preview is built with
 Send the address to the committee; do not put it anywhere a stranger will find
 it.
 
-Two things are true on the preview that are not true of the finished site, and
-they are worth saying to the committee out loud rather than letting them be
+Three things are true on the preview that are not true of the finished site,
+and they are worth saying to the committee out loud rather than letting them be
 found:
 
+- **The message form is drawn, and it cannot send.** The public site shows a
+  paragraph saying a form comes later; the preview draws the real one, because
+  its labels are what the committee is being asked to approve. The fields work
+  and the send button does not. Somebody who writes a message into it and
+  presses the button has not been in touch with anybody.
 - **The legal notices name Infomaniak as the host.** On Pages that sentence is
   false. It is [`pre-launch-checklist.md`](pre-launch-checklist.md) C4 and it
   clears itself the day the site is served from Infomaniak.
