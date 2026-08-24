@@ -9,7 +9,7 @@ Réunissez ces éléments — vous n'aurez pas à chercher en cours de route :
 - Le **titre**, la **date et l'heure**, le **lieu et l'adresse complète**
 - Une **photo principale** : JPEG, format paysage, 1920 × 1080 minimum
 - Le **programme** : déroulé, intervenants, dress code, informations pratiques
-- Les **tarifs** et le **nombre de places**
+- Les **tarifs**, tels que vous voulez les voir affichés
 - Le **lien de billetterie**, s'il existe déjà
 
 Si un élément manque, publiez quand même : seuls le titre, la date et le lieu

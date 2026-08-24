@@ -455,8 +455,6 @@ export const ui = {
     'event.venue': 'Lieu',
     'event.programme': 'Programme',
     'event.pricing': 'Tarifs',
-    'event.capacity': 'Nombre de places',
-    'event.places': 'places',
     'event.sold_out': 'Complet',
     'event.book': 'Réserver',
     'event.finished': 'Événement terminé',
@@ -477,9 +475,6 @@ export const ui = {
     'event.ticket_types': 'Types de billets',
     'event.large_booking':
       'Pour une table ou une réservation d’entreprise, écrivez-nous : ces places se réservent directement auprès du Comité.',
-    // NOT APPROVED COPY — see the header of this file. Says out loud what the
-    // brief asks for: one room capacity shared by every ticket type.
-    'event.capacity_note': 'Places disponibles pour l’ensemble des tarifs.',
     // NOT APPROVED COPY — the brief asks for an automatic « Complet ». A static
     // page cannot know a provider's remaining stock, so this state is set by the
     // Comité on the fiche. See ADR-0001 and PRD 6.
@@ -714,8 +709,6 @@ export const ui = {
     'event.venue': 'Venue',
     'event.programme': 'Programme',
     'event.pricing': 'Tickets',
-    'event.capacity': 'Places',
-    'event.places': 'places',
     'event.sold_out': 'Sold out',
     'event.book': 'Book',
     'event.finished': 'This event has taken place',
@@ -734,8 +727,6 @@ export const ui = {
     'event.ticket_types': 'Ticket types',
     'event.large_booking':
       'For a table or a company booking, write to us: those places are reserved directly with the Committee.',
-    // NOT APPROVED COPY — see the header of this file.
-    'event.capacity_note': 'Places available across all ticket types together.',
     // NOT APPROVED COPY — see the header of this file.
     'event.sold_out_detail': 'Every place has been taken. Booking is closed for this event.',
     'event.sold_out_contact': 'A place may free up: write to us.',

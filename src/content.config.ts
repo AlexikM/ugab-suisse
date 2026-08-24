@@ -79,12 +79,24 @@ const events = defineCollection({
       programme: z.string().optional(),
       /** Free text, as the brief writes it: "CHF 150 / pers. — CHF 250 / couple". */
       pricing: z.string().optional(),
-      /** Nombre de places. */
-      capacity: z.number().int().positive().optional(),
       /**
-       * Set by hand when the room is full. A static site cannot know a
-       * provider's remaining stock; deriving this from live availability is
-       * PRD 6's decision to make.
+       * An override, and only an override.
+       *
+       * There is no `capacity` beside this any more, and its removal is the
+       * reason this comment is long. The quota belongs to the ticketing
+       * provider (PRD 6), which is the only system that can know it; a number
+       * held here as well would be a second truth, drifting from the first the
+       * moment ten seats are added to a room.
+       *
+       * A fiche written before that decision may still carry `capacity:` in its
+       * frontmatter. It is ignored rather than refused: an editor's old entry
+       * must not take the site down over a field nobody reads.
+       *
+       * So this flag is for an event that is *not* sold through the provider,
+       * and as an answer the Comité can give immediately without waiting for
+       * anything. Ticked out of habit on an event that is selling, it hides a
+       * working booking widget and nothing on the site says so — which is why
+       * the field help in the back-office says it in as many words.
        */
       soldOut: z.boolean().default(false),
       /** Where a visitor buys a ticket. */

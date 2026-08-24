@@ -64,7 +64,6 @@ export interface EventFields {
   excerpt: string;
   programme?: string;
   pricing?: string;
-  capacity?: number;
   soldOut: boolean;
   ticketUrl?: string;
   draft: boolean;
@@ -120,7 +119,6 @@ export interface EditorialEvent {
   /** The programme as paragraphs, in the order the Comité wrote them. */
   readonly programme: readonly string[];
   readonly pricing: string | null;
-  readonly capacity: number | null;
   readonly soldOut: boolean;
   readonly ticketUrl: string | null;
   /** Prepared but not yet shown to visitors. */
@@ -275,7 +273,6 @@ function toEvent(record: EventRecord, now: Date): EditorialEvent {
     gallery: data.gallery?.filter((image) => trimmed(image) !== null) ?? [],
     programme: paragraphs(data.programme),
     pricing: trimmed(data.pricing),
-    capacity: data.capacity ?? null,
     soldOut: data.soldOut,
     ticketUrl,
     isDraft: data.draft,

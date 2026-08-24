@@ -25,12 +25,11 @@
  * evening that has already happened is simply past.
  *
  * On the static-site problem: a prebuilt page cannot know a provider's remaining
- * stock, so this page never claims to. It shows the room's capacity, which is a
- * fact about the venue, and says plainly that the number of places left is not
- * on this page. ADR-0001 accepted that; PRD 6 resolves it by mounting the
- * provider's own availability widget in the slot below, where the system that
- * owns the stock reports it. That is the follow-up, and it changes this file
- * only by filling the slot.
+ * stock, so this page never claims to — not a number of places left, and no
+ * longer a room capacity either. PRD 6 removed that field: a figure the site
+ * asserts and nothing verifies drifts the first time the room changes. What is
+ * left is the honest sentence, and the provider's own availability widget in the
+ * slot below, where the system that owns the stock reports it.
  */
 
 import { localeRoute, routes } from '../i18n/ui';

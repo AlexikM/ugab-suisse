@@ -10,7 +10,6 @@ programme: |
 
   Tenue de soirée souhaitée.
 pricing: CHF 150 / pers. — CHF 250 / couple
-capacity: 200
 soldOut: true
 ticketUrl: https://example.invalid/billets
 ---

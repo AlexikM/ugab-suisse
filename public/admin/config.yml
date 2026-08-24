@@ -225,14 +225,6 @@ collections:
         required: false
         hint: 'Texte libre, par exemple : CHF 150 / pers. — CHF 250 / couple.'
 
-      - label: Nombre de places
-        name: capacity
-        widget: number
-        required: false
-        value_type: int
-        min: 1
-        hint: Facultatif. Affiché au visiteur comme capacité de la salle.
-
       - label: Lien de billetterie
         name: ticketUrl
         widget: string

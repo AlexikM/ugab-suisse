@@ -8,7 +8,8 @@
 // most likely to embarrass the committee if it ever stops being true:
 //
 //   - a full room shows a sold-out state and no active booking control;
-//   - ticket types and capacity come from the fields the committee fills in;
+//   - ticket types and prices come from the fields the committee fills in;
+//   - no page ever states a number of places — the provider owns the quota;
 //   - an incomplete event renders — which is the normal case, not the exception;
 //   - a past event shows its photographs rather than a dead booking link;
 //   - the provider's return address resolves, in every language;
@@ -22,6 +23,7 @@ import { test } from 'node:test';
 import astroConfig from '../../astro.config.mjs';
 import { collectReferences, hostsOf, KIND } from '../compliance/lib/scan.mjs';
 import {
+  allBuiltPages,
   buildWithContent,
   builtPageExists,
   readBuiltPage,
@@ -105,7 +107,7 @@ test('the listing says a room is full, and offers no booking control of its own'
 });
 
 // ---------------------------------------------------------------------------
-// Ticket types and capacity
+// Ticket types, prices, and the number of places we do not claim
 // ---------------------------------------------------------------------------
 
 test('ticket types and prices come from the fiche, split into the types they name', () => {
@@ -127,14 +129,83 @@ test('a price list the committee wrote as one line is not mangled into fragments
   assert.match(text, /CHF 250 \/ couple/);
 });
 
-test('the room capacity is shown, and said to cover every ticket type together', () => {
-  const fr = visibleText(page('2099-complet'));
-  assert.match(fr, /200/, 'the number of places is not shown');
-  // The copy mixes straight and typographic apostrophes; the assertions accept
-  // either rather than depending on which one a given string happens to carry.
-  assert.match(fr, /Places disponibles pour l['’]ensemble des tarifs/);
+/**
+ * The regression test for a field that was removed, and the reason it is
+ * written against every built page rather than against a component.
+ *
+ * `capacity` used to render as « Nombre de places — places disponibles pour
+ * l'ensemble des tarifs »: a number the site asserted and nothing verified.
+ * The provider owns the quota now, so ours would be a second truth that drifts
+ * the first time ten seats are added to a room — quietly, on the page a visitor
+ * reads before deciding to come.
+ *
+ * A number of places is exactly the kind of detail that reappears in a later
+ * template because it looks helpful. So this is phrased as a prohibition over
+ * the whole build, and it is the assertion that has to fail before anyone can
+ * put one back.
+ *
+ * Both builds are swept, and the fixture one is the half that matters. Real
+ * events are excluded from the repository — the only fiches committed are the
+ * committee's, and it has not delivered any (#9) — so on a clean checkout the
+ * live build contains no event page at all and a prohibition read only from
+ * `dist/` would pass by having nothing to look at. The fixtures always carry an
+ * event, and one of them still carries `capacity:` in its frontmatter on
+ * purpose.
+ */
+test('no built page tells a visitor how many places there are', () => {
+  // A number immediately before the word, in either language. « Toutes les
+  // places ont été attribuées » carries no figure and is not a claim about
+  // stock; « 180 places » is.
+  const claim = /\d[\d'\u2019\u00a0 ]*places\b/i;
 
-  assert.match(visibleText(page('2099-complet', '/en')), /across all ticket types together/);
+  const fixturePages = ['2099-complet', '2099-tarifs-sans-billetterie', '2099-minimal', '2020-passe']
+    .flatMap((slug) => ['', '/en', '/hy'].map((locale) => ({ slug, locale })))
+    .map(({ slug, locale }) => ({
+      route: `[fixture] ${locale || ''}/evenements/${slug}`,
+      html: page(slug, locale),
+    }));
+
+  const claiming = [...allBuiltPages(), ...fixturePages]
+    .map((page) => ({ route: page.route, text: visibleText(page.html) }))
+    .filter((page) => claim.test(page.text))
+    .map((page) => `  ${page.route}  →  ${page.text.match(claim)[0].trim()}`);
+
+  assert.deepEqual(
+    claiming,
+    [],
+    'These pages state a number of places:\n\n' +
+      `${claiming.join('\n')}\n\n` +
+      'The ticketing provider owns the quota (PRD 6). A number here is a second truth that ' +
+      'drifts the first time the room changes, and nothing on this site can verify it. Say ' +
+      'nothing about how many places exist, and let the booking widget report what is left.',
+  );
+});
+
+/**
+ * The other half of the removal, and the half that protects an editor rather
+ * than a visitor.
+ *
+ * `capacity` was a real field for months, so fiches in git still carry it —
+ * `2099-tarifs-sans-billetterie` does, on purpose, and must keep doing so. The
+ * site refuses to build over several things an editor can get wrong (a reversed
+ * date, a deleted photograph, an invented event) and each refusal was chosen
+ * because publishing the mistake was worse. A field nobody reads any more is
+ * not in that category: failing there would take the whole site off the air
+ * over frontmatter that changes nothing.
+ */
+test('a fiche still carrying the removed capacity field builds, and says nothing about it', () => {
+  const html = page('2099-tarifs-sans-billetterie');
+  const text = visibleText(html);
+
+  // Not a bare `200`: the price list on this fiche contains « CHF 1'200 / table
+  // VIP », and matching that would fail on the committee's prices rather than
+  // on the removed field.
+  assert.doesNotMatch(
+    text,
+    /\d[\d'\u2019\u00a0 ]*places\b/i,
+    'the removed field is rendered again',
+  );
+  assert.match(text, /CHF 150 \/ pers\./, 'the rest of the fiche stopped rendering');
 });
 
 // ---------------------------------------------------------------------------
