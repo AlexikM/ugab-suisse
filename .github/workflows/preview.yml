@@ -72,6 +72,17 @@ jobs:
           # The committee reads announcements before they are public — the same
           # reason the staging build sets it. See docs/editorial/publication.md.
           UGAB_SHOW_DRAFTS: ${{ inputs.show_drafts && '1' || '' }}
+          # The message form, drawn and inert. Without this the contact page
+          # shows the "a form comes later" paragraph instead — which is right
+          # for a public site and wrong here, because the labels on that form
+          # are the ones the Comité is being asked to approve, and they cannot
+          # approve what the build does not draw. Only the send button is
+          # disabled, in the markup rather than by script, and a line under it
+          # says the form sends nothing. See src/lib/preview.ts.
+          #
+          # Not an input, unlike show_drafts: there is no version of this
+          # preview that is improved by hiding it.
+          UGAB_PREVIEW_FORMS: '1'
         run: npm run build
 
       - name: Refuse to publish a preview that invites indexing
