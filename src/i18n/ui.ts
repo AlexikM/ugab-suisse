@@ -473,8 +473,12 @@ export const ui = {
     // would speak for itself. See the header of this file.
     'event.tickets_title': 'Billetterie',
     'event.ticket_types': 'Types de billets',
+    // NOT APPROVED COPY — see the header of this file. PRD 6 : la table se commande
+    // dans la billetterie en choisissant le paiement sur facture, et non par
+    // courriel à côté du système — une table convenue par e-mail ne retient
+    // aucune place, et la billetterie continue de vendre les sièges concernés.
     'event.large_booking':
-      'Pour une table ou une réservation d’entreprise, écrivez-nous : ces places se réservent directement auprès du Comité.',
+      'Pour une table ou une réservation d’entreprise, choisissez « paiement sur facture » au moment de réserver : vos places sont retenues, et nous vous adressons une facture QR à régler par virement. Vous préférez en parler d’abord ?',
     // NOT APPROVED COPY — the brief asks for an automatic « Complet ». A static
     // page cannot know a provider's remaining stock, so this state is set by the
     // Comité on the fiche. See ADR-0001 and PRD 6.
@@ -733,8 +737,9 @@ export const ui = {
     // header of this file, and the French table above.
     'event.tickets_title': 'Booking',
     'event.ticket_types': 'Ticket types',
+    // NOT APPROVED COPY — see the header of this file.
     'event.large_booking':
-      'For a table or a company booking, write to us: those places are reserved directly with the Committee.',
+      'For a table or a company booking, choose payment by invoice when you book: your places are held, and we send you a QR-invoice to settle by bank transfer. Would you rather talk to us first?',
     // NOT APPROVED COPY — see the header of this file.
     'event.sold_out_detail': 'Every place has been taken. Booking is closed for this event.',
     'event.sold_out_contact': 'A place may free up: write to us.',

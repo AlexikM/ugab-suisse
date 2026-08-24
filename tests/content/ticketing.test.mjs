@@ -320,19 +320,48 @@ test('an event with a ticketing link but no price list renders and takes booking
   );
 });
 
-test('a table or a company booking is pointed at the committee, not at a card', () => {
-  // PRD 6: "Large amounts go by invoice. VIP tables and sponsorship packages
-  // are handled by invoice and bank transfer, not card." On a four-figure table
-  // the card fee is material, and a corporate buyer wants an invoice anyway.
+/**
+ * The four-figure table, and the correction PRD 6 made to its own earlier
+ * answer.
+ *
+ * This used to say « écrivez-nous : ces places se réservent directement auprès
+ * du Comité » — book it by email, invoice it off-platform. That was right while
+ * invoicing happened outside the ticketing system, and it is wrong now, in the
+ * way that costs the committee the thing the whole PRD is about: a table
+ * arranged by email holds no seats. The per-person checkout keeps cheerfully
+ * selling places a company already believes it has, and the room count is wrong
+ * on the one evening where being wrong is expensive.
+ *
+ * The corrected flow orders inside the system and chooses prepayment. The seats
+ * are held against the same capacity as online sales while the transfer is in
+ * flight; the committee sends a QR-facture from its e-banking; the money lands
+ * in the association's own account and the fixed console commission is a franc
+ * rather than the fifty a card would take.
+ *
+ * The route to a person stays. It stops being the mechanism.
+ */
+test('a table or a company booking is offered the invoice route, not just an address', () => {
   const html = page('2099-tarifs-sans-billetterie');
+  const fr = visibleText(html);
 
-  assert.match(visibleText(html), /table ou une réservation d['’]entreprise/);
-  assert.match(html, /href="[^"]*\/contact\/?"/);
-
+  assert.match(fr, /table ou une réservation d['’]entreprise/, 'the case is no longer addressed');
   assert.match(
-    visibleText(page('2099-tarifs-sans-billetterie', '/en')),
-    /table or a company booking/,
+    fr,
+    /facture/i,
+    'the page does not name the invoice route, so a company is left to improvise — and a table ' +
+      'arranged by email holds no seats',
   );
+  assert.match(
+    fr,
+    /retenues|réservées|conservées/,
+    'nothing says the places are held while the transfer is made, which is the reason to order ' +
+      'inside the system rather than beside it',
+  );
+  assert.match(html, /href="[^"]*\/contact\/?"/, 'the route to a person disappeared entirely');
+
+  const en = visibleText(page('2099-tarifs-sans-billetterie', '/en'));
+  assert.match(en, /table or a company booking/);
+  assert.match(en, /invoice/i);
 });
 
 test('a page taking bookings does not pretend to know how many places are left', () => {
