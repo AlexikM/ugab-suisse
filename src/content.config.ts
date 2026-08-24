@@ -99,8 +99,23 @@ const events = defineCollection({
        * the field help in the back-office says it in as many words.
        */
       soldOut: z.boolean().default(false),
-      /** Where a visitor buys a ticket. */
+      /** Where a visitor buys a ticket, when the Comité has only a plain link. */
       ticketUrl: z.string().url().optional(),
+      /**
+       * The provider's shop identifier, pasted from its interface after the
+       * till has been created there. The booking widget is built from it and
+       * mounted on the page, so the event reports the availability the provider
+       * actually holds instead of a guess frozen at build time.
+       *
+       * Deliberately not a URL, and deliberately separate from `ticketUrl`. Not
+       * a URL because exactly one line in the codebase should know what a
+       * provider's address looks like — PRD 6 keeps a fallback provider and says
+       * switching costs a different pasted identifier. Separate from `ticketUrl`
+       * because the choice is the Comité's, per event: embed where live
+       * availability matters, plain link where they would rather not load a
+       * third-party frame onto an announcement.
+       */
+      ticketShopId: z.string().optional(),
 
       draft: z.boolean().default(false),
       // Marks an entry as invented. The build refuses to publish it — see below.

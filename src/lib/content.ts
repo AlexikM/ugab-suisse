@@ -66,6 +66,7 @@ export interface EventFields {
   pricing?: string;
   soldOut: boolean;
   ticketUrl?: string;
+  ticketShopId?: string;
   draft: boolean;
   demo: boolean;
 }
@@ -121,6 +122,12 @@ export interface EditorialEvent {
   readonly pricing: string | null;
   readonly soldOut: boolean;
   readonly ticketUrl: string | null;
+  /**
+   * The provider's shop, when the Comité has created the till and pasted its
+   * identifier. Its presence is what turns the booking slot from an apology
+   * into the provider's own widget.
+   */
+  readonly ticketShopId: string | null;
   /** Prepared but not yet shown to visitors. */
   readonly isDraft: boolean;
   readonly isPast: boolean;
@@ -259,6 +266,7 @@ function toEvent(record: EventRecord, now: Date): EditorialEvent {
   const endsAt = data.endDate ?? data.date;
   const isPast = endsAt.valueOf() < now.valueOf();
   const ticketUrl = trimmed(data.ticketUrl);
+  const ticketShopId = trimmed(data.ticketShopId);
 
   return {
     id: record.id,
@@ -275,9 +283,10 @@ function toEvent(record: EventRecord, now: Date): EditorialEvent {
     pricing: trimmed(data.pricing),
     soldOut: data.soldOut,
     ticketUrl,
+    ticketShopId,
     isDraft: data.draft,
     isPast,
-    canBook: !isPast && !data.soldOut && ticketUrl !== null,
+    canBook: !isPast && !data.soldOut && (ticketShopId !== null || ticketUrl !== null),
     body: async () => (await record.renderBody?.()) ?? null,
   };
 }

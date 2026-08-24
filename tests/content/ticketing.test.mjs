@@ -158,7 +158,12 @@ test('no built page tells a visitor how many places there are', () => {
   // stock; « 180 places » is.
   const claim = /\d[\d'\u2019\u00a0 ]*places\b/i;
 
-  const fixturePages = ['2099-complet', '2099-tarifs-sans-billetterie', '2099-minimal', '2020-passe']
+  const fixturePages = [
+    '2099-complet',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+    '2020-passe',
+  ]
     .flatMap((slug) => ['', '/en', '/hy'].map((locale) => ({ slug, locale })))
     .map(({ slug, locale }) => ({
       route: `[fixture] ${locale || ''}/evenements/${slug}`,
@@ -206,6 +211,67 @@ test('a fiche still carrying the removed capacity field builds, and says nothing
     'the removed field is rendered again',
   );
   assert.match(text, /CHF 150 \/ pers\./, 'the rest of the fiche stopped rendering');
+});
+
+// ---------------------------------------------------------------------------
+// The booking widget
+// ---------------------------------------------------------------------------
+
+/**
+ * The answer to the problem PRD 6 opens with: a statically generated page has no
+ * knowledge of live stock, and will show a working booking button until somebody
+ * rebuilds it, however sold out the event is.
+ *
+ * Embedding the provider's own widget resolves that, because availability is
+ * then reported by the system that owns it. It is the only mechanism by which a
+ * page with no server can be accurate about a room.
+ */
+test('an event carrying a shop identifier mounts the provider’s booking widget', () => {
+  const html = page('2099-billetterie-integree');
+
+  assert.match(html, /data-booking="open"/, 'an event with a shop is not taking bookings');
+  assert.match(html, /data-provider-slot="ticketing"/, 'no slot for the widget to mount into');
+  assert.match(
+    html,
+    /data-provider-state="connected"/,
+    'the slot still reports itself as waiting for a provider that is in fact mounted',
+  );
+  assert.match(
+    html,
+    /gala-de-test-1234/,
+    'the shop identifier from the fiche does not reach the embed, so the widget would open ' +
+      'somebody else’s till — or none',
+  );
+});
+
+/**
+ * Both fields on one fiche is not a mistake to refuse — it is what happens when
+ * a committee that has been pasting links for a year creates its first till and
+ * fills in the new field without clearing the old one. The page has to answer,
+ * and it must not answer twice: two buttons for one action is a worse page than
+ * either button alone.
+ *
+ * The widget wins, because it is the one that can report live availability,
+ * which is the entire reason PRD 6 embeds anything. Removing the identifier is
+ * how a committee chooses the plain link — which is the choice the two separate
+ * fields exist to give them.
+ */
+test('a fiche carrying both a shop and a link offers the widget, once', () => {
+  const html = page('2099-billetterie-double');
+
+  assert.match(html, /data-ticketing-embed="concert-de-test-5678"/, 'the widget is not mounted');
+  assert.doesNotMatch(
+    html,
+    /href="https:\/\/example\.invalid\/lien-double"/,
+    'the page offers the old link beside the widget — two ways to do one thing',
+  );
+
+  const controls = [...html.matchAll(/data-booking-control/g)];
+  assert.equal(
+    controls.length,
+    1,
+    `one way to book was expected, ${controls.length} were rendered`,
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -342,7 +408,12 @@ test('no event may claim the address the booking confirmation uses', () => {
 // ---------------------------------------------------------------------------
 
 test('an event page still shows the event and a contact route with embeds blocked', () => {
-  for (const slug of ['2099-complet', '2099-tarifs-sans-billetterie', '2099-minimal']) {
+  for (const slug of [
+    '2099-complet',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+    '2099-billetterie-integree',
+  ]) {
     const blocked = withEmbedsBlocked(page(slug));
     const text = visibleText(blocked);
 
@@ -356,6 +427,38 @@ test('an event page still shows the event and a contact route with embeds blocke
     /CHF 150 \/ pers\./,
     'a blocked embed must not take the price list with it',
   );
+});
+
+/**
+ * The degradation that now removes something real.
+ *
+ * Until the widget existed, blocking embeds on an event page took nothing away —
+ * worth asserting, and asserted, but not yet a test of anything. The booking
+ * panel is an iframe, so this is the first time the helper strips the thing the
+ * visitor came for.
+ *
+ * An ad blocker, a corporate proxy and a provider having a bad afternoon all
+ * produce the same page, and none of them are rare. What must survive is not the
+ * booking — that is gone, honestly — but a visitor's ability to find out that
+ * the evening exists and that a human will answer.
+ */
+test('a blocked booking panel leaves the visitor a way through, not an empty box', () => {
+  const blocked = withEmbedsBlocked(page('2099-billetterie-integree'));
+  const text = visibleText(blocked);
+
+  assert.doesNotMatch(
+    blocked,
+    /<iframe/i,
+    'the helper did not block the panel, so this proves nothing',
+  );
+
+  assert.match(text, /CHF 150 \/ pers\./, 'the price list went with the blocked frame');
+  assert.match(
+    text,
+    /bloqueur de publicité|réseau d['’]entreprise/,
+    'nothing tells the visitor why the booking panel is missing, so the page reads as broken',
+  );
+  assert.match(blocked, /href="[^"]*\/contact\/?"/, 'no route to a human once the panel is gone');
 });
 
 test('an event page loads nothing from a ticketing host today', () => {

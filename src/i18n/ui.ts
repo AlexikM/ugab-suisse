@@ -486,6 +486,14 @@ export const ui = {
       'La billetterie en ligne sera ouverte dès l’ouverture du compte auprès du prestataire. D’ici là, écrivez-nous pour réserver.',
     'event.booking_external':
       'La réservation et le paiement se font chez le prestataire de billetterie du Comité.',
+    // NOT APPROVED COPY — see the header of this file. PRD 6, comme PRD 5 : aucun
+    // prestataire suisse ne propose de paiement en arménien, et le dire vaut mieux
+    // que de laisser un visiteur arménophone le découvrir au moment de payer.
+    'event.booking_languages':
+      'La réservation se fait en français, en allemand ou en anglais — le prestataire ne propose pas l’arménien.',
+    'event.embed_title': 'Réservation en ligne',
+    'event.embed_blocked':
+      'Si le module de réservation ne s’affiche pas — bloqueur de publicité, réseau d’entreprise —, écrivez-nous : nous réservons votre place à la main.',
     'event.availability_note':
       'Le nombre de places restantes n’est pas affiché sur cette page : seule la billetterie le connaît.',
     // Message de confirmation — Achat de billet. Le texte approuvé nomme la date
@@ -735,6 +743,12 @@ export const ui = {
       'Online booking will open as soon as the account with the ticketing provider is open. Until then, write to us to reserve a place.',
     'event.booking_external':
       'Booking and payment take place with the Committee’s ticketing provider.',
+    // NOT APPROVED COPY — see the header of this file.
+    'event.booking_languages':
+      'Booking is in French, German or English — the provider does not offer Armenian.',
+    'event.embed_title': 'Online booking',
+    'event.embed_blocked':
+      'If the booking panel does not appear — an ad blocker, a corporate network — write to us and we will reserve your place by hand.',
     'event.availability_note':
       'The number of places left is not shown on this page: only the ticketing system knows it.',
     'event.thanks_title': 'Booking confirmed',

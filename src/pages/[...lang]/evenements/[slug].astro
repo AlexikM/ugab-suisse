@@ -160,6 +160,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
           isPast={event.isPast}
           soldOut={event.soldOut}
           ticketUrl={event.ticketUrl}
+          shopId={event.ticketShopId}
         />
       </div>
     </div>
@@ -195,7 +196,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     into. Absent entirely on a past event: an archive page has nothing to book.
   -->
   {!event.isPast && (
-    <section class="py-section">
+    <section id="billetterie" class="py-section scroll-mt-8">
       <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
         <div class="lg:col-span-4">
           <h2 class="text-display-sm">{t('event.tickets_title')}</h2>
@@ -232,6 +233,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             isPast={event.isPast}
             soldOut={event.soldOut}
             ticketUrl={event.ticketUrl}
+            shopId={event.ticketShopId}
           />
         </div>
       </div>

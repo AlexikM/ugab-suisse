@@ -229,6 +229,17 @@ collections:
           billetterie qu'il paie. Les deux ne sont pas reliés : un prix corrigé
           ici ne l'est pas là-bas. Corrigez toujours les deux.
 
+      - label: Identifiant de la boutique
+        name: ticketShopId
+        widget: string
+        required: false
+        hint: >-
+          Créez d'abord l'événement dans la billetterie Infomaniak, puis
+          recopiez ici l'identifiant de sa boutique. Le module de réservation
+          s'affiche alors directement sur la page, avec les places réellement
+          disponibles — c'est la billetterie qui les compte, pas le site.
+          Laissez vide tant que la billetterie n'est pas prête.
+
       - label: Lien de billetterie
         name: ticketUrl
         widget: string
@@ -237,8 +248,9 @@ collections:
           - '^https://'
           - Le lien doit commencer par https://
         hint: >-
-          L'adresse fournie par la billetterie. Sans ce lien, aucun bouton de
-          réservation n'apparaît.
+          À utiliser à la place de l'identifiant ci-dessus, quand vous préférez
+          un simple bouton qui emmène le visiteur chez le prestataire. Si les
+          deux champs sont remplis, c'est le module de réservation qui s'affiche.
 
       - label: Complet
         name: soldOut

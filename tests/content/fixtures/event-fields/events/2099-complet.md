@@ -12,6 +12,7 @@ programme: |
 pricing: CHF 150 / pers. — CHF 250 / couple
 soldOut: true
 ticketUrl: https://example.invalid/billets
+ticketShopId: complet-de-test-9999
 ---
 
 Description de l'événement.

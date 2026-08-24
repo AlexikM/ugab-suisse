@@ -124,12 +124,42 @@ test('every field an editor can fill in exists in the content schema', () => {
  * Asserted on substance rather than wording — a hint may be rewritten, but it
  * may not quietly lose the warning it exists to carry.
  */
+/**
+ * The shop identifier is the whole join between the two systems PRD 6 accepts.
+ * The event exists twice — an announcement here, a till at the provider — and
+ * this one pasted string is what makes them the same event. A field the editor
+ * cannot reach means the widget can never be mounted by anyone but a developer,
+ * which is the thing this back-office exists to avoid.
+ *
+ * The hint is asserted alongside it because the field has an order dependency
+ * that nothing else in the form has: the identifier does not exist until the
+ * till has been created at the provider, so an events officer who meets this
+ * field first has to be told to go and do something else in another window.
+ */
+test('an events officer can paste the shop identifier, and is told where it comes from', () => {
+  const config = readConfig();
+  const events = config.collections.find((collection) => collection.name === 'events');
+  const field = events.fields.find((f) => f.name === 'ticketShopId');
+
+  assert.ok(field, 'the fiche offers no way to connect an event to its ticket shop');
+  assert.match(
+    field.hint ?? '',
+    /billetterie|prestataire|Infomaniak/i,
+    'the hint does not say the till must be created at the provider first, so the field reads ' +
+      'as something the editor can invent',
+  );
+});
+
 test('the fiche warns that « Complet » hides a working booking widget', () => {
   const config = readConfig();
   const events = config.collections.find((collection) => collection.name === 'events');
   const hint = events.fields.find((field) => field.name === 'soldOut')?.hint ?? '';
 
-  assert.match(hint, /billetterie|prestataire/i, 'the hint does not mention the ticketing provider');
+  assert.match(
+    hint,
+    /billetterie|prestataire/i,
+    'the hint does not mention the ticketing provider',
+  );
   assert.match(
     hint,
     /masqu|cache|disparaî|supprim/i,
