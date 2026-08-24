@@ -13,7 +13,8 @@
 //   - an incomplete event renders — which is the normal case, not the exception;
 //   - a past event shows its photographs rather than a dead booking link;
 //   - the provider's return address resolves, in every language;
-//   - the pages still work with third-party embeds blocked.
+//   - the pages still work with third-party embeds blocked;
+//   - the host the widget loads from is the one the privacy policy names.
 
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
@@ -21,6 +22,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 import astroConfig from '../../astro.config.mjs';
+import { declaredHosts } from '../compliance/lib/declared.mjs';
 import { collectReferences, hostsOf, KIND } from '../compliance/lib/scan.mjs';
 import {
   allBuiltPages,
@@ -461,20 +463,113 @@ test('a blocked booking panel leaves the visitor a way through, not an empty box
   assert.match(blocked, /href="[^"]*\/contact\/?"/, 'no route to a human once the panel is gone');
 });
 
-test('an event page loads nothing from a ticketing host today', () => {
-  for (const slug of ['2099-complet', '2099-billetterie-sans-tarifs', '2020-passe']) {
-    const references = collectReferences({
-      page: slug,
-      html: page(slug),
-      siteHost,
-    });
+/**
+ * The coupling that breaks silently, and the reason it is asserted from the
+ * built page rather than from the register.
+ *
+ * `src/i18n/legal.ts` names the ticketing host, and `TicketingEmbed.astro`
+ * builds the booking panel's address. Those are two independent literals that
+ * happen to agree today. PRD 6 keeps a fallback provider and designs the embed
+ * so that switching to it costs one line — which means the day somebody takes
+ * that option, the widget starts contacting Eventfrog while the privacy policy
+ * still tells the reader it is Infomaniak. Every existing audit passes: the page
+ * declares a host, the site contacts a host, and nobody compares the two for
+ * *this* pair.
+ *
+ * The register is not imported here for the same reason `declared.mjs` does not
+ * import it — reading the source would prove the data matches the data. This
+ * reads what a visitor is shown on the privacy page, in the same build, and
+ * compares it against what the page they are booking from actually loads.
+ */
+test('the host the booking widget contacts is one the privacy policy names', () => {
+  const html = page('2099-billetterie-integree');
+  const contacted = hostsOf(
+    collectReferences({ page: '2099-billetterie-integree', html, siteHost }),
+    KIND.AUTOMATIC,
+  );
+
+  assert.ok(
+    contacted.length > 0,
+    'the booking widget contacts nothing, so either the embed stopped mounting or the scanner ' +
+      'stopped seeing it — either way this test is no longer proving anything',
+  );
+
+  const privacy = readPage(events().outDir, '/confidentialite');
+  const declared = declaredHosts(privacy);
+  const named = new Set([...declared.active, ...declared.planned, ...declared.preLaunch]);
+
+  const undeclared = contacted.filter((host) => !named.has(host));
+
+  assert.deepEqual(
+    undeclared,
+    [],
+    `The booking widget loads from ${undeclared.join(', ')}, which the privacy policy does not ` +
+      'name anywhere.\n\nThe likely cause is a change of ticketing provider: the address in ' +
+      'src/components/TicketingEmbed.astro moved and the processor register in src/i18n/legal.ts ' +
+      'did not follow. Both have to move together — the register is what the visitor is shown, ' +
+      'and the embed is what their browser actually does.',
+  );
+});
+
+/**
+ * The complement, and the assertion the plain-link path exists to keep true.
+ *
+ * A ticket link the committee pasted onto a fiche is a link. It is followed
+ * because a visitor chose to follow it, and nothing about the announcement page
+ * reaches the provider before that — no frame, no script, no beacon. That is the
+ * difference the two fields are there to give the Comité, and it is worth an
+ * assertion rather than a promise, because "it is only a link" is exactly the
+ * sentence somebody says while adding a tracking pixel beside it.
+ */
+test('an event sold through a plain link contacts nobody until the visitor clicks', () => {
+  for (const slug of [
+    '2099-billetterie-sans-tarifs',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+  ]) {
+    const references = collectReferences({ page: slug, html: page(slug), siteHost });
 
     assert.deepEqual(
       hostsOf(references, KIND.AUTOMATIC),
       [],
-      `${slug} fetches from a third party while the page loads. No ticketing account exists ` +
-        '(ADR-0001); when one does, its hosts belong in the processor register in ' +
-        'src/i18n/legal.ts before they belong on a page.',
+      `${slug} fetches from a third party while the page loads, and it carries no shop ` +
+        'identifier — so whatever is doing it is not the booking widget.',
+    );
+  }
+});
+
+/**
+ * The published site, as opposed to the fixtures.
+ *
+ * No committee fiche carries a shop identifier yet, and until one does the
+ * ticketing processor is honestly disclosed as `planned` — a promise about a
+ * host the browser does not yet contact. The moment an events officer pastes an
+ * identifier onto a real announcement, that stops being true, and it stops being
+ * true through an ordinary editorial action taken by somebody who has never
+ * heard of a processor register.
+ *
+ * That case is already caught: tests/compliance/third-party-requests.test.mjs fails
+ * on a `planned` processor whose host turns up in the build, with a message
+ * naming the file and the change. This test is the narrower, earlier one — it
+ * says the situation has not arisen yet, so the disclosure the site publishes
+ * today is accurate today.
+ */
+test('no published event page contacts a ticketing host yet', () => {
+  const eventPages = allBuiltPages().filter((built) => /\/evenements\/[^/]+\/?$/.test(built.route));
+
+  for (const built of eventPages) {
+    const automatic = hostsOf(
+      collectReferences({ page: built.route, html: built.html, siteHost }),
+      KIND.AUTOMATIC,
+    );
+
+    assert.deepEqual(
+      automatic,
+      [],
+      `${built.route} loads from a third party while the page opens. If that is a booking ` +
+        'widget, the ticketing processor in src/i18n/legal.ts has to move from `planned` to ' +
+        '`active` in the same change — the privacy policy currently tells the reader that ' +
+        'nothing is contacted.',
     );
   }
 });
