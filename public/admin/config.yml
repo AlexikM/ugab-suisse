@@ -223,7 +223,11 @@ collections:
         name: pricing
         widget: string
         required: false
-        hint: 'Texte libre, par exemple : CHF 150 / pers. — CHF 250 / couple.'
+        hint: >-
+          Texte libre, par exemple « CHF 150 / pers. — CHF 250 / couple ». C'est
+          ce que le visiteur lit sur la page ; c'est chez le prestataire de
+          billetterie qu'il paie. Les deux ne sont pas reliés : un prix corrigé
+          ici ne l'est pas là-bas. Corrigez toujours les deux.
 
       - label: Lien de billetterie
         name: ticketUrl
@@ -241,9 +245,13 @@ collections:
         widget: boolean
         default: false
         hint: >-
-          À cocher quand la salle est pleine. Le bouton de réservation disparaît
-          et la mention « Complet » s'affiche. À faire à la main : le site ne
-          connaît pas le nombre de billets restants.
+          Une exception, pas une habitude. Quand l'événement est vendu par la
+          billetterie, c'est elle qui sait si la salle est pleine et qui
+          l'annonce d'elle-même : en cochant cette case, vous masquez une
+          réservation qui fonctionne, et rien sur le site ne vous le signalera.
+          Réservez-la aux événements qui ne passent pas par la billetterie, ou
+          pour répondre tout de suite sans attendre. La mention « Complet »
+          s'affiche alors, et toute possibilité de réserver disparaît de la page.
 
       - label: Texte de présentation
         name: body

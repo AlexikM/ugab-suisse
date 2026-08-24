@@ -53,9 +53,24 @@ qui hésite à acheter un billet pour la prochaine soirée.
 
 ## Les points qui prêtent à confusion
 
-**« Complet »** — cochez cette case quand la salle est pleine. Le bouton de
-réservation disparaît et la mention « Complet » s'affiche. Décochez-la si des
-places se libèrent.
+**« Complet » est une exception, pas une habitude.** Quand l'événement est vendu
+par la billetterie, c'est elle qui sait si la salle est pleine, et elle l'annonce
+d'elle-même sur la page : vous n'avez rien à faire. Cocher la case par réflexe
+masque alors une réservation qui fonctionne — sur un événement qui se vend
+encore — et rien sur le site ne vous le signalera.
+
+Elle sert dans deux cas, et ils sont réels : un événement qui ne passe pas par la
+billetterie du tout, et l'urgence, quand vous voulez répondre tout de suite sans
+attendre. La mention « Complet » s'affiche alors, et toute possibilité de
+réserver disparaît de la page. Décochez-la si des places se libèrent.
+
+**Les tarifs sont recopiés, et personne ne les recopie pour vous.** Le champ
+« Tarifs » est ce que le visiteur lit sur la page ; le prix qu'il paie est celui
+que vous avez saisi dans la billetterie. Les deux ne sont reliés par rien. C'est
+volontaire — la page doit rester lisible en arménien, sans JavaScript, et à
+l'intérieur de l'annonce elle-même, ce que le module de réservation ne sait pas
+faire — mais cela veut dire qu'un tarif corrigé d'un seul côté est faux de
+l'autre. Corrigez toujours les deux.
 
 **« Langue de la fiche »** — un événement en français et sa version anglaise sont
 deux fiches distinctes. Créez d'abord le français ; l'anglais peut attendre.
