@@ -247,6 +247,45 @@ test('an event carrying a shop identifier mounts the provider’s booking widget
 });
 
 /**
+ * The booking step is not available in Armenian, and the page says so before
+ * the visitor gets there.
+ *
+ * PRD 6 records this as a limit rather than a defect: no Swiss provider offers
+ * an Armenian checkout, and the site is trilingual. The same is true of
+ * donations. An Armenian-reading visitor meeting a French payment form having
+ * been told nothing is a worse experience than one who was warned on the page
+ * they chose to book from — and the warning belongs beside the widget, not in a
+ * committee guide.
+ */
+test('the page says the booking step is not in Armenian', () => {
+  assert.match(
+    visibleText(page('2099-billetterie-integree')),
+    /français, en allemand ou en anglais/,
+    'nothing on the page warns that the booking step is not available in every language the ' +
+      'site is read in',
+  );
+  assert.match(visibleText(page('2099-billetterie-integree', '/en')), /French, German or English/);
+});
+
+/**
+ * The normal incomplete case, with the widget on it.
+ *
+ * A committee announces an event as soon as the date and the venue are settled,
+ * and `pricing` is free text it may simply not have written yet — the provider
+ * holds the real prices either way. The page must not depend on a field the
+ * fiche was never obliged to carry.
+ */
+test('an event with a shop but no price list renders and takes bookings', () => {
+  const html = page('2099-billetterie-sans-grille');
+  const text = visibleText(html);
+
+  assert.match(html, /data-booking="open"/);
+  assert.match(html, /data-ticketing-embed="conference-de-test-2468"/, 'the widget is not mounted');
+  assert.doesNotMatch(html, /data-ticket-types/, 'no prices were written, so none should appear');
+  assert.doesNotMatch(text, /undefined|NaN/, 'a missing optional field leaked into the page');
+});
+
+/**
  * Both fields on one fiche is not a mistake to refuse — it is what happens when
  * a committee that has been pasting links for a year creates its first till and
  * fills in the new field without clearing the old one. The page has to answer,
