@@ -8,11 +8,13 @@
 // most likely to embarrass the committee if it ever stops being true:
 //
 //   - a full room shows a sold-out state and no active booking control;
-//   - ticket types and capacity come from the fields the committee fills in;
+//   - ticket types and prices come from the fields the committee fills in;
+//   - no page ever states a number of places — the provider owns the quota;
 //   - an incomplete event renders — which is the normal case, not the exception;
 //   - a past event shows its photographs rather than a dead booking link;
 //   - the provider's return address resolves, in every language;
-//   - the pages still work with third-party embeds blocked.
+//   - the pages still work with third-party embeds blocked;
+//   - the host the widget loads from is the one the privacy policy names.
 
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
@@ -20,8 +22,10 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 import astroConfig from '../../astro.config.mjs';
+import { declaredHosts } from '../compliance/lib/declared.mjs';
 import { collectReferences, hostsOf, KIND } from '../compliance/lib/scan.mjs';
 import {
+  allBuiltPages,
   buildWithContent,
   builtPageExists,
   readBuiltPage,
@@ -105,7 +109,7 @@ test('the listing says a room is full, and offers no booking control of its own'
 });
 
 // ---------------------------------------------------------------------------
-// Ticket types and capacity
+// Ticket types, prices, and the number of places we do not claim
 // ---------------------------------------------------------------------------
 
 test('ticket types and prices come from the fiche, split into the types they name', () => {
@@ -127,14 +131,188 @@ test('a price list the committee wrote as one line is not mangled into fragments
   assert.match(text, /CHF 250 \/ couple/);
 });
 
-test('the room capacity is shown, and said to cover every ticket type together', () => {
-  const fr = visibleText(page('2099-complet'));
-  assert.match(fr, /200/, 'the number of places is not shown');
-  // The copy mixes straight and typographic apostrophes; the assertions accept
-  // either rather than depending on which one a given string happens to carry.
-  assert.match(fr, /Places disponibles pour l['’]ensemble des tarifs/);
+/**
+ * The regression test for a field that was removed, and the reason it is
+ * written against every built page rather than against a component.
+ *
+ * `capacity` used to render as « Nombre de places — places disponibles pour
+ * l'ensemble des tarifs »: a number the site asserted and nothing verified.
+ * The provider owns the quota now, so ours would be a second truth that drifts
+ * the first time ten seats are added to a room — quietly, on the page a visitor
+ * reads before deciding to come.
+ *
+ * A number of places is exactly the kind of detail that reappears in a later
+ * template because it looks helpful. So this is phrased as a prohibition over
+ * the whole build, and it is the assertion that has to fail before anyone can
+ * put one back.
+ *
+ * Both builds are swept, and the fixture one is the half that matters. Real
+ * events are excluded from the repository — the only fiches committed are the
+ * committee's, and it has not delivered any (#9) — so on a clean checkout the
+ * live build contains no event page at all and a prohibition read only from
+ * `dist/` would pass by having nothing to look at. The fixtures always carry an
+ * event, and one of them still carries `capacity:` in its frontmatter on
+ * purpose.
+ */
+test('no built page tells a visitor how many places there are', () => {
+  // A number immediately before the word, in either language. « Toutes les
+  // places ont été attribuées » carries no figure and is not a claim about
+  // stock; « 180 places » is.
+  const claim = /\d[\d'\u2019\u00a0 ]*places\b/i;
 
-  assert.match(visibleText(page('2099-complet', '/en')), /across all ticket types together/);
+  const fixturePages = [
+    '2099-complet',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+    '2020-passe',
+  ]
+    .flatMap((slug) => ['', '/en', '/hy'].map((locale) => ({ slug, locale })))
+    .map(({ slug, locale }) => ({
+      route: `[fixture] ${locale || ''}/evenements/${slug}`,
+      html: page(slug, locale),
+    }));
+
+  const claiming = [...allBuiltPages(), ...fixturePages]
+    .map((page) => ({ route: page.route, text: visibleText(page.html) }))
+    .filter((page) => claim.test(page.text))
+    .map((page) => `  ${page.route}  →  ${page.text.match(claim)[0].trim()}`);
+
+  assert.deepEqual(
+    claiming,
+    [],
+    'These pages state a number of places:\n\n' +
+      `${claiming.join('\n')}\n\n` +
+      'The ticketing provider owns the quota (PRD 6). A number here is a second truth that ' +
+      'drifts the first time the room changes, and nothing on this site can verify it. Say ' +
+      'nothing about how many places exist, and let the booking widget report what is left.',
+  );
+});
+
+/**
+ * The other half of the removal, and the half that protects an editor rather
+ * than a visitor.
+ *
+ * `capacity` was a real field for months, so fiches in git still carry it —
+ * `2099-tarifs-sans-billetterie` does, on purpose, and must keep doing so. The
+ * site refuses to build over several things an editor can get wrong (a reversed
+ * date, a deleted photograph, an invented event) and each refusal was chosen
+ * because publishing the mistake was worse. A field nobody reads any more is
+ * not in that category: failing there would take the whole site off the air
+ * over frontmatter that changes nothing.
+ */
+test('a fiche still carrying the removed capacity field builds, and says nothing about it', () => {
+  const html = page('2099-tarifs-sans-billetterie');
+  const text = visibleText(html);
+
+  // Not a bare `200`: the price list on this fiche contains « CHF 1'200 / table
+  // VIP », and matching that would fail on the committee's prices rather than
+  // on the removed field.
+  assert.doesNotMatch(
+    text,
+    /\d[\d'\u2019\u00a0 ]*places\b/i,
+    'the removed field is rendered again',
+  );
+  assert.match(text, /CHF 150 \/ pers\./, 'the rest of the fiche stopped rendering');
+});
+
+// ---------------------------------------------------------------------------
+// The booking widget
+// ---------------------------------------------------------------------------
+
+/**
+ * The answer to the problem PRD 6 opens with: a statically generated page has no
+ * knowledge of live stock, and will show a working booking button until somebody
+ * rebuilds it, however sold out the event is.
+ *
+ * Embedding the provider's own widget resolves that, because availability is
+ * then reported by the system that owns it. It is the only mechanism by which a
+ * page with no server can be accurate about a room.
+ */
+test('an event carrying a shop identifier mounts the provider’s booking widget', () => {
+  const html = page('2099-billetterie-integree');
+
+  assert.match(html, /data-booking="open"/, 'an event with a shop is not taking bookings');
+  assert.match(html, /data-provider-slot="ticketing"/, 'no slot for the widget to mount into');
+  assert.match(
+    html,
+    /data-provider-state="connected"/,
+    'the slot still reports itself as waiting for a provider that is in fact mounted',
+  );
+  assert.match(
+    html,
+    /gala-de-test-1234/,
+    'the shop identifier from the fiche does not reach the embed, so the widget would open ' +
+      'somebody else’s till — or none',
+  );
+});
+
+/**
+ * The booking step is not available in Armenian, and the page says so before
+ * the visitor gets there.
+ *
+ * PRD 6 records this as a limit rather than a defect: no Swiss provider offers
+ * an Armenian checkout, and the site is trilingual. The same is true of
+ * donations. An Armenian-reading visitor meeting a French payment form having
+ * been told nothing is a worse experience than one who was warned on the page
+ * they chose to book from — and the warning belongs beside the widget, not in a
+ * committee guide.
+ */
+test('the page says the booking step is not in Armenian', () => {
+  assert.match(
+    visibleText(page('2099-billetterie-integree')),
+    /français, en allemand ou en anglais/,
+    'nothing on the page warns that the booking step is not available in every language the ' +
+      'site is read in',
+  );
+  assert.match(visibleText(page('2099-billetterie-integree', '/en')), /French, German or English/);
+});
+
+/**
+ * The normal incomplete case, with the widget on it.
+ *
+ * A committee announces an event as soon as the date and the venue are settled,
+ * and `pricing` is free text it may simply not have written yet — the provider
+ * holds the real prices either way. The page must not depend on a field the
+ * fiche was never obliged to carry.
+ */
+test('an event with a shop but no price list renders and takes bookings', () => {
+  const html = page('2099-billetterie-sans-grille');
+  const text = visibleText(html);
+
+  assert.match(html, /data-booking="open"/);
+  assert.match(html, /data-ticketing-embed="conference-de-test-2468"/, 'the widget is not mounted');
+  assert.doesNotMatch(html, /data-ticket-types/, 'no prices were written, so none should appear');
+  assert.doesNotMatch(text, /undefined|NaN/, 'a missing optional field leaked into the page');
+});
+
+/**
+ * Both fields on one fiche is not a mistake to refuse — it is what happens when
+ * a committee that has been pasting links for a year creates its first till and
+ * fills in the new field without clearing the old one. The page has to answer,
+ * and it must not answer twice: two buttons for one action is a worse page than
+ * either button alone.
+ *
+ * The widget wins, because it is the one that can report live availability,
+ * which is the entire reason PRD 6 embeds anything. Removing the identifier is
+ * how a committee chooses the plain link — which is the choice the two separate
+ * fields exist to give them.
+ */
+test('a fiche carrying both a shop and a link offers the widget, once', () => {
+  const html = page('2099-billetterie-double');
+
+  assert.match(html, /data-ticketing-embed="concert-de-test-5678"/, 'the widget is not mounted');
+  assert.doesNotMatch(
+    html,
+    /href="https:\/\/example\.invalid\/lien-double"/,
+    'the page offers the old link beside the widget — two ways to do one thing',
+  );
+
+  const controls = [...html.matchAll(/data-booking-control/g)];
+  assert.equal(
+    controls.length,
+    1,
+    `one way to book was expected, ${controls.length} were rendered`,
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -181,19 +359,48 @@ test('an event with a ticketing link but no price list renders and takes booking
   );
 });
 
-test('a table or a company booking is pointed at the committee, not at a card', () => {
-  // PRD 6: "Large amounts go by invoice. VIP tables and sponsorship packages
-  // are handled by invoice and bank transfer, not card." On a four-figure table
-  // the card fee is material, and a corporate buyer wants an invoice anyway.
+/**
+ * The four-figure table, and the correction PRD 6 made to its own earlier
+ * answer.
+ *
+ * This used to say « écrivez-nous : ces places se réservent directement auprès
+ * du Comité » — book it by email, invoice it off-platform. That was right while
+ * invoicing happened outside the ticketing system, and it is wrong now, in the
+ * way that costs the committee the thing the whole PRD is about: a table
+ * arranged by email holds no seats. The per-person checkout keeps cheerfully
+ * selling places a company already believes it has, and the room count is wrong
+ * on the one evening where being wrong is expensive.
+ *
+ * The corrected flow orders inside the system and chooses prepayment. The seats
+ * are held against the same capacity as online sales while the transfer is in
+ * flight; the committee sends a QR-facture from its e-banking; the money lands
+ * in the association's own account and the fixed console commission is a franc
+ * rather than the fifty a card would take.
+ *
+ * The route to a person stays. It stops being the mechanism.
+ */
+test('a table or a company booking is offered the invoice route, not just an address', () => {
   const html = page('2099-tarifs-sans-billetterie');
+  const fr = visibleText(html);
 
-  assert.match(visibleText(html), /table ou une réservation d['’]entreprise/);
-  assert.match(html, /href="[^"]*\/contact\/?"/);
-
+  assert.match(fr, /table ou une réservation d['’]entreprise/, 'the case is no longer addressed');
   assert.match(
-    visibleText(page('2099-tarifs-sans-billetterie', '/en')),
-    /table or a company booking/,
+    fr,
+    /facture/i,
+    'the page does not name the invoice route, so a company is left to improvise — and a table ' +
+      'arranged by email holds no seats',
   );
+  assert.match(
+    fr,
+    /retenues|réservées|conservées/,
+    'nothing says the places are held while the transfer is made, which is the reason to order ' +
+      'inside the system rather than beside it',
+  );
+  assert.match(html, /href="[^"]*\/contact\/?"/, 'the route to a person disappeared entirely');
+
+  const en = visibleText(page('2099-tarifs-sans-billetterie', '/en'));
+  assert.match(en, /table or a company booking/);
+  assert.match(en, /invoice/i);
 });
 
 test('a page taking bookings does not pretend to know how many places are left', () => {
@@ -271,7 +478,12 @@ test('no event may claim the address the booking confirmation uses', () => {
 // ---------------------------------------------------------------------------
 
 test('an event page still shows the event and a contact route with embeds blocked', () => {
-  for (const slug of ['2099-complet', '2099-tarifs-sans-billetterie', '2099-minimal']) {
+  for (const slug of [
+    '2099-complet',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+    '2099-billetterie-integree',
+  ]) {
     const blocked = withEmbedsBlocked(page(slug));
     const text = visibleText(blocked);
 
@@ -287,20 +499,145 @@ test('an event page still shows the event and a contact route with embeds blocke
   );
 });
 
-test('an event page loads nothing from a ticketing host today', () => {
-  for (const slug of ['2099-complet', '2099-billetterie-sans-tarifs', '2020-passe']) {
-    const references = collectReferences({
-      page: slug,
-      html: page(slug),
-      siteHost,
-    });
+/**
+ * The degradation that now removes something real.
+ *
+ * Until the widget existed, blocking embeds on an event page took nothing away —
+ * worth asserting, and asserted, but not yet a test of anything. The booking
+ * panel is an iframe, so this is the first time the helper strips the thing the
+ * visitor came for.
+ *
+ * An ad blocker, a corporate proxy and a provider having a bad afternoon all
+ * produce the same page, and none of them are rare. What must survive is not the
+ * booking — that is gone, honestly — but a visitor's ability to find out that
+ * the evening exists and that a human will answer.
+ */
+test('a blocked booking panel leaves the visitor a way through, not an empty box', () => {
+  const blocked = withEmbedsBlocked(page('2099-billetterie-integree'));
+  const text = visibleText(blocked);
+
+  assert.doesNotMatch(
+    blocked,
+    /<iframe/i,
+    'the helper did not block the panel, so this proves nothing',
+  );
+
+  assert.match(text, /CHF 150 \/ pers\./, 'the price list went with the blocked frame');
+  assert.match(
+    text,
+    /bloqueur de publicité|réseau d['’]entreprise/,
+    'nothing tells the visitor why the booking panel is missing, so the page reads as broken',
+  );
+  assert.match(blocked, /href="[^"]*\/contact\/?"/, 'no route to a human once the panel is gone');
+});
+
+/**
+ * The coupling that breaks silently, and the reason it is asserted from the
+ * built page rather than from the register.
+ *
+ * `src/i18n/legal.ts` names the ticketing host, and `TicketingEmbed.astro`
+ * builds the booking panel's address. Those are two independent literals that
+ * happen to agree today. PRD 6 keeps a fallback provider and designs the embed
+ * so that switching to it costs one line — which means the day somebody takes
+ * that option, the widget starts contacting Eventfrog while the privacy policy
+ * still tells the reader it is Infomaniak. Every existing audit passes: the page
+ * declares a host, the site contacts a host, and nobody compares the two for
+ * *this* pair.
+ *
+ * The register is not imported here for the same reason `declared.mjs` does not
+ * import it — reading the source would prove the data matches the data. This
+ * reads what a visitor is shown on the privacy page, in the same build, and
+ * compares it against what the page they are booking from actually loads.
+ */
+test('the host the booking widget contacts is one the privacy policy names', () => {
+  const html = page('2099-billetterie-integree');
+  const contacted = hostsOf(
+    collectReferences({ page: '2099-billetterie-integree', html, siteHost }),
+    KIND.AUTOMATIC,
+  );
+
+  assert.ok(
+    contacted.length > 0,
+    'the booking widget contacts nothing, so either the embed stopped mounting or the scanner ' +
+      'stopped seeing it — either way this test is no longer proving anything',
+  );
+
+  const privacy = readPage(events().outDir, '/confidentialite');
+  const declared = declaredHosts(privacy);
+  const named = new Set([...declared.active, ...declared.planned, ...declared.preLaunch]);
+
+  const undeclared = contacted.filter((host) => !named.has(host));
+
+  assert.deepEqual(
+    undeclared,
+    [],
+    `The booking widget loads from ${undeclared.join(', ')}, which the privacy policy does not ` +
+      'name anywhere.\n\nThe likely cause is a change of ticketing provider: the address in ' +
+      'src/components/TicketingEmbed.astro moved and the processor register in src/i18n/legal.ts ' +
+      'did not follow. Both have to move together — the register is what the visitor is shown, ' +
+      'and the embed is what their browser actually does.',
+  );
+});
+
+/**
+ * The complement, and the assertion the plain-link path exists to keep true.
+ *
+ * A ticket link the committee pasted onto a fiche is a link. It is followed
+ * because a visitor chose to follow it, and nothing about the announcement page
+ * reaches the provider before that — no frame, no script, no beacon. That is the
+ * difference the two fields are there to give the Comité, and it is worth an
+ * assertion rather than a promise, because "it is only a link" is exactly the
+ * sentence somebody says while adding a tracking pixel beside it.
+ */
+test('an event sold through a plain link contacts nobody until the visitor clicks', () => {
+  for (const slug of [
+    '2099-billetterie-sans-tarifs',
+    '2099-tarifs-sans-billetterie',
+    '2099-minimal',
+  ]) {
+    const references = collectReferences({ page: slug, html: page(slug), siteHost });
 
     assert.deepEqual(
       hostsOf(references, KIND.AUTOMATIC),
       [],
-      `${slug} fetches from a third party while the page loads. No ticketing account exists ` +
-        '(ADR-0001); when one does, its hosts belong in the processor register in ' +
-        'src/i18n/legal.ts before they belong on a page.',
+      `${slug} fetches from a third party while the page loads, and it carries no shop ` +
+        'identifier — so whatever is doing it is not the booking widget.',
+    );
+  }
+});
+
+/**
+ * The published site, as opposed to the fixtures.
+ *
+ * No committee fiche carries a shop identifier yet, and until one does the
+ * ticketing processor is honestly disclosed as `planned` — a promise about a
+ * host the browser does not yet contact. The moment an events officer pastes an
+ * identifier onto a real announcement, that stops being true, and it stops being
+ * true through an ordinary editorial action taken by somebody who has never
+ * heard of a processor register.
+ *
+ * That case is already caught: tests/compliance/third-party-requests.test.mjs fails
+ * on a `planned` processor whose host turns up in the build, with a message
+ * naming the file and the change. This test is the narrower, earlier one — it
+ * says the situation has not arisen yet, so the disclosure the site publishes
+ * today is accurate today.
+ */
+test('no published event page contacts a ticketing host yet', () => {
+  const eventPages = allBuiltPages().filter((built) => /\/evenements\/[^/]+\/?$/.test(built.route));
+
+  for (const built of eventPages) {
+    const automatic = hostsOf(
+      collectReferences({ page: built.route, html: built.html, siteHost }),
+      KIND.AUTOMATIC,
+    );
+
+    assert.deepEqual(
+      automatic,
+      [],
+      `${built.route} loads from a third party while the page opens. If that is a booking ` +
+        'widget, the ticketing processor in src/i18n/legal.ts has to move from `planned` to ' +
+        '`active` in the same change — the privacy policy currently tells the reader that ' +
+        'nothing is contacted.',
     );
   }
 });

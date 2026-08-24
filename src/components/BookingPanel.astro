@@ -17,25 +17,37 @@
  *   widget could usefully say, and a widget that mounted anyway would be a
  *   second opinion about availability sitting next to the committee's own.
  * - `open` — an upcoming event with somewhere to book.
- * - `unavailable` — an upcoming event with no ticketing link yet. The normal
- *   case for an announcement made as soon as the date and the venue are settled;
- *   it offers the committee's own address instead of a dead end.
+ * - `unavailable` — an upcoming event with no ticketing yet. The normal case for
+ *   an announcement made as soon as the date and the venue are settled; it
+ *   offers the committee's own address instead of a dead end.
  *
- * `past` wins over `sold-out`, which wins over the presence of a link: a sold-out
- * evening that has already happened is simply past.
+ * `past` wins over `sold-out`, which wins over having anywhere to book: a
+ * sold-out evening that has already happened is simply past.
+ *
+ * **There is no fifth state for "open, with a widget".** `data-booking` answers
+ * one question — can this visitor book? — and a shop identifier does not change
+ * that answer, only how it is offered. How it is offered is already a fact about
+ * the markup, `data-provider-state` on the slot, and two orthogonal questions are
+ * better as two attributes than as a state whose name means "open, but".
+ *
+ * **The shop wins over the link when a fiche carries both.** They are two ways
+ * to do one thing, and offering both is two buttons for one action; the widget
+ * is the one that can report live availability, which is the entire reason PRD 6
+ * embeds anything at all. A committee that wants the plain link removes the
+ * identifier, which is the choice the two fields exist to give them.
  *
  * On the static-site problem: a prebuilt page cannot know a provider's remaining
- * stock, so this page never claims to. It shows the room's capacity, which is a
- * fact about the venue, and says plainly that the number of places left is not
- * on this page. ADR-0001 accepted that; PRD 6 resolves it by mounting the
- * provider's own availability widget in the slot below, where the system that
- * owns the stock reports it. That is the follow-up, and it changes this file
- * only by filling the slot.
+ * stock, so this page never claims to — not a number of places left, and no
+ * longer a room capacity either. PRD 6 removed that field: a figure the site
+ * asserts and nothing verifies drifts the first time the room changes. What is
+ * left is the honest sentence, and the provider's own availability widget in the
+ * slot below, where the system that owns the stock reports it.
  */
 
 import { localeRoute, routes } from '../i18n/ui';
 import { type Lang, useTranslations, withBase } from '../i18n/utils';
 import ProviderSlot from './ProviderSlot.astro';
+import TicketingEmbed from './TicketingEmbed.astro';
 
 export type BookingState = 'open' | 'sold-out' | 'past' | 'unavailable';
 
@@ -43,10 +55,11 @@ export function bookingState(event: {
   isPast: boolean;
   soldOut: boolean;
   ticketUrl: string | null | undefined;
+  shopId?: string | null;
 }): BookingState {
   if (event.isPast) return 'past';
   if (event.soldOut) return 'sold-out';
-  return event.ticketUrl ? 'open' : 'unavailable';
+  return event.shopId || event.ticketUrl ? 'open' : 'unavailable';
 }
 
 interface Props {
@@ -57,6 +70,8 @@ interface Props {
   isPast: boolean;
   soldOut: boolean;
   ticketUrl?: string | null;
+  /** The provider's shop, when the committee has created the till. */
+  shopId?: string | null;
   /**
    * `summary` is the one line in the event's facts strip; `full` is the section
    * lower down that a provider's widget mounts into. Same decision, two sizes.
@@ -64,10 +79,18 @@ interface Props {
   variant: 'summary' | 'full';
 }
 
-const { served, requested, isPast, soldOut, ticketUrl = null, variant } = Astro.props;
+const {
+  served,
+  requested,
+  isPast,
+  soldOut,
+  ticketUrl = null,
+  shopId = null,
+  variant,
+} = Astro.props;
 
 const t = useTranslations(served);
-const state = bookingState({ isPast, soldOut, ticketUrl });
+const state = bookingState({ isPast, soldOut, ticketUrl, shopId });
 const contactHref = withBase(localeRoute(routes.contact, requested));
 ---
 
@@ -79,7 +102,22 @@ const contactHref = withBase(localeRoute(routes.contact, requested));
       <div class="text-lg leading-snug font-medium text-ink">{t('event.sold_out')}</div>
     )}
 
-    {state === 'open' && ticketUrl && (
+    {/*
+      With a widget on the page, the strip points down to it rather than off the
+      site: the booking is here, and sending the visitor to the provider's own
+      page instead would throw away the reason for embedding it.
+    */}
+    {state === 'open' && shopId && (
+      <a
+        href="#billetterie"
+        data-booking-control
+        class="inline-block text-lg font-medium text-navy underline underline-offset-4 hover:text-red"
+      >
+        {t('event.book')} →
+      </a>
+    )}
+
+    {state === 'open' && !shopId && ticketUrl && (
       <a
         href={ticketUrl}
         data-booking-control
@@ -120,7 +158,28 @@ const contactHref = withBase(localeRoute(routes.contact, requested));
       </div>
     )}
 
-    {state === 'open' && ticketUrl && (
+    {state === 'open' && shopId && (
+      <ProviderSlot provider="ticketing" title={t('event.tickets_title')} connected>
+        <TicketingEmbed shop={shopId} title={t('event.embed_title')} />
+        <p class="mt-5 text-sm leading-relaxed text-ink-muted">{t('event.booking_external')}</p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-muted">{t('event.booking_languages')}</p>
+        {/*
+          What a visitor gets when the frame above never loads — a blocker, a
+          proxy, or the provider having a bad afternoon. Never conditional: a
+          slot that shows nothing reads as a broken site rather than a blocked
+          script.
+        */}
+        <p class="mt-4 text-sm leading-relaxed text-ink-muted">{t('event.embed_blocked')}</p>
+        <a
+          href={contactHref}
+          class="eyebrow mt-4 inline-flex items-center border-b border-navy pb-1 text-navy hover:text-red"
+        >
+          {t('event.ask')} →
+        </a>
+      </ProviderSlot>
+    )}
+
+    {state === 'open' && !shopId && ticketUrl && (
       <ProviderSlot provider="ticketing" title={t('event.tickets_title')}>
         <a
           href={ticketUrl}

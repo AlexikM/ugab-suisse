@@ -116,10 +116,12 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
   <!--
     L'ESSENTIEL — the facts strip.
 
-    Tarifs and Nombre de places are separate cells. They used to share one, with
-    the capacity printed under the "Tarifs" label, which read as though two
-    hundred were part of the price. They answer different questions and the
-    committee fills them in independently.
+    There is no cell for a number of places, and there is not going to be one.
+    The quota belongs to the ticketing provider (PRD 6); a figure printed here
+    is a second truth that nothing on this site can verify, and it drifts
+    silently the first time the room changes. `data-booking` below reports what
+    a visitor can actually do, which is a different question and an answerable
+    one.
   -->
   <section class="bg-paper border-b border-line">
     <div class="mx-auto max-w-page px-6 py-8 md:py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
@@ -144,16 +146,6 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
         </div>
       )}
 
-      {event.capacity && (
-        <div>
-          <div class="eyebrow mb-2 text-navy">{t('event.capacity')}</div>
-          <div class="text-lg font-medium leading-snug">
-            {event.capacity} {t('event.places')}
-          </div>
-          <div class="text-sm text-ink-muted mt-1">{t('event.capacity_note')}</div>
-        </div>
-      )}
-
       <div>
         <!--
           Labelled "Billetterie", not "Réserver": the cell holds four possible
@@ -168,6 +160,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
           isPast={event.isPast}
           soldOut={event.soldOut}
           ticketUrl={event.ticketUrl}
+          shopId={event.ticketShopId}
         />
       </div>
     </div>
@@ -203,7 +196,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
     into. Absent entirely on a past event: an archive page has nothing to book.
   -->
   {!event.isPast && (
-    <section class="py-section">
+    <section id="billetterie" class="py-section scroll-mt-8">
       <div class="mx-auto max-w-page px-6 grid lg:grid-cols-12 gap-12 lg:gap-16">
         <div class="lg:col-span-4">
           <h2 class="text-display-sm">{t('event.tickets_title')}</h2>
@@ -233,12 +226,6 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             </div>
           )}
 
-          {event.capacity && (
-            <p class="text-sm leading-relaxed text-ink-muted">
-              {event.capacity} {t('event.places')} — {t('event.capacity_note')}
-            </p>
-          )}
-
           <BookingPanel
             served={served}
             requested={lang}
@@ -246,6 +233,7 @@ const directionsUrl = `https://www.openstreetmap.org/search?query=${encodeURICom
             isPast={event.isPast}
             soldOut={event.soldOut}
             ticketUrl={event.ticketUrl}
+            shopId={event.ticketShopId}
           />
         </div>
       </div>

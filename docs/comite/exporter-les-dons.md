@@ -7,6 +7,10 @@ don appartient au prestataire de paiement, et l'argent va du donateur au
 prestataire, puis du prestataire au compte de l'association. **Le tableau de bord
 du prestataire est la seule source qui fasse foi.**
 
+Avec une exception, et elle a sa section plus bas : un **soutien ajouté à une
+commande de billets** est encaissé par la billetterie et n'apparaît nulle part
+chez le prestataire de dons.
+
 Cette page décrit ce que le trésorier fait avec, sans avoir à demander à
 personne.
 
@@ -42,6 +46,32 @@ Ce qui suit ne dépend pas du prestataire et vaut dans tous les cas.
 Faites-le même si vous n'avez pas besoin d'attestations cette année-là. C'est
 aussi ce qui rend un changement de prestataire indolore ; voir
 [Quitter un prestataire](quitter-un-prestataire.md).
+
+## Les soutiens ajoutés à une commande de billets
+
+**Il y a deux exports de dons, pas un.** C'est le genre de chose désagréable à
+découvrir en janvier, alors autant le savoir maintenant.
+
+La billetterie permet à un acheteur d'ajouter un **soutien** à sa commande de
+billets, au moment de payer. C'est une vraie libéralité et elle compte comme
+telle — mais elle est encaissée par la billetterie, pas par le prestataire de
+dons, et elle est **versée avec l'argent des billets**. Elle n'apparaîtra jamais
+dans l'export du prestataire de dons, quelle que soit l'année.
+
+Donc, au bouclement :
+
+1. Exportez les transactions du prestataire de dons, comme décrit ci-dessus.
+2. **Exportez aussi les commandes de la billetterie**, pour chaque événement de
+   l'exercice, et isolez-en les lignes de soutien.
+3. Additionnez les deux sources **par donateur** avant d'établir une attestation.
+   Une même personne peut très bien avoir fait un virement en mars et ajouté un
+   soutien à son billet de gala en novembre.
+
+**L'attestation ne porte que sur le soutien, jamais sur le billet.** Un don est
+une libéralité sans contrepartie ; un billet de gala donne droit à un dîner. Les
+certifier ensemble serait certifier quelque chose de faux, une fois par convive.
+C'est précisément pour cela que le prix du billet et le soutien sont deux lignes
+séparées à l'encaissement, et non un prix unique gonflé.
 
 ## Les dons récurrents
 

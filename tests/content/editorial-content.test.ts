@@ -68,7 +68,6 @@ describe('an event the Comité has only half filled in', () => {
       address: null,
       cover: null,
       pricing: null,
-      capacity: null,
       ticketUrl: null,
       gallery: [],
       programme: [],
