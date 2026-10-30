@@ -40,7 +40,9 @@ brief's fiche événement requires:
 
 - `program` (déroulé, intervenants, dress code)
 - `pricing` (e.g. CHF 150 / pers · 250 / couple · 1'200 / table VIP)
-- `capacity` (nombre de places) and `soldOut` (the automatic « Complet »)
+- `soldOut` (the « Complet » override). `capacity` was added here and then
+  removed by PRD 6: the quota belongs to the ticketing provider, and a copy
+  of it on the fiche is a second truth nothing can verify.
 - `ticketUrl` — `registrationUrl` exists and probably becomes this
 
 **`antennes`** — Genève, Lausanne, Zurich. **Not in the brief at all.** The

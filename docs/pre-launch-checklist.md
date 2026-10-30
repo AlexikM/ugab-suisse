@@ -182,7 +182,7 @@ the result.
 
 - [ ] **Committee + webmaster** — every page in all three languages, including the Armenian the committee supplies.
 - [ ] **Treasurer** — a real test donation, carried through to the bank. Confirm the amount arrives, the confirmation email is right, and the wording matches what A1 concluded.
-- [ ] **Committee** — a real test booking, carried through to the e-ticket, and check it against however the door is actually run.
+- [ ] **Committee** — the ticketing test in full: [`comite/tester-la-billetterie.md`](comite/tester-la-billetterie.md). One booking per ticket type through to the e-ticket and refunded, one prepayment order carried to release, one console sale, and one booking against a deliberately exhausted capacity. It is written there rather than here because it is run before **every** major event, not once before launch — the configuration is per-event, so last year's gala proves nothing about this year's.
 - [ ] **Committee** — send the contact form and the sponsorship form; confirm both arrive in a mailbox someone reads.
 - [ ] **Committee + webmaster** — every page on a phone, including the donation and booking steps.
 - [ ] **Webmaster** — keyboard-only pass over the whole site, and a screen-reader pass over the donation flow.

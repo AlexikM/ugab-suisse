@@ -57,7 +57,7 @@ provider**. Nothing that handles money is built in-house.
 | Hosting | Infomaniak (CH) | Swiss data residency; mail bundled; as specified |
 | CMS | Sveltia CMS (fallback: Storyblok) | Drop-in for the existing Decap config; content stays in git; FR UI; CHF 0 |
 | Donations | RaiseNow Free or Payrexx | TWINT, PostFinance, QR-facture, recurring; no monthly fee |
-| Ticketing | Billetweb (or provider pay-links, reduced scope) | Ticket types, stock, e-tickets, door check-in |
+| Ticketing | Infomaniak eTickets | Same account as hosting; TWINT; ticket types, stock, e-tickets, door check-in |
 | Forms | One PHP handler on Infomaniak + Cloudflare Turnstile | No form SaaS; no personal data leaves CH |
 | Analytics | Cookieless (Umami/Plausible) or none | Removes most of the consent banner |
 
@@ -83,9 +83,32 @@ cadence has been sporadic. Sveltia reads the same config, so this is a swap,
 not a rebuild.
 
 **Stripe for donations and ticketing.** Rejected as primary: no PostFinance Pay,
-weaker TWINT/QR-facture story, and a developer-facing dashboard where the
-committee's treasurer needs a fundraising-facing one in French. Retained as a
-fallback if the Swiss providers disappoint on form design control.
+no ticketing product at all — no shared capacity across ticket types, no
+e-ticket, no door list — and a developer-facing dashboard where the committee's
+treasurer needs a fundraising-facing one in French. Note that Stripe now
+supports TWINT for Swiss businesses, so the TWINT objection this ADR originally
+carried no longer holds; the others do. Retained as a fallback if the Swiss
+providers disappoint on form design control.
+
+**Billetweb, or another non-Swiss ticketing service.** Rejected once Infomaniak
+eTickets was compared properly. Billetweb is roughly three times cheaper per
+ticket and charges its fee to the buyer, but it is French and EUR-centric,
+almost certainly without TWINT, and it is a twelfth account for a turning-over
+committee to hold. Eventfrog (CH) is the retained fallback instead: its free
+tier is genuinely CHF 0 below CHF 50 a ticket, which wins if the calendar turns
+out to be many small events rather than one gala. See PRD 6.
+
+**Self-hosted open-source ticketing** — pretix, alf.io, Hi.Events. Rejected, and
+worth recording so it is a decision rather than an omission. pretix in
+particular fits the requirement better than anything on this list: its quota
+model is exactly the shared-capacity-across-ticket-types problem, under a free
+licence. The cost is not the licence. It is a server, Postgres, Redis, TLS,
+backups and a security-update cadence, in a language nobody on this committee's
+future bench will recognise — which is the liability this ADR rejected WordPress
+for, rebuilt. A VPS alone breaks the CHF 150/year target before a ticket is
+sold, and self-hosting makes the association the data controller for attendee
+data. The saving is a per-ticket commission that the ticket price carries
+anyway. *Revisit only if the committee ever funds a maintenance contract.*
 
 **Building ticketing in-house.** Rejected outright. Regulated, high-stakes,
 constantly moving, and impossible within the fee.
@@ -125,12 +148,20 @@ constantly moving, and impossible within the fee.
 
 1. **Is "WordPress" a requirement or vocabulary?** Gates this whole ADR.
 2. **Must editors log in with only an email address?** Sveltia vs Storyblok.
-3. **Scanned tickets at the door, or a printed guest list?** Billetweb vs pay-links.
-4. **"Gestion des places"** — capacity only, or table assignment for the gala?
-5. **Attestation fiscale** automatic, or issued yearly by the committee?
+3. **Attestation fiscale** automatic, or issued yearly by the committee?
+
+Two questions that used to block have stopped blocking, because Infomaniak
+eTickets does both answers and the choice is configuration rather than a
+different provider: **scanned tickets or a printed guest list** (it ships a free
+offline scanning app and exports a list), and **"gestion des places"** — capacity
+only, or table assignment (it does seating plans, including banquet layouts).
+Both still need asking; neither changes this decision.
 
 ## References
 
 - Cahier des charges + Textes du site, received 2026-08-20 (held outside the repo — contractual terms are deliberately not committed)
 - RaiseNow pricing: https://www.raisenow.com/en-ch/pricing-plans
 - Payrexx pricing: https://payrexx.com/en/pricing/
+- Infomaniak eTickets pricing: https://www.infomaniak.com/en/etickets/prices
+- Infomaniak eTickets commissions: https://www.infomaniak.com/en/support/faq/1746/ticketing-understand-the-commissions-applied-to-sales
+- Eventfrog pricing (fallback): https://eventfrog.ch/de/veranstalten/preise.html

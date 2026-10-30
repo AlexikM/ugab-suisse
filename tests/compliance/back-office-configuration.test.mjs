@@ -105,6 +105,83 @@ test('every field an editor can fill in exists in the content schema', () => {
 });
 
 /**
+ * Two fields survive PRD 6 with their meaning changed, and neither change is
+ * visible anywhere in the code. The only place an editor meets it is the help
+ * text under the field, which is why the help text is asserted.
+ *
+ * **« Complet » stopped being the site's answer to a full room** and became an
+ * override — right for an event not sold through the provider, and as an
+ * immediate answer the Comité can give without waiting for anything. Ticked out
+ * of habit on an event that is selling, it hides a working booking widget, and
+ * nothing else on the site will say so.
+ *
+ * **« Tarifs » duplicates what the provider holds**, deliberately: the price
+ * list has to be readable in Armenian, without JavaScript, and inside the
+ * announcement itself, and an embedded widget provides none of the three. An
+ * accepted duplication has to be a named one, or the events officer changes a
+ * price in one system and believes they have changed it in both.
+ *
+ * Asserted on substance rather than wording — a hint may be rewritten, but it
+ * may not quietly lose the warning it exists to carry.
+ */
+/**
+ * The shop identifier is the whole join between the two systems PRD 6 accepts.
+ * The event exists twice — an announcement here, a till at the provider — and
+ * this one pasted string is what makes them the same event. A field the editor
+ * cannot reach means the widget can never be mounted by anyone but a developer,
+ * which is the thing this back-office exists to avoid.
+ *
+ * The hint is asserted alongside it because the field has an order dependency
+ * that nothing else in the form has: the identifier does not exist until the
+ * till has been created at the provider, so an events officer who meets this
+ * field first has to be told to go and do something else in another window.
+ */
+test('an events officer can paste the shop identifier, and is told where it comes from', () => {
+  const config = readConfig();
+  const events = config.collections.find((collection) => collection.name === 'events');
+  const field = events.fields.find((f) => f.name === 'ticketShopId');
+
+  assert.ok(field, 'the fiche offers no way to connect an event to its ticket shop');
+  assert.match(
+    field.hint ?? '',
+    /billetterie|prestataire|Infomaniak/i,
+    'the hint does not say the till must be created at the provider first, so the field reads ' +
+      'as something the editor can invent',
+  );
+});
+
+test('the fiche warns that « Complet » hides a working booking widget', () => {
+  const config = readConfig();
+  const events = config.collections.find((collection) => collection.name === 'events');
+  const hint = events.fields.find((field) => field.name === 'soldOut')?.hint ?? '';
+
+  assert.match(
+    hint,
+    /billetterie|prestataire/i,
+    'the hint does not mention the ticketing provider',
+  );
+  assert.match(
+    hint,
+    /masqu|cache|disparaî|supprim/i,
+    'the hint does not say that ticking the box hides a booking that works — which is what it ' +
+      'now does on an event sold through the provider, silently',
+  );
+});
+
+test('the fiche warns that the price list is a copy of what the provider holds', () => {
+  const config = readConfig();
+  const events = config.collections.find((collection) => collection.name === 'events');
+  const hint = events.fields.find((field) => field.name === 'pricing')?.hint ?? '';
+
+  assert.match(
+    hint,
+    /billetterie|prestataire/i,
+    'the hint does not say where a visitor actually pays, so nothing warns the events officer ' +
+      'that changing a price here changes nothing there',
+  );
+});
+
+/**
  * Where an uploaded photograph is written, and where the fiche then looks for
  * it, are two settings that have to agree. `media_folder` is a path on disk;
  * `public_folder` is the path an entry carries and the site serves. If they

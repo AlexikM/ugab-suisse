@@ -13,6 +13,7 @@ comptes.
 | --- | --- |
 | **[Carte des comptes](carte-des-comptes.md)** | **Maintenant, pour la remplir. Puis après chaque élection.** |
 | [Publier un événement](publier-un-evenement.md) | À chaque événement |
+| [Tester la billetterie](tester-la-billetterie.md) | Avant chaque grande soirée, une fois l'événement configuré |
 | [Mettre à jour le Bureau](mettre-a-jour-le-bureau.md) | Après une élection |
 | [Exporter les dons](exporter-les-dons.md) | Au bouclement des comptes |
 | [En cas de problème](en-cas-de-probleme.md) | Le jour où quelque chose ne va pas |

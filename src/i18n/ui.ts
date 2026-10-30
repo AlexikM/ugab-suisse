@@ -455,8 +455,6 @@ export const ui = {
     'event.venue': 'Lieu',
     'event.programme': 'Programme',
     'event.pricing': 'Tarifs',
-    'event.capacity': 'Nombre de places',
-    'event.places': 'places',
     'event.sold_out': 'Complet',
     'event.book': 'Réserver',
     'event.finished': 'Événement terminé',
@@ -475,11 +473,12 @@ export const ui = {
     // would speak for itself. See the header of this file.
     'event.tickets_title': 'Billetterie',
     'event.ticket_types': 'Types de billets',
+    // NOT APPROVED COPY — see the header of this file. PRD 6 : la table se commande
+    // dans la billetterie en choisissant le paiement sur facture, et non par
+    // courriel à côté du système — une table convenue par e-mail ne retient
+    // aucune place, et la billetterie continue de vendre les sièges concernés.
     'event.large_booking':
-      'Pour une table ou une réservation d’entreprise, écrivez-nous : ces places se réservent directement auprès du Comité.',
-    // NOT APPROVED COPY — see the header of this file. Says out loud what the
-    // brief asks for: one room capacity shared by every ticket type.
-    'event.capacity_note': 'Places disponibles pour l’ensemble des tarifs.',
+      'Pour une table ou une réservation d’entreprise, choisissez « paiement sur facture » au moment de réserver : vos places sont retenues, et nous vous adressons une facture QR à régler par virement. Vous préférez en parler d’abord ?',
     // NOT APPROVED COPY — the brief asks for an automatic « Complet ». A static
     // page cannot know a provider's remaining stock, so this state is set by the
     // Comité on the fiche. See ADR-0001 and PRD 6.
@@ -491,6 +490,14 @@ export const ui = {
       'La billetterie en ligne sera ouverte dès l’ouverture du compte auprès du prestataire. D’ici là, écrivez-nous pour réserver.',
     'event.booking_external':
       'La réservation et le paiement se font chez le prestataire de billetterie du Comité.',
+    // NOT APPROVED COPY — see the header of this file. PRD 6, comme PRD 5 : aucun
+    // prestataire suisse ne propose de paiement en arménien, et le dire vaut mieux
+    // que de laisser un visiteur arménophone le découvrir au moment de payer.
+    'event.booking_languages':
+      'La réservation se fait en français, en allemand ou en anglais — le prestataire ne propose pas l’arménien.',
+    'event.embed_title': 'Réservation en ligne',
+    'event.embed_blocked':
+      'Si le module de réservation ne s’affiche pas — bloqueur de publicité, réseau d’entreprise —, écrivez-nous : nous réservons votre place à la main.',
     'event.availability_note':
       'Le nombre de places restantes n’est pas affiché sur cette page : seule la billetterie le connaît.',
     // Message de confirmation — Achat de billet. Le texte approuvé nomme la date
@@ -714,8 +721,6 @@ export const ui = {
     'event.venue': 'Venue',
     'event.programme': 'Programme',
     'event.pricing': 'Tickets',
-    'event.capacity': 'Places',
-    'event.places': 'places',
     'event.sold_out': 'Sold out',
     'event.book': 'Book',
     'event.finished': 'This event has taken place',
@@ -732,10 +737,9 @@ export const ui = {
     // header of this file, and the French table above.
     'event.tickets_title': 'Booking',
     'event.ticket_types': 'Ticket types',
-    'event.large_booking':
-      'For a table or a company booking, write to us: those places are reserved directly with the Committee.',
     // NOT APPROVED COPY — see the header of this file.
-    'event.capacity_note': 'Places available across all ticket types together.',
+    'event.large_booking':
+      'For a table or a company booking, choose payment by invoice when you book: your places are held, and we send you a QR-invoice to settle by bank transfer. Would you rather talk to us first?',
     // NOT APPROVED COPY — see the header of this file.
     'event.sold_out_detail': 'Every place has been taken. Booking is closed for this event.',
     'event.sold_out_contact': 'A place may free up: write to us.',
@@ -744,6 +748,12 @@ export const ui = {
       'Online booking will open as soon as the account with the ticketing provider is open. Until then, write to us to reserve a place.',
     'event.booking_external':
       'Booking and payment take place with the Committee’s ticketing provider.',
+    // NOT APPROVED COPY — see the header of this file.
+    'event.booking_languages':
+      'Booking is in French, German or English — the provider does not offer Armenian.',
+    'event.embed_title': 'Online booking',
+    'event.embed_blocked':
+      'If the booking panel does not appear — an ad blocker, a corporate network — write to us and we will reserve your place by hand.',
     'event.availability_note':
       'The number of places left is not shown on this page: only the ticketing system knows it.',
     'event.thanks_title': 'Booking confirmed',

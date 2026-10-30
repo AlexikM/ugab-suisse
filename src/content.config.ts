@@ -79,16 +79,43 @@ const events = defineCollection({
       programme: z.string().optional(),
       /** Free text, as the brief writes it: "CHF 150 / pers. — CHF 250 / couple". */
       pricing: z.string().optional(),
-      /** Nombre de places. */
-      capacity: z.number().int().positive().optional(),
       /**
-       * Set by hand when the room is full. A static site cannot know a
-       * provider's remaining stock; deriving this from live availability is
-       * PRD 6's decision to make.
+       * An override, and only an override.
+       *
+       * There is no `capacity` beside this any more, and its removal is the
+       * reason this comment is long. The quota belongs to the ticketing
+       * provider (PRD 6), which is the only system that can know it; a number
+       * held here as well would be a second truth, drifting from the first the
+       * moment ten seats are added to a room.
+       *
+       * A fiche written before that decision may still carry `capacity:` in its
+       * frontmatter. It is ignored rather than refused: an editor's old entry
+       * must not take the site down over a field nobody reads.
+       *
+       * So this flag is for an event that is *not* sold through the provider,
+       * and as an answer the Comité can give immediately without waiting for
+       * anything. Ticked out of habit on an event that is selling, it hides a
+       * working booking widget and nothing on the site says so — which is why
+       * the field help in the back-office says it in as many words.
        */
       soldOut: z.boolean().default(false),
-      /** Where a visitor buys a ticket. */
+      /** Where a visitor buys a ticket, when the Comité has only a plain link. */
       ticketUrl: z.string().url().optional(),
+      /**
+       * The provider's shop identifier, pasted from its interface after the
+       * till has been created there. The booking widget is built from it and
+       * mounted on the page, so the event reports the availability the provider
+       * actually holds instead of a guess frozen at build time.
+       *
+       * Deliberately not a URL, and deliberately separate from `ticketUrl`. Not
+       * a URL because exactly one line in the codebase should know what a
+       * provider's address looks like — PRD 6 keeps a fallback provider and says
+       * switching costs a different pasted identifier. Separate from `ticketUrl`
+       * because the choice is the Comité's, per event: embed where live
+       * availability matters, plain link where they would rather not load a
+       * third-party frame onto an announcement.
+       */
+      ticketShopId: z.string().optional(),
 
       draft: z.boolean().default(false),
       // Marks an entry as invented. The build refuses to publish it — see below.

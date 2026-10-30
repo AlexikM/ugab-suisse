@@ -1,0 +1,61 @@
+---
+/**
+ * The provider's booking widget, mounted on the event page.
+ *
+ * This is PRD 6's answer to the problem the document opens with: a statically
+ * generated page has no knowledge of live stock, and will keep showing a
+ * working booking button until somebody rebuilds it, however sold out the event
+ * is. Embedding the widget means availability is reported by the system that
+ * owns the count. It is the only mechanism by which a page with no server can
+ * be accurate about a room.
+ *
+ * **One constant is the whole integration.** The committee pastes a shop
+ * identifier onto the fiche and this builds the address from it. That is
+ * deliberate and it is the reason the identifier is not stored as a full URL:
+ * PRD 6 keeps Eventfrog as a fallback provider and says switching should cost
+ * "a different pasted identifier" — which is only true if exactly one line here
+ * knows what a provider's address looks like.
+ *
+ * **The address shape is not yet confirmed against a real shop.** No eTickets
+ * account exists; #94 opens one, reads the embed snippet the provider's own
+ * interface generates, and corrects `shopUrl` if it differs. Written down here
+ * rather than assumed, because a plausible-looking URL that silently 404s is
+ * worse than an obvious gap: nobody re-checks a field that looks filled in.
+ *
+ * **An iframe, not a script.** A third-party script on an announcement page can
+ * read the page, and would have to be trusted with it; an iframe cannot, and it
+ * is what an ad-blocker, a corporate proxy and a strict browser all block
+ * cleanly rather than half-executing. It also means this component loads nothing
+ * of its own and carries no key.
+ *
+ * `loading="lazy"` matters for more than bandwidth. The request to the provider
+ * is the moment a visitor's IP address reaches a third party, and deferring it
+ * until the widget is actually scrolled to is the same instinct that made the
+ * venue a link rather than an embedded map.
+ */
+
+interface Props {
+  /** The shop identifier, exactly as the committee pasted it onto the fiche. */
+  shop: string;
+  /** For the frame's accessible name — a screen reader announces this. */
+  title: string;
+}
+
+const { shop, title } = Astro.props;
+
+/**
+ * The one line that knows what a ticketing provider's address looks like.
+ * Confirmed against a real shop in #94; changing provider changes this and
+ * nothing else.
+ */
+const shopUrl = (identifier: string): string =>
+  `https://etickets.infomaniak.com/shop/${encodeURIComponent(identifier)}/`;
+---
+
+<iframe
+  src={shopUrl(shop)}
+  data-ticketing-embed={shop}
+  title={title}
+  loading="lazy"
+  class="h-[42rem] w-full border-0"
+></iframe>

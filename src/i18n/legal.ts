@@ -145,12 +145,17 @@ export const processors: Processor[] = [
   {
     id: 'ticketing',
     name: {
-      fr: 'Prestataire de billetterie (Billetweb — non encore arrêté)',
-      en: 'Ticketing provider (Billetweb — not yet fixed)',
+      fr: 'Infomaniak Network SA (billetterie « eTickets »)',
+      en: 'Infomaniak Network SA (“eTickets” ticketing)',
     },
-    country: { fr: 'France (Union européenne)', en: 'France (European Union)' },
+    country: { fr: 'Suisse (Genève)', en: 'Switzerland (Geneva)' },
     status: 'planned',
-    hosts: [],
+    // The same company that hosts the site, but a distinct processing: it
+    // receives who is coming to an event, which the hosting never sees. Listed
+    // separately for that reason and not because it is a second supplier.
+    // The booking widget is embedded in the event page, so unlike the hosting
+    // this one is a hostname the browser really does contact.
+    hosts: ['etickets.infomaniak.com'],
     purpose: {
       fr: "Vend et émet les billets de nos événements, et gère la liste d'entrée le soir même.",
       en: 'Sells and issues tickets for our events, and holds the door list on the night.',

@@ -231,7 +231,11 @@ nettement plus difficile que de l'ouvrir correctement.
 
 - **À quoi ça sert** — vend les billets, émet les e-billets, tient la liste
   d'entrée le soir de l'événement.
-- **Prestataire** — *à fournir par le Comité* — Billetweb, non encore arrêté
+- **Prestataire** — Infomaniak eTickets, c'est-à-dire **le même compte
+  Infomaniak que l'hébergement** (fiche 3). Il n'y a donc pas un identifiant de
+  plus à retenir : c'est un service de plus à l'intérieur du compte que le
+  Comité possède déjà. Les accès, la double authentification et les codes de
+  secours sont ceux de la fiche 3.
 - **Identifiant du compte** — *à fournir par le Comité*
 - **Titulaire du compte** — *à fournir par le Comité*
 - **Adresse e-mail de contact du compte** — *à fournir par le Comité*
